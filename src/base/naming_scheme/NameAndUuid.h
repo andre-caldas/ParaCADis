@@ -74,6 +74,9 @@ namespace NamingScheme
   };
 
 
+  /**
+   * @brief Object held by things that have an UUID and possibly a name.
+   */
   class NameAndUuid : private Uuid
   {
   private:
@@ -101,7 +104,7 @@ namespace NamingScheme
 
     std::string toString() const;
     operator std::string() const { return toString(); }
-    bool hasName() const { return !name.empty(); }
+    bool               hasName() const { return !name.empty(); }
     const std::string& getName() const { return name; }
   };
 
