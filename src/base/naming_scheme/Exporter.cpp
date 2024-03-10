@@ -20,99 +20,46 @@
  *                                                                          *
  ***************************************************************************/
 
+#include "Exporter.h"
+#include "Exporter_impl.h"
 #include "NameAndUuid.h"
-#include "exceptions.h"
 
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/string_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include <base/threads/locks/LockPolicy.h>
+#include <base/thread_safe_structs/ThreadSafeMap.h>
 
 namespace NamingScheme
 {
 
-  /*
-   * Uuid
-   * ====
-   */
-
   namespace
   {
-    boost::uuids::random_generator random_generator;
-    boost::uuids::string_generator string_generator;
-    // A static POD is zero initialized.
-    static boost::uuids::uuid zero_uuid;
+    ThreadSafeStructs::ThreadSafeMap<Uuid::uuid_type, std::weak_ptr<Exporter>> map;
   }
 
-  Uuid::Uuid()
-      : uuid(random_generator())
+  Uuid::uuid_type Exporter::getUuid() const
   {
+    return nameAndUuid.getUuid();
   }
 
-  void Uuid::isValid() const
+  void Exporter::registerUuid(const SharedPtr<Exporter>& shared_ptr)
   {
-    return uuid != zero_uuid;
+    auto uuid = ptr->getUuid();
+    assert(uuid.isValid());
+    map.emplace({uuid, ptr});
   }
 
-  void Uuid::setUuid(std::string_view uuid)
+  SharedPtr<Exporter> Exporter::getSharedPtr(std::string_view uuid)
   {
-    try {
-      uuid = string_generator(uuid);
-      assert(isValid);
-    } catch (const std::runtime_error&) {
-      // Zero-initialize.
-      uuid = uuid_type();
-      assert(!isValid());
+    Uuid t(uuid);
+    return getSharedPtr(t);
+  }
+
+  SharedPtr<Exporter> Exporter::getSharedPtr(Uuid::uuid_type uuid)
+  {
+    SharedLockFreeLock lock(map);
+    if (lock->count(uuid) == 0) {
+      return SharedPtr<Exporter>();
     }
-  }
-
-  /*
-   * NameOrUuid
-   * ==========
-   */
-
-  NameOrUuid::NameOrUuid(std::string name_or_uuid)
-      : uuid(name_or_uuid)
-  {
-    assert(!name_or_uuid.empty());
-    if (!uuid.isValid()) {
-      name = std::move(name_or_uuid);
-    }
-  }
-
-  /*
-   * NameAnduuid
-   * ===========
-   */
-
-  bool NameAndUuid::isValidName(std::string_view name_str)
-  {
-    if (name_str.empty()) {
-      return true;
-    }
-    Uuid test(name_str);
-    return !test.isValid();
-  }
-
-  void NameAndUuid::setName(std::string name_str)
-  {
-    assert(isValid());  // We have a valid uuid.
-    if (!isValidName(name_str)) {
-      throw ExceptionInvalidName(std::move(name_str));
-    }
-    name = std::move(name_str);
-  }
-
-  bool NameAndUuid::pointsToMe(NameOrUuid& name_or_uuid) const
-  {
-    if (name_or_uuid.isUuid()) {
-      return (uuid == name_or_uuid.uuid);
-    }
-    return !name.empty() && (name == name_or_uuid.name);
-  }
-
-  std::string NameAndUuid::toString() const
-  {
-    return name.empty() ? to_string(uuid) : name;
+    return lock->at(uuid).lock();
   }
 
 }  // namespace NamingScheme
