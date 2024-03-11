@@ -20,9 +20,10 @@
  *                                                                          *
  ***************************************************************************/
 
+#include "checks.h"
+#include "exceptions.h"
 #include "types.h"
 
-#include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/vec3>
 
@@ -30,8 +31,13 @@ void CoordinateSystem::set(
     PrecisePoint origin, PreciseVector x, PreciseVector y, PreciseVector z)
 {
   origin = orig;
-  glm::mat3 M(x, y, z);
-  if (M.determinant() < 0.0) {
+
+  Check::assertTwoByTwoOrthogonality(x, y, z);
+  glm::mat3 M(x.normalize(), y.normalize(), z.normalize());
+
+  auto det = M.determinant();
+  assert(!Check::epsilonZero(det));
+  if (det < 0.0) {
     orientation = -1.0;
     M *= -1.0;
   }
@@ -43,7 +49,7 @@ void CoordinateSystem::set(
 {
   auto a = (orientation > 0.0) ? y : z;
   auto b = (orientation > 0.0) ? z : y;
-  auto x = cross(a, b);
+  auto x = Check::assertLI(a, b);
   set(origin, x, y, z);
 }
 
@@ -52,7 +58,7 @@ void CoordinateSystem::set(
 {
   auto a = (orientation > 0.0) ? z : x;
   auto b = (orientation > 0.0) ? x : z;
-  auto y = cross(a, b);
+  auto y = Check::assertLI(a, b);
   set(origin, x, y, z);
 }
 
@@ -61,7 +67,7 @@ void CoordinateSystem::set(
 {
   auto a = (orientation > 0.0) ? x : y;
   auto b = (orientation > 0.0) ? y : z;
-  auto z = cross(a, b);
+  auto z = Check::assertLI(a, b);
   set(origin, x, y, z);
 }
 

@@ -1,12 +1,11 @@
-subdir('coordinate_system')
+subdir('document_tree')
 subdir('expected_behaviour')
+subdir('geometric_primitives')
 subdir('naming_scheme')
 subdir('thread_safe_structs')
 
 base_src = [
-  'Container.cpp',
-  'DocumentTree.cpp',
-  'TreeNode.cpp',
+  'exceptions.cpp',
 ]
 
 base_lib = shared_library(
