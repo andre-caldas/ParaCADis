@@ -47,7 +47,7 @@ AlignTrailingComments:
   Kind:            Always
   OverEmptyLines:  0
 AllowAllArgumentsOnNextLine: true
-AllowAllParametersOfDeclarationOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: false
 AllowBreakBeforeNoexceptSpecifier: OnlyWithParen
 AllowShortBlocksOnASingleLine: Always
 AllowShortCaseLabelsOnASingleLine: false
@@ -57,11 +57,8 @@ AllowShortFunctionsOnASingleLine: InlineOnly
 AllowShortIfStatementsOnASingleLine: Always
 AllowShortLambdasOnASingleLine: All
 AllowShortLoopsOnASingleLine: true
-AlwaysBreakAfterDefinitionReturnType: None
 
-# Deprecation: renamed in clang-format-19.
-# --> BreakAfterReturnType: ExceptShortType
-AlwaysBreakAfterReturnType: None
+BreakAfterReturnType: ExceptShortType
 AlwaysBreakBeforeMultilineStrings: false
 AlwaysBreakTemplateDeclarations: Yes
 AttributeMacros:
@@ -177,17 +174,17 @@ PackConstructorInitializers: CurrentLine
 #    before breaking lines.
 # 3. Add numbers less than 10 to distinguish cases.
 #
-PenaltyBreakAssignment: 2
-PenaltyBreakBeforeFirstCallParameter: 100
-PenaltyBreakComment: 103
-PenaltyBreakFirstLessLess: 102
-PenaltyBreakOpenParenthesis: 0
+PenaltyBreakAssignment: 51
+PenaltyBreakBeforeFirstCallParameter: 101
+PenaltyBreakComment: 104
+PenaltyBreakFirstLessLess: 103
+PenaltyBreakOpenParenthesis: 102
 PenaltyBreakScopeResolution: 200
 PenaltyBreakString: 91
 PenaltyBreakTemplateDeclaration: 0
 PenaltyExcessCharacter: 10
 PenaltyIndentedWhitespace: 0
-PenaltyReturnTypeOnItsOwnLine: 101
+PenaltyReturnTypeOnItsOwnLine: 71
 
 PointerAlignment: Left
 PPIndentWidth:   -1
