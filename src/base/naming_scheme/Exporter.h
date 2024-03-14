@@ -25,8 +25,9 @@
 
 #include "NameAndUuid.h"
 
-#include <base/expected_behaviour/SharedPtr.h>
 #include <base/expected_behaviour/SharedFromThis.h>
+#include <base/expected_behaviour/SharedPtr.h>
+#include <base/threads/locks/MutexData.h>
 #include <base/types.h>
 
 #include <ranges>
@@ -34,6 +35,9 @@
 
 namespace NamingScheme
 {
+
+  template<typename X>
+  class NameSearchResult;
 
   template<typename T>
   class IExport;
@@ -48,21 +52,19 @@ namespace NamingScheme
    */
   class Exporter : public SharedFromThis<Exporter>
   {
+  private:
+    MutexData mutex_data;
+
   public:
     virtual ~Exporter() = default;
 
-    /**
-     * @brief Calls the correct `resolve()` method.
-     * The same class can export different types of objects.
-     * That is, it can subclass different types of `IExport<T>`.
-     * Each of them implements a different `resolve()` method.
-     * This templated `resolve<>()` calls the correct one.
+    /** Must satisfy `Threads::C_MutexHolder`.
+     *
+     * You may reimplement this if you have other mutexes in the same class.
      */
-    template<typename X>
-    SharedPtr<X> resolve(std::ranges::subrange<token_range> tokens);
+    virtual MutexData* getMutexData() { return &mutex_data; }
 
-    /**
-     * @brief Globally registers a Uuid.
+    /** Globally registers a Uuid.
      * This is specially useful when serializing (Save)
      * and unserializing (Restore).
      * @param shared_ptr - a shared_ptr to the @class Exporter.
@@ -87,6 +89,8 @@ namespace NamingScheme
 
     NameAndUuid name_and_uuid;
   };
+
+  static_assert(Threads::C_MutexHolder<Exporter>);
 
 }  // namespace NamingScheme
 

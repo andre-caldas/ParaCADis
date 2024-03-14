@@ -20,31 +20,67 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef NamingScheme_ResolvedData_impl_H
-#define NamingScheme_ResolvedData_impl_H
+#ifndef NamingScheme_NameSearchResult_H
+#define NamingScheme_NameSearchResult_H
 
-#include "Exporter.h"
-#include "ResolvedData.h"
+#include "types.h"
 
+#include <base/expected_behaviour/SharedPtr.h>
 #include <base/threads/locks/LockPolicy.h>
 
 namespace NamingScheme
 {
 
-  T* data;
+  class Exporter;
+
+  /**
+   * All information for the resolved ReferenceToOjbect.
+   *
+   * To support multithread, NamingScheme::Exporter provides a shared_mutex
+   * for accessing its data. So, we keep a reference for this mutex.
+   * The developer must lock the mutex before using the data.
+   */
+  class NameSearchResultBase
+  {
+  protected:
+    SharedPtr<Exporter> exporter;
+
+    void resolveExporter(token_iterator& tokens);
+
+  public:
+    NameSearchResultBase(SharedPtr<Exporter> root) : exporter(root) {}
+
+    [[maybe_unused]] [[nodiscard]]
+    Threads::SharedLock lockForReading() const;
+
+    [[maybe_unused]] [[nodiscard]]
+    Threads::ExclusiveLock<Threads::MutexData> lockForWriting() const;
+  };
+
 
   template<typename T>
-  const T* ResolvedData::getDataForReading() const
+  class NameSearchResult : public NameSearchResultBase
   {
-    assert(LockPolicy::isLocked(exporter.getMutexData());
-    return data;
-  }
+  private:
+    SharedPtr<T> data;
 
-  T* ResolvedData::getDataForWriting() const
-  {
-    assert(LockPolicy::isLockedExclusively(exporter.getMutexData());
-    return data;
-  }
+  public:
+    using NameSearchResultBase::NameSearchResultBase;
+
+    bool resolve(token_iterator tokens);
+
+    enum {
+      not_resolved_yet = '0',  ///< Method resolve() not called, yet.
+      success          = 'S',  ///< Method resolve() succeeded.
+      not_found        = '?',  ///< Could not find token.
+      too_few_tokens   = '<',  ///< Tokens resolve only up to Exporter.
+      too_many_tokens  = '>',  ///< Resolved, but did not consume all tokens.
+      does_not_export  = '*'   ///< Last Exporter does not export requested type.
+    } status = not_resolved_yet;
+
+    std::shared_ptr<const T> getDataForReading() const;
+    std::shared_ptr<T>       getDataForWriting() const;
+  };
 
 }  // namespace NamingScheme
 

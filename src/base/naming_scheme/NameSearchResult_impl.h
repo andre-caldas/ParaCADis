@@ -20,40 +20,68 @@
  *                                                                          *
  ***************************************************************************/
 
+#ifndef NamingScheme_NameSearchResult_impl_H
+#define NamingScheme_NameSearchResult_impl_H
+
 #include "Exporter.h"
+#include "NameSearchResult.h"
 
 #include <base/threads/locks/LockPolicy.h>
 
-#include <memory>
-
-using namespace Threads;
+#include <type_traits>
 
 namespace NamingScheme
 {
 
-  SharedLock ResolvedDataBase::lockForReading() const
+  template<typename T>
+  bool NameSearchResult::resolve(token_iterator tokens)
   {
-    return SharedLock(exporter->getMutexData());
-  }
+    resolveExporter(tokens);
+    if constexpr (std::is_same_v<std::remove_cv_t<T>, Exporter>) {
+      if (tokens) {
+        result = too_many_tokens;
+        return false;
+      }
+      result = success;
+      return true;
+    }
 
-  ExclusiveLock<MutexData> ResolvedDataBase::lockForWriting() const
-  {
-    return ExclusiveLock(exporter->getMutexData());
+    auto ptr = dynamic_cast<IExport<T>*>(exporter.get());
+    if (!ptr) {
+      result = does_not_export;
+      return false;
+    }
+
+    data = ptr->resolve(tokens);
+    if (!data) {
+      result = not_found;
+      return false;
+    }
+
+    if (tokens) {
+      result = too_many_tokens;
+      return false;
+    }
+    result = success;
+    return true;
   }
+}
+
+
+template<typename T>
+const T* NameSearchResult::getDataForReading() const
+{
+    assert(LockPolicy::isLocked(exporter.getMutexData());
+    return data;
+}
+
+T* NameSearchResult::getDataForWriting() const
+{
+    assert(LockPolicy::isLockedExclusively(exporter.getMutexData());
+    return data;
+}
 
 }  // namespace NamingScheme
 
-/**
- * Template instantiation for most used exported types.
- */
-
-#include <base/geometric_primitives/Circle.h>
-#include <base/geometric_primitives/Line.h>
-#include <base/geometric_primitives/types.h>
-
-template class NamingScheme::ResolvedData<Real>;
-template class NamingScheme::ResolvedData<Point>;
-template class NamingScheme::ResolvedData<Vector>;
-template class NamingScheme::ResolvedData<Line>;
-template class NamingScheme::ResolvedData<Circle>;
+#endif
 

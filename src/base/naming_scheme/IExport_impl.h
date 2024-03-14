@@ -47,7 +47,7 @@ namespace NamingScheme
 {
 
   template<typename T>
-  SharedPtr<T> IExport<T>::resolve(std::ranges::subrange<token_range> token_list)
+  SharedPtr<T> IExport<T>::resolve(token_iterator& token_list)
   {
     auto share = resolve_share(token_list);
     if (share) { return share; }
@@ -58,14 +58,14 @@ namespace NamingScheme
   }
 
   template<typename T>
-  T* IExport<T>::resolve_ptr(std::ranges::subrange<token_range> /* token_list */)
+  T* IExport<T>::resolve_ptr(token_iterator& /* token_list */)
   {
     return nullptr;
   }
 
   template<typename T>
   SharedPtr<T>
-  IExport<T>::resolve_share(std::ranges::subrange<token_range> /* token_list */)
+  IExport<T>::resolve_share(token_iterator& /* token_list */)
   {
     return {};
   }

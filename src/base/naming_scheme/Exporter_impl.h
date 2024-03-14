@@ -30,30 +30,65 @@
 #endif
 #include "Exporter.h"
 #include "IExport.h"
+#include "NameSearchResult.h"
 #include "exceptions.h"
 #include "types.h"
 
 #include <base/expected_behaviour/SharedPtr.h>
 
+#include <type_traits>
+
 namespace NamingScheme
 {
 
   template<typename X>
-  SharedPtr<X> Exporter::resolve(std::ranges::subrange<token_range> tokens);
+  ResolveData<X> Exporter::resolve(token_iterator& tokens)
   {
-    {  // Check if this exports X.
+    ResolveData<X> resolve_data;
+    bool result = resolve(tokens, &resolve_data);
+    if(!) {
+    }
+    return resolve_data;
+  }
+
+  template<typename X>
+  bool Exporter::_resolve(token_iterator& tokens, ResolveData<X>* resolve_data);
+  {
+    if (!tokens) { return; }
+
+    // We set this before iterating, because we need the mutex for the last iteration.
+    result->mutex = getMutexData();
+
+    {  // Check if we directly export.
+      // TODO: std::remove_cv<X>.
       auto ptr = dynamic_cast<IExport<X>*>(this);
-      if (ptr) { return ptr->resolve<X>(tokens); }
+      if (ptr) {
+        auto next = ptr->resolve(tokens);
+        if (next) {
+          result->data = std::move(next);
+          return result;
+        }
+      }
     }
 
     {  // Check if this is chainable.
       auto ptr = dynamic_cast<IExport<Exporter>*>(this);
-      if (ptr) { return ptr->resolve<X>(tokens); }
+      if (ptr) {
+        auto pos           = tokens.cbegin();
+        auto next_exporter = ptr->_resolve<X>(tokens, result);
+        if (next_exporter) {
+          assert(
+              pos != tokens.cbegin()
+              && "IExport<X>::resolve must advance iterator.");
+          return next_exporter->resolve<X>(tokens, collector);
+        }
+      }
     }
-    throw ExceptionNoExport(tokens)
   }
+  throw ExceptionNoExport(tokens)
+}
 
 }  // namespace NamingScheme
 
-#endif  // NamingScheme_Exporter_impl_H
+#endif
 

@@ -24,22 +24,28 @@
 #ifndef BASE_Accessor_Types_H
 #define BASE_Accessor_Types_H
 
-#include <memory>
-#include <vector>
-#include <string>
+#include <base/expected_behaviour/SharedPtr.h>
+
 #include <ranges>
+#include <vector>
+
+template<typename T>
+class WeakPtr;
+
+class Exporter;
 
 namespace NamingScheme
 {
 
-class NameOrUuid;
-class Exporter;
+  class NameOrUuid;
+  class Exporter;
 
-using token_item = NameOrUuid;
-using token_range = std::ranges<token_item>;
-using object_pointer_type = std::shared_ptr<Exporter>;
-using pointer_list = std::vector<object_pointer_type>;
+  using token_item         = NameOrUuid;
+  using token_range        = std::ranges<token_item>;
+  using token_iterator     = std::ranges::subrange<token_item>;
+  using weak_ptr_collector = std::vector<WeakPtr<Exporter>>;
 
-} //namespace Base::Accessor
+}  // namespace NamingScheme
 
-#endif // BASE_Accessor_Types_H
+#endif  // BASE_Accessor_Types_H
+

@@ -32,6 +32,9 @@
 namespace NamingScheme
 {
 
+  template <typename T>
+  class NameSearchResult;
+
   /**
    * @brief Any class that exports some type T must subclass @class IExport<T>.
    *
@@ -48,9 +51,10 @@ namespace NamingScheme
   class IExport
   {
   public:
+    using NameSearchResult = NameSearchResult<T>;
     using token_iterator = NamingScheme::token_iterator;
 
-    shared_ptr<T> resolve(std::ranges::subrange<token_range> tokens);
+    SharedPtr<T> resolve(token_iterator& tokens);
 
   protected:
     /**
@@ -61,7 +65,7 @@ namespace NamingScheme
      * @attention To allow a class to derive from multiple IExport<T> classes,
      * we have added a T* to the end of the methods signature.
      */
-    virtual T* resolve_ptr(const token_iterator& end, T* = nullptr);
+    virtual T* resolve_ptr(token_iterator& tokens, T* = nullptr);
 
     /**
      * @brief Implement, to return a @class SharedPtr to any object.
@@ -69,11 +73,7 @@ namespace NamingScheme
      * @attention To allow a class to derive from multiple IExport<T> classes,
      * we have added a T* to the end of the methods signature.
      */
-    virtual SharefPtr<T> resolve_share(const token_iterator& end, T* = nullptr);
-  };
-
-  class Chainable : public IExport<Exporter>
-  {
+    virtual SharefPtr<T> resolve_share(token_iterator& tokens, T* = nullptr);
   };
 
 }  // namespace NamingScheme
