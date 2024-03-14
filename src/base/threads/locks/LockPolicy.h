@@ -141,21 +141,14 @@ namespace Threads
 
 
   /**
-   * @brief Locks and gives access to locked classes of type "MutexHolder".
+   * Locks many mutexes exclsively (for writing).
    */
-  template<C_MutexHolder FirstHolder, C_MutexHolder... MutexHolder>
+  template<C_MutexData FirstMutex, C_MutexData... MutexData>
   class ExclusiveLock : public LockPolicy
   {
   public:
     [[nodiscard]]
-    ExclusiveLock(FirstHolder& first_holder, MutexHolder&... mutex_holder);
-
-    // This could actually be static.
-    template<C_MutexHolder SomeHolder>
-    auto& operator[](SomeHolder& tsc) const;
-
-    template<typename = std::enable_if_t<sizeof...(MutexHolder) == 0>>
-    auto operator->() const;
+    ExclusiveLock(FirstMutex& first_mutex, MutexData&... mutex_data);
 
     void release();
 
@@ -163,7 +156,7 @@ namespace Threads
 
   private:
     using locks_t
-        = std::scoped_lock<YesItIsAMutex, ForEach_t<YesItIsAMutex, MutexHolder>...>;
+        = std::scoped_lock<YesItIsAMutex, ForEach_t<YesItIsAMutex, MutexData>...>;
     /*
      * After constructed, std::scoped_lock cannot be changed.
      * So, we usa a unique_ptr.
@@ -177,7 +170,27 @@ namespace Threads
      * information: the std::thread instance.
      */
     std::shared_ptr<locks_t> locks;
+  };
 
+
+  /**
+   * @brief Locks and gives access to locked classes of type "MutexHolder".
+   */
+  template<C_MutexHolder FirstHolder, C_MutexHolder... MutexHolder>
+  class ExclusiveLockGate : public ExclusiveLock
+  {
+  public:
+    [[nodiscard]]
+    ExclusiveLockGate(FirstHolder& first_holder, MutexHolder&... mutex_holder);
+
+    // This could actually be static.
+    template<C_MutexHolderWithGate SomeHolder>
+    auto& operator[](SomeHolder& tsc) const;
+
+    template<typename = std::enable_if_t<sizeof...(MutexHolder) == 0>>
+    auto operator->() const;
+
+  private:
     FirstHolder& FirstHolder;
   };
 

@@ -55,33 +55,10 @@ namespace Threads
     const C& container;
   };
 
-  template<>
-  struct MutexDataPointer<MutexData*> {
-    MutexDataPointer(MutexData* mutex)
-        : mutex(mutex)
-    {
-    }
-
-    auto getPair() { return mutex; }
-
-    MutexData* mutex;
-  };
-
-  template<>
-  struct MutexDataPointer<MutexData> : MutexDataPointer<MutexData*> {
-    MutexDataPointer(MutexData& mutex)
-        : MutexDataPointer<MutexData*>(&mutex)
-    {
-    }
-  };
-
-  template<IsMutexHolder FirstHolder, IsMutexHolder... MutexHolder>
-  ExclusiveLock<FirstHolder, MutexHolder...>::ExclusiveLock(
-      FirstHolder& first_holder, MutexHolder&... holder)
-      : LockPolicy(
-            true, MutexDataPointer{first_holder}.getPair(),
-            MutexDataPointer{holder}.getPair()...)
-      , FirstHolder(first_holder)
+  template<C_MutexData FirstMutex, C_MutexData... MutexData>
+  ExclusiveLock<FirstMutex, MutexData...>::ExclusiveLock(
+      FirstMutex* first_mutex, MutexData*... mutex_data)
+      : LockPolicy(true, first_mutex, mutex_data...)
   {
     /*
      * Here we know that if this is not the first lock,
@@ -96,23 +73,41 @@ namespace Threads
      * ExclusiveLock l2(m1); // Does nothing.
      */
     assert(
-        getMutexes().empty()
-        || getMutexes().size() == 1 + sizeof...(MutexHolder));
-    if (getMutexes().size() == 1 + sizeof...(MutexHolder)) {
+        getMutexes().empty() || getMutexes().size() == 1 + sizeof...(MutexData));
+    if (getMutexes().size() == 1 + sizeof...(MutexData)) {
       /*
        * It would be more natural if we could pass "mutexes" to the constructor.
        * But there is only the option to list all mutexes at compile time.
        * Fortunately, mutexes = {container.getMutexPtr()...}.
        */
-      locks = std::make_shared<locks_t>(
-          MutexDataPointer{first_holder}.getPair()->mutex,
-          MutexDataPointer{holder}.getPair()->mutex...);
+      locks = std::make_shared<locks_t>(first_mutex->mutex, mutex_data->mutex...);
     }
   }
 
-  template<IsMutexHolder FirstHolder, IsMutexHolder... MutexHolder>
-  template<IsMutexHolder SomeHolder>
-  auto& ExclusiveLock<FirstHolder, MutexHolder...>::operator[](SomeHolder& tsc) const
+  template<C_MutexData FirstData, C_MutexData... MutexData>
+  void ExclusiveLock<FirstData, MutexData...>::release()
+  {
+    locks.reset();
+  }
+
+  template<C_MutexData FirstData, C_MutexData... MutexData>
+  auto ExclusiveLock<FirstData, MutexData...>::detachFromThread()
+  {
+    LockPolicy::detachFromThread();
+    return locks;
+  }
+
+  template<C_MutexHolder FirstHolder, C_C_MutexHolder... MutexHolder>
+  ExclusiveLockGate<FirstHolder, MutexHolder...>::ExclusiveLockGate(
+      FirstHolder& first_holder, MutexHolder&... holder)
+      : ExclusiveLock(first_holder.getMutexData(), holder.getMutexData()...)
+      , FirstHolder(first_holder)
+  {
+  }
+
+  template<C_MutexHolder FirstHolder, C_MutexHolder... MutexHolder>
+  template<C_MutexHolderWithGate SomeHolder>
+  auto& ExclusiveLockGate<FirstHolder, MutexHolder...>::operator[](SomeHolder& tsc) const
   {
     if (!isLockedExclusively(tsc.getMutexData())) {
       throw ExceptionNeedLockToAccessContainer();
@@ -121,28 +116,15 @@ namespace Threads
     return *gate;
   }
 
-  template<IsMutexHolder FirstHolder, IsMutexHolder... MutexHolder>
-  template<IsMutexHolder>
-  auto ExclusiveLock<FirstHolder, MutexHolder...>::operator->() const
+  template<C_MutexHolder FirstHolder, C_MutexHolder... MutexHolder>
+  template<typename>
+  auto ExclusiveLockGate<FirstHolder, MutexHolder...>::operator->() const
   {
     if (!isLockedExclusively(FirstHolder.getMutexData())) {
       throw ExceptionNeedLockToAccessContainer();
     }
     auto& gate = FirstHolder.getWriterGate(this);
     return &*gate;
-  }
-
-  template<IsMutexHolder FirstHolder, IsMutexHolder... MutexHolder>
-  void ExclusiveLock<FirstHolder, MutexHolder...>::release()
-  {
-    locks.reset();
-  }
-
-  template<IsMutexHolder FirstHolder, IsMutexHolder... MutexHolder>
-  auto ExclusiveLock<FirstHolder, MutexHolder...>::detachFromThread()
-  {
-    LockPolicy::detachFromThread();
-    return locks;
   }
 
 }  // namespace Threads
