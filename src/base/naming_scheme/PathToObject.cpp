@@ -48,9 +48,16 @@ namespace NamingScheme
 
   ListOfPathTokens& ListOfPathTokens::operator<<(NameOrUuid extra_token)
   {
-    tokens.emplace_back(std::move(extra_path));
+    tokens.emplace_back(std::move(extra_token));
     return *this;
   }
+
+  ListOfPathTokens& ListOfPathTokens::operator<<(ListOfPathTokens extra_tokens)
+  {
+    tokens.append_range(std::move(extra_tokens.tokens));
+    return *this;
+  }
+
 
   void ListOfPathTokens::serialize(Files::XmlWriter& writer) const
   {
@@ -62,99 +69,61 @@ namespace NamingScheme
     throw NotImplemented();
   }
 
-
   /*
    * PathToObject
    * ============
    */
 
   PathToObject::PathToObject(const Uuid& uuid, ListOfPathTokens tokens)
-      : root_uuid(uuid), tokens(std::move(tokens)
+      : root_uuid(uuid), tokens(std::move(tokens))
   {
   }
 
-  PathToObject::PathToObject(
-      std::shared_ptr<Exporter> root, ListOfPathTokens tokens)
-      : root_uuid(root->getUuid()), root_weak_ptr(root), tokens(std::move(tokens))
+  PathToObject::PathToObject(SharedPtr<Exporter> root, ListOfPathTokens tokens)
+      : root_weak_ptr(root), root_uuid(root->getUuid()), tokens(std::move(tokens))
   {
   }
 
-
-  ListOfPathTokens PathToObject::operator+(NameOrUuid extra_token) const
+  PathToObject PathToObject::operator+(NameOrUuid extra_token) const
   {
-    ListOfPathTokens result(*this);
-    result << std::move(extra_token);
+    ListOfPathTokens path(*this);
+    path << std::move(extra_token);
+    PathToObject result(root_uuid, std::move(path));
+    result.root_weak_ptr = root_weak_ptr;
+    result.url           = url;
     return result;
   }
 
-  PathToObject::lock_type PathToObject::getLock() const
+  PathToObject PathToObject::operator+(ListOfPathTokens extra_tokens) const
   {
-    // First we try the root_weak_ptr.
-    auto last_object = root_weak_ptr.lock();
-    // If it is not valid, we try to find the uuid in the global dictionary.
-    if (!last_object) {
-      last_object = Exporter::getSharedPtr(root_uuid);
-    }
-
-    if (!last_object) {
-      throw ExceptionNoUuid(root_uuid, "Root object does not exist!");
-    }
-
-    // TODO: Implement different "cache expire" policies.
-    lock_type lock{last_object: last_object, remaining_tokens: tokens};
-    while (lock.remaining_tokens) {
-      try {
-        lock.last_object = lock.last_object->resolve<Exporter>(
-            lock.last_object, lock.remaining_tokens);
-      } catch (ExceptionNoExport&) {
-        // Current object is not chainable.
-        return lock;
-      }
-
-      auto previous_it = lock.remaining_tokens_start;
-
-      if (lock.remaining_tokens_start == previous_it) {
-        FC_THROWM(
-            Base::RuntimeError,
-            "Object's path resolution is not consuming tokens. Path: '"
-                << pathString() << "'. This is a BUG!");
-      }
-    }
-    return lock;
-  }
-
-  void PathToObject::serialize(Base::Writer& writer) const
-  {
-    writer.Stream() << writer.ind() << "<PathToObject>" << std::endl;
-    writer.incInd();
-    writer.Stream() << writer.ind() << "<root_uuid>";
-    writer.Stream() << root_uuid.toString() << "</root_uuid>" << std::endl;
-    for (auto token: tokens) {
-      // TODO: escape token.getText().
-      writer.Stream() << writer.ind() << "<NameOrUuid>";
-      writer.Stream() << token.getText() << "</NameOrUuid>" << std::endl;
-    }
-    writer.decInd();
-    writer.Stream() << writer.ind() << "</PathToObject>" << std::endl;
-  }
-
-  PathToObject PathToObject::unserialize(Base::XMLReader& reader)
-  {
-    reader.readElement("PathToObject");
-    reader.readElement("root_uuid");
-    auto root = Exporter::getWeakPtr(reader.getCharacters()).lock();
-    if (!root) {
-      FC_THROWM(
-          ReferenceError,
-          "Root element does not exist when unserializing RferenceTo: '"
-              << reader.getCharacters() << "'");
-    }
-    PathToObject result{root};
-    while (!reader.testEndElement("PathToObject")) {
-      reader.readElement("NameOrUuid");
-      result.tokens.push_back(NameAndUuid(reader.getCharacters()));
-    }
+    ListOfPathTokens path(*this);
+    path << std::move(extra_tokens);
+    PathToObject result(root_uuid, std::move(path));
+    result.root_weak_ptr = root_weak_ptr;
+    result.url           = url;
     return result;
+  }
+
+
+  void PathToObject::serialize(Files::XmlWriter& writer) const
+  {
+    auto sentinel = writer.newTag("PathToObject");
+    try {
+      root_uuid.serialize(writer);
+      for (const auto& token: tokens) {
+        token.serialize(writer);
+      }
+    } catch (Files::XmlWriter::SerializeError s) {
+      writer.reportError(s);
+    }
+  }
+
+  PathToObject PathToObject::unserialize(Files::XmlReader& reader)
+  {
+    auto sentinel = reader.readOpenElement("PathToObject");
+    auto root_uuid = Uuid::unserialize();
+    auto list_of_tags = ListOfPathTokens::unserialize();
+    return PathToObject(std::move(root_uuid), std::move(list_of_tags));
   }
 
 }  // namespace NamingScheme

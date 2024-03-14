@@ -23,6 +23,8 @@
 #ifndef NamingScheme_PathToObject_H
 #define NamingScheme_PathToObject_H
 
+#include <base/expected_behaviour/SharedPtr.h>
+
 #include <deque>
 #include <initializer_list>
 
@@ -54,6 +56,7 @@ namespace NamingScheme
     std::string pathString() const;
 
     ListOfPathTokens& operator<<(NameOrUuid extra_token);
+    ListOfPathTokens& operator<<(ListOfPathTokens extra_tokens);
 
     void                    serialize(Files::XmlWriter& writer) const;
     static ListOfPathTokens unserialize(Files::XmlReader& reader);
@@ -80,9 +83,9 @@ namespace NamingScheme
   class PathToObject : private ListOfPathTokens
   {
   protected:
-    std::string             document_url;  // Not used yet!
-    Uuid                    root_uuid;
-    std::weak_ptr<Exporter> root_weak_ptr;
+    WeakPtr<Exporter> root_weak_ptr;  ///< Try first.
+    Uuid              root_uuid;      ///< Try second.
+    std::string       document_url;   ///< Try this third. (not implemented)
 
   public:
     PathToObject(PathToObject&&)                 = default;
@@ -91,50 +94,22 @@ namespace NamingScheme
     PathToObject& operator=(PathToObject&&)      = default;
 
     /**
-     * @brief Constructor to use with @class ListOfPathTokens or `{}`.
+     * A root object and a list of tokens.
      * @example `PathToObject(root, {"geometries", "second_line"});`
      */
-    PathToObject(std::shared_ptr<Exporter> root, ListOfPathTokens tokens);
-    PathToObject(Uuid root_uuid, ListOfPathTokens tokens);
+    /// @{
+    PathToObject(SharedPtr<Exporter> root, ListOfPathTokens tokens = {});
+    PathToObject(Uuid root_uuid, ListOfPathTokens tokens = {});
+    PathToObject(std::string root_url, ListOfPathTokens tokens = {});
+    /// @}
 
     virtual ~PathToObject() = default;
 
-    /**
-     * @brief References are *NOT* serialized with knowledge
-     * of what is is the most derived class.
-     * When unserializing, the application needs to know what specific
-     * subclass must be instantiated.
-     * Then, serialization is implemented as a static method of the derived class.
-     * @param writer - stream to write to.
-     */
     void                serialize(Files::XmlWriter& writer) const;
     static PathToObject unserialize(Files::XmlReader& reader);
 
-    ListOfPathTokens operator+(NameOrUuid extra_token) const;
-
-    /**
-     * @brief The resolution mechanism resolves the token chain
-     * up to the end of the chain, or up to the first non-chainable object.
-     * The last found object is kept (using a shared_ptr) at "last_object".
-     *
-     * In the context of @class ReferenceTo<X>,
-     * this last found object has to be of type:
-     * * @class X, when there are no remaining tokens.
-     * * @class IExport<X>, where there are tokens to be resolved.
-     */
-    struct lock_type {
-      // TODO: Implement different lock_types for different "cache" policies.
-      std::shared_ptr<Exporter>          last_object;
-      std::ranges::subrange<token_range> remaining_tokens;
-    };
-
-    /**
-     * @brief Resolves the reference until it finds a non @class Chainable
-     * object, or until the chain is fully consumed.
-     * @return A lock to the shared resource and a "list" of the remaining
-     * tokens. That is, a @class lock_type.
-     */
-    lock_type getLock() const;
+    PathToObject operator+(NameOrUuid extra_token) const;
+    PathToObject operator+(ListOfPathTokens extra_tokens) const;
   };
 
 }  // namespace NamingScheme
