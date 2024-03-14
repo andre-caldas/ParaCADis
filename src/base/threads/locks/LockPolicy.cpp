@@ -20,8 +20,13 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "../Exception.h"
 #include "LockPolicy.h"
+#include "exceptions.h"
+
+#include <algorithm>
+#include <limits>
+#include <stack>
+#include <unordered_set>
 
 namespace Threads
 {
@@ -29,8 +34,8 @@ namespace Threads
   thread_local std::unordered_set<const MutexPair*> threadExclusiveMutexes;
   thread_local std::unordered_set<const MutexPair*> threadNonExclusiveMutexes;
   thread_local std::stack<bool>                     isLayerExclusive;
+  thread_local std::stack<int>                      layerNumber;
   thread_local std::stack<std::unordered_set<const MutexPair*>> threadMutexLayers;
-  thread_local bool isExecutingLockFree = false;
 
   bool LockPolicy::hasAnyLock()
   {
@@ -42,8 +47,8 @@ namespace Threads
 
   bool LockPolicy::isLocked(const MutexPair* mutex)
   {
-    bool has_exclusive     = threadExclusiveMutexes.count(mutex);
-    bool has_non_exclusive = threadNonExclusiveMutexes.count(mutex);
+    bool has_exclusive     = threadExclusiveMutexes.contains(mutex);
+    bool has_non_exclusive = threadNonExclusiveMutexes.contains(mutex);
     return has_exclusive || has_non_exclusive;
   }
 
@@ -54,7 +59,7 @@ namespace Threads
 
   bool LockPolicy::isLockedExclusively(const MutexPair* mutex)
   {
-    return threadExclusiveMutexes.count(mutex);
+    return threadExclusiveMutexes.contains(mutex);
   }
 
   bool LockPolicy::isLockedExclusively(const MutexPair& mutex)
@@ -70,16 +75,11 @@ namespace Threads
     }
     assert(!mutexes.empty());
 
-    if (isExecutingLockFree) {
-      assert(false);
-      throw ExceptionNewThreadRequiresReleaseableLock{};
-    }
-
     // Confirm all mutexes are in the topmost layer.
     assert(!threadMutexLayers.empty());
     auto layer = threadMutexLayers.top();
     for (auto mutex: mutexes) {
-      if (!layer.count(mutex)) {
+      if (!layer.contains(mutex)) {
         assert(false);
         throw ExceptionNewThreadRequiresReleaseableLock{};
       }
@@ -98,6 +98,22 @@ namespace Threads
     return has_ignored_mutexes;
   }
 
+  int LockPolicy::minLayerNumber() const
+  {
+    auto red = [](m) { return m.layer; };
+    return std::transform_reduce(
+        mutexes.cbegin(), mutexes.cend(), std::numeric_limits<int>::max(), red,
+        std::min<>());
+  }
+
+  int LockPolicy::maxLayerNumber() const
+  {
+    auto red = [](m) { return m.layer; };
+    return std::transform_reduce(
+        mutexes.cbegin(), mutexes.cend(), std::numeric_limits<int>::min(), red,
+        std::max<>());
+  }
+
   const std::unordered_set<const MutexPair*>& LockPolicy::getMutexes() const
   {
     return mutexes;
@@ -113,12 +129,11 @@ namespace Threads
     if (mutexes.empty()) {
       return;
     }
-    isExecutingLockFree = false;
 
     for (auto mutex: mutexes) {
       assert(
-          threadExclusiveMutexes.count(mutex)
-          || threadNonExclusiveMutexes.count(mutex));
+          threadExclusiveMutexes.contains(mutex)
+          || threadNonExclusiveMutexes.contains(mutex));
       threadExclusiveMutexes.erase(mutex);
       threadNonExclusiveMutexes.erase(mutex);
       assert(!threadMutexLayers.empty());
@@ -129,15 +144,14 @@ namespace Threads
     if (!threadMutexLayers.empty() && threadMutexLayers.top().empty()) {
       threadMutexLayers.pop();
       isLayerExclusive.pop();
+      layerNumber.pop();
       assert(isLayerExclusive.size() == threadMutexLayers.size());
-    } else {
-      assert(!isExecutingLockFree);
+      assert(isLayerExclusive.size() == layerNumber.size());
     }
   }
 
   void LockPolicy::attachToThread(bool is_exclusive)
   {
-    assert(!isExecutingLockFree);
     assert(!hasAnyLock());
     assert(!mutexes.empty());
     assert(!has_ignored_mutexes);
@@ -151,26 +165,7 @@ namespace Threads
         || mutexes.size() == threadNonExclusiveMutexes.size());
   }
 
-  bool LockPolicy::_areParentsLocked() const
-  {
-    assert(!threadMutexLayers.empty());
-    for (auto mutex: mutexes) {
-      if (!mutex->parent_pair) {
-        continue;
-      }
-      bool parent_locked = false;
-      parent_locked
-          = parent_locked || threadExclusiveMutexes.count(mutex->parent_pair);
-      parent_locked = parent_locked
-                      || threadNonExclusiveMutexes.count(mutex->parent_pair);
-      if (!parent_locked) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  void LockPolicy::_processLock(bool is_exclusive, bool is_lock_free)
+  void LockPolicy::_processLock(bool is_exclusive)
   {
     assert(is_detached);
     is_detached = false;
@@ -185,12 +180,6 @@ namespace Threads
      * just lock as required.
      */
     if (!hasAnyLock()) {
-      if (isExecutingLockFree) {
-        assert(false);
-        throw ExceptionNoLocksAfterLockFree{};
-      }
-      isExecutingLockFree = is_lock_free;
-
       assert(threadExclusiveMutexes.empty());
       assert(threadNonExclusiveMutexes.empty());
 
@@ -198,7 +187,9 @@ namespace Threads
       threadMutexLayers.push(mutexes);
       assert(threadMutexLayers.size() == 1);
       isLayerExclusive.push(is_exclusive);
+      layerNumber.push(maxLayerNumber());
       assert(isLayerExclusive.size() == threadMutexLayers.size());
+      assert(isLayerExclusive.size() == layerNumber.size());
       if (is_exclusive) {
         threadExclusiveMutexes = mutexes;
       } else {
@@ -208,34 +199,27 @@ namespace Threads
     }
 
     if (is_exclusive) {
-      _processExclusiveLock(is_lock_free);
+      _processExclusiveLock();
     } else {
-      _processNonExclusiveLock(is_lock_free);
+      _processNonExclusiveLock();
     }
   }
 
-  void LockPolicy::_processExclusiveLock(bool is_lock_free)
+  void LockPolicy::_processExclusiveLock()
   {
     assert(!threadExclusiveMutexes.empty() || !threadNonExclusiveMutexes.empty());
     assert(!threadMutexLayers.empty());
     assert(isLayerExclusive.size() == threadMutexLayers.size());
+    assert(isLayerExclusive.size() == layerNumber.size());
 
     // remove already locked "exclusive" mutexes from the list.
     for (auto it = mutexes.begin(); it != mutexes.end();) {
-      if (threadExclusiveMutexes.count(*it)) {
+      if (threadExclusiveMutexes.contains(*it)) {
         assert(isLockedExclusively(*it));
         it                  = mutexes.erase(it);
         has_ignored_mutexes = true;
       } else {
         ++it;
-      }
-    }
-
-    // do not allow already locked "non-exclusive" mutexes in the list.
-    for (auto mutex: mutexes) {
-      if (threadNonExclusiveMutexes.count(mutex)) {
-        // We cannot exclusively lock if it is already shared.
-        throw ExceptionNoExclusiveOverNonExclusive();
       }
     }
 
@@ -245,36 +229,42 @@ namespace Threads
       return;
     }
 
-
-    if (isExecutingLockFree) {
-      assert(false);
-      throw ExceptionNoLocksAfterLockFree{};
-    }
-    isExecutingLockFree = is_lock_free;
-
-    // All parents must be locked.
-    if (!_areParentsLocked()) {
-      throw ExceptionExclusiveParentNotLocked();
+    // do not allow already locked "non-exclusive" mutexes in the list.
+    for (auto mutex: mutexes) {
+      if (threadNonExclusiveMutexes.contains(mutex)) {
+        // We cannot exclusively lock if it is already shared.
+        throw ExceptionNoExclusiveOverNonExclusive();
+      }
     }
 
-    threadExclusiveMutexes.insert(mutexes.cbegin(), mutexes.cend());
+    // Create layers if needed.
+    int min = minLayerNumber();
+    assert(!layerNumber.empty());
+    if (min <= layerNumber.top()) {
+      throw ExceptionAlreadyHasLayer(min);
+    }
+
+    threadExclusiveMutexes.insert_range(mutexes);
     threadMutexLayers.push(mutexes);
     isLayerExclusive.push(true);
+    layerNumber.push(maxLayerNumber());
     assert(isLayerExclusive.size() == threadMutexLayers.size());
+    assert(isLayerExclusive.size() == layerNumber.size());
     assert(!threadMutexLayers.top().empty());
     assert(!threadExclusiveMutexes.empty());
   }
 
-  void LockPolicy::_processNonExclusiveLock(bool is_lock_free)
+  void LockPolicy::_processNonExclusiveLock()
   {
     assert(!threadExclusiveMutexes.empty() || !threadNonExclusiveMutexes.empty());
     assert(!threadMutexLayers.empty());
     assert(isLayerExclusive.size() == threadMutexLayers.size());
+    assert(isLayerExclusive.size() == layerNumber.size());
 
     // remove already locked "exclusive" and "non-exclusive" mutexes from the list.
     for (auto it = mutexes.begin(); it != mutexes.end();) {
-      if (threadExclusiveMutexes.count(*it)
-          || threadNonExclusiveMutexes.count(*it)) {
+      if (threadExclusiveMutexes.contains(*it)
+          || threadNonExclusiveMutexes.contains(*it)) {
         assert(isLocked(*it));
         it                  = mutexes.erase(it);
         has_ignored_mutexes = true;
@@ -289,25 +279,26 @@ namespace Threads
       return;
     }
 
-    if (isExecutingLockFree) {
-      assert(false);
-      throw ExceptionNoLocksAfterLockFree{};
-    }
-    isExecutingLockFree = is_lock_free;
-
     assert(!isLayerExclusive.empty());
     if (isLayerExclusive.top()) {
-      // Are parents really locked!
-      if (!is_lock_free && true /*!_areParentsLocked()*/) {
+      // Create layers if needed.
+      int min = minLayerNumber();
+      assert(!layerNumber.empty());
+      if (min < layerNumber.top()) {
+        throw ExceptionAlreadyHasBiggerLayer(min);
+      }
+      if (min == layerNumber.top() && isLayerExclusive.top()) {
         throw ExceptionNoLocksAfterExclusiveLock();
       }
       threadMutexLayers.emplace();
       isLayerExclusive.push(false);
+      layerNumber.push(maxLayerNumber());
       assert(isLayerExclusive.size() == threadMutexLayers.size());
+      assert(isLayerExclusive.size() == layerNumber.size());
     }
 
-    threadMutexLayers.top().insert(mutexes.cbegin(), mutexes.cend());
-    threadNonExclusiveMutexes.insert(mutexes.cbegin(), mutexes.cend());
+    threadMutexLayers.top().insert_range(mutexes);
+    threadNonExclusiveMutexes.insert_range(mutexes);
   }
 
   LockPolicy::~LockPolicy()
@@ -315,17 +306,12 @@ namespace Threads
     _detachFromThread();
   }
 
-  SharedLock::SharedLock()
-      : LockPolicy(false, false)
-  {
-  }
-
-  SharedLock::SharedLock(bool is_lock_free, MutexPair& mutex)
-      : LockPolicy(false, is_lock_free, &mutex)
+  SharedLock::SharedLock(MutexPair& mutex)
+      : LockPolicy(false, &mutex)
   {
     if (!getMutexes().empty()) {
       assert(getMutexes().size() == 1);
-      assert(getMutexes().count(&mutex));
+      assert(getMutexes().contains(&mutex));
       lock = std::shared_lock(mutex.mutex);
     }
   }

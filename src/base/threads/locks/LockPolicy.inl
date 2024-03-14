@@ -20,8 +20,8 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "../Exception.h"
 #include "LockPolicy.h"
+#include "exceptions.h"
 
 #include <algorithm>
 #include <memory>
@@ -32,53 +32,55 @@ namespace Threads
 {
 
   template<IsMutxexPair... MutN>
-  LockPolicy::LockPolicy(bool is_exclusive, bool is_lock_free, MutN*... mutex)
+  LockPolicy::LockPolicy(bool is_exclusive, MutN*... mutex)
       : mutexes{mutex...}
   {
-    _processLock(is_exclusive, is_lock_free);
+    // Shared locks are acquired one by one.
+    assert(!is_esclusive || mutexes.size() <= 1);
+    _processLock(is_exclusive);
   }
 
   /*
    * Traits: we want to pass either a mutex or a container to ExclusiveLock.
    */
   template<typename C>
-  struct MutexPairPointer {
-    MutexPairPointer(const C& container)
+  struct MutexDataPointer {
+    MutexDataPointer(const C& container)
         : container(container)
     {
     }
 
-    auto getPair() { return container.getMutexPair(); }
+    auto getPair() { return container.getMutexData(); }
 
     const C& container;
   };
 
   template<>
-  struct MutexPairPointer<MutexPair*> {
-    MutexPairPointer(MutexPair* mutex)
+  struct MutexDataPointer<MutexData*> {
+    MutexDataPointer(MutexData* mutex)
         : mutex(mutex)
     {
     }
 
     auto getPair() { return mutex; }
 
-    MutexPair* mutex;
+    MutexData* mutex;
   };
 
   template<>
-  struct MutexPairPointer<MutexPair> : MutexPairPointer<MutexPair*> {
-    MutexPairPointer(MutexPair& mutex)
-        : MutexPairPointer<MutexPair*>(&mutex)
+  struct MutexDataPointer<MutexData> : MutexDataPointer<MutexData*> {
+    MutexDataPointer(MutexData& mutex)
+        : MutexDataPointer<MutexData*>(&mutex)
     {
     }
   };
 
   template<IsMutexHolder FirstHolder, IsMutexHolder... MutexHolder>
   ExclusiveLock<FirstHolder, MutexHolder...>::ExclusiveLock(
-      bool is_lock_free, FirstHolder& first_holder, MutexHolder&... holder)
+      FirstHolder& first_holder, MutexHolder&... holder)
       : LockPolicy(
-            true, is_lock_free, MutexPairPointer{first_holder}.getPair(),
-            MutexPairPointer{holder}.getPair()...)
+            true, MutexDataPointer{first_holder}.getPair(),
+            MutexDataPointer{holder}.getPair()...)
       , FirstHolder(first_holder)
   {
     /*
@@ -103,17 +105,16 @@ namespace Threads
        * Fortunately, mutexes = {container.getMutexPtr()...}.
        */
       locks = std::make_shared<locks_t>(
-          MutexPairPointer{first_holder}.getPair()->mutex,
-          MutexPairPointer{holder}.getPair()->mutex...);
+          MutexDataPointer{first_holder}.getPair()->mutex,
+          MutexDataPointer{holder}.getPair()->mutex...);
     }
   }
 
   template<IsMutexHolder FirstHolder, IsMutexHolder... MutexHolder>
   template<IsMutexHolder SomeHolder>
-  auto&
-  ExclusiveLock<FirstHolder, MutexHolder...>::operator[](SomeHolder& tsc) const
+  auto& ExclusiveLock<FirstHolder, MutexHolder...>::operator[](SomeHolder& tsc) const
   {
-    if (!isLockedExclusively(tsc.getMutexPair())) {
+    if (!isLockedExclusively(tsc.getMutexData())) {
       throw ExceptionNeedLockToAccessContainer();
     }
     auto& gate = tsc.getWriterGate(this);
@@ -124,7 +125,7 @@ namespace Threads
   template<IsMutexHolder>
   auto ExclusiveLock<FirstHolder, MutexHolder...>::operator->() const
   {
-    if (!isLockedExclusively(FirstHolder.getMutexPair())) {
+    if (!isLockedExclusively(FirstHolder.getMutexData())) {
       throw ExceptionNeedLockToAccessContainer();
     }
     auto& gate = FirstHolder.getWriterGate(this);
