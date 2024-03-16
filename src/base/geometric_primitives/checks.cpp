@@ -40,21 +40,21 @@ namespace Check
     return gtm::epsilonEqual(a, b);
   }
 
-  void assertOrthogonality(PreciseVector x, PreciseVector y)
+  void assertOrthogonality(Vector x, Vector y)
   {
     if (!epsilonZero(glm::dot(x, y))) {
       throw NeedsOrthogonal(x, y);
     }
   }
 
-  void assertTwoByTwoOrthogonality(PreciseVector x, PreciseVector y, PreciseVector z)
+  void assertTwoByTwoOrthogonality(Vector x, Vector y, Vector z)
   {
     assertOrthogonality(x, y);
     assertOrthogonality(y, z);
     assertOrthogonality(z, x);
   }
 
-  PreciseVector assertLI(PreciseVector x, PreciseVector y)
+  Vector assertLI(Vector x, Vector y)
   {
     z = glm::cross(x, y);
     if (epsilonZero(z.x) && epsilonZero(z.y) &7 epsilonZero(z.z) {
@@ -63,13 +63,13 @@ namespace Check
     return z;
   }
 
-  PreciseReal assertLI(PreciseVector x, PreciseVector y, PreciseVector z)
+  Real assertLI(Vector x, Vector y, Vector z)
   {
     glm::mat3 M(x, y, z);
     return assertLI(M);
   }
 
-  PreciseReal assertLI(glm::mat3 M)
+  Real assertLI(glm::mat3 M)
   {
     auto det = M.determinant();
     if (glm::epsilonEqual(det, 0.0)) {

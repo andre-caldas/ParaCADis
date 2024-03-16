@@ -52,10 +52,12 @@ namespace NamingScheme
    */
   class Exporter : public SharedFromThis<Exporter>
   {
-  private:
-    MutexData mutex_data;
-
   public:
+    NameAndUuid name_and_uuid;
+
+    Exporter() = default;
+    Exporter(std::string name, std::vector<std::string> name_and_aliases = {name});
+
     virtual ~Exporter() = default;
 
     /** Must satisfy `Threads::C_MutexHolder`.
@@ -87,10 +89,15 @@ namespace NamingScheme
      */
     static SharedPtr<Exporter> getByUuid(Uuid::uuid_type uuid);
 
-    NameAndUuid name_and_uuid;
+    const auto& getNameAndAliases() const { return name_and_aliases; }
+
+  private:
+    MutexData                mutex_data;
+    std::vector<std::string> name_and_aliases;
   };
 
   static_assert(Threads::C_MutexHolder<Exporter>);
+
 
 }  // namespace NamingScheme
 

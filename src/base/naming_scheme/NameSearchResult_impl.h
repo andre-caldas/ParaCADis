@@ -36,7 +36,10 @@ namespace NamingScheme
   template<typename T>
   bool NameSearchResult::resolve(token_iterator tokens)
   {
+    // Resolve a chain of exporters.
     resolveExporter(tokens);
+
+    // Do we want an exporter?
     if constexpr (std::is_same_v<std::remove_cv_t<T>, Exporter>) {
       if (tokens) {
         result = too_many_tokens;
@@ -44,6 +47,18 @@ namespace NamingScheme
       }
       result = success;
       return true;
+    }
+
+    // If there are no more tokens.
+    if (!tokens) {
+      // Is the last exporter also an instance of T?
+      auto ptr = dynamic_cast<T*>(exporter.get());
+      if (ptr) {
+        result = success;
+        return true;
+      }
+      result = too_few_tokens;
+      return false;
     }
 
     auto ptr = dynamic_cast<IExport<T>*>(exporter.get());

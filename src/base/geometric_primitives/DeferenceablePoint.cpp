@@ -20,29 +20,13 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "types.h"
-
-namespace glm {
-class mat3;
+DeferenceablePoint::DeferenceablePoint(const Point& p, std::string name)
+    : x(p.x()), y(p.y()), z(p.z()), GeometricObject(std::move(name))
+{
 }
 
-namespace Check
+DeferenceablePoint::DeferenceablePoint(Real x, Real y, Real z, std::string name)
+    : x(x), y(y), z(z), GeometricObject(std::move(name))
 {
-  bool epsilonZero(Real a);
-  bool epsilonEqual(Real a, Real b);
-
-  void assertOrthogonality(Vector x, Vector y);
-  void assertTwoByTwoOrthogonality(Vector x, Vector y, Vector z);
-
-  /** If not linearly independent, throws @class NeedsLI.
-  */
-  /// @{
-  /// @return The cross-product.
-  Vector assertLI(Vector x, Vector y);
-  /// @return The determinant.
-  Real assertLI(Vector x, Vector y, Vector z);
-  /// @return The determinant.
-  Real assertLI(glm::mat3 M);
-  /// @{
 }
 

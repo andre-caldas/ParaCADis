@@ -68,6 +68,7 @@ namespace NamingScheme
     NameOrUuid(auto uuid) : uuid(uuid) {}
     NameOrUuid(std::string name_or_uuid);
 
+    const std::string& getName() const { return name; }
     bool operator==(std::string_view str) const { return (str == name); }
     bool operator==(Uuid id) const { return (id == uuid); }
 

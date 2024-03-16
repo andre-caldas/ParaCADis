@@ -24,8 +24,8 @@
 #include "Exporter_impl.h"
 #include "NameAndUuid.h"
 
-#include <base/threads/locks/LockPolicy.h>
 #include <base/thread_safe_structs/ThreadSafeMap.h>
+#include <base/threads/locks/LockPolicy.h>
 
 namespace NamingScheme
 {
@@ -33,6 +33,12 @@ namespace NamingScheme
   namespace
   {
     ThreadSafeStructs::ThreadSafeMap<Uuid::uuid_type, std::weak_ptr<Exporter>> map;
+  }
+
+  Exporter::Exporter(std::string name, std::vector<std::string> name_and_aliases)
+      : name_and_uuid(std::move(name))
+      , name_and_aliases(std::move(name_and_aliases))
+  {
   }
 
   Uuid::uuid_type Exporter::getUuid() const

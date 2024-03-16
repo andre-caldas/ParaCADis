@@ -20,29 +20,16 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "types.h"
+#include "GeometricObject.h"
 
-namespace glm {
-class mat3;
-}
+#include <base/naming_scheme/NameAndUuid.h>
 
-namespace Check
+template<typename T>
+T* GeometricObject::resolve_ptr(const token_iterator& tokens, T*) override
 {
-  bool epsilonZero(Real a);
-  bool epsilonEqual(Real a, Real b);
-
-  void assertOrthogonality(Vector x, Vector y);
-  void assertTwoByTwoOrthogonality(Vector x, Vector y, Vector z);
-
-  /** If not linearly independent, throws @class NeedsLI.
-  */
-  /// @{
-  /// @return The cross-product.
-  Vector assertLI(Vector x, Vector y);
-  /// @return The determinant.
-  Real assertLI(Vector x, Vector y, Vector z);
-  /// @return The determinant.
-  Real assertLI(glm::mat3 M);
-  /// @{
+  if (tokens.front() == "native_object") {
+    tokens.advance(1);
+    return &obj;
+  }
 }
 

@@ -20,29 +20,62 @@
  *                                                                          *
  ***************************************************************************/
 
+#ifndef GeometricPrimitives_Circles
+#define GeometricPrimitives_Circles
+
+#include "DeferenceablePoint.h"
 #include "types.h"
 
-namespace glm {
-class mat3;
-}
+#include <base/naming_scheme/IExport.h>
 
-namespace Check
+/**
+ * A counter-clockwise oriented circle, if radius is positive.
+ */
+class CircleRadiusPoint
+    : IExport<DeferenceablePoint>
+    , IExport<Real>
 {
-  bool epsilonZero(Real a);
-  bool epsilonEqual(Real a, Real b);
+public:
+  Exported<DeferenceablePoint, "center"> center;
+  Exported<Real, "radius"> radius;
 
-  void assertOrthogonality(Vector x, Vector y);
-  void assertTwoByTwoOrthogonality(Vector x, Vector y, Vector z);
+  CircleRadiusPoint(const Point& center, Real radius);
+};
 
-  /** If not linearly independent, throws @class NeedsLI.
-  */
-  /// @{
-  /// @return The cross-product.
-  Vector assertLI(Vector x, Vector y);
-  /// @return The determinant.
-  Real assertLI(Vector x, Vector y, Vector z);
-  /// @return The determinant.
-  Real assertLI(glm::mat3 M);
-  /// @{
-}
+
+/**
+ * An oriented circle defined by three points.
+ * Orientation given by the points: a --> b --> c.
+ */
+class Circle3Points : IExport<DeferenceablePoint>
+{
+public:
+  Exported<DeferenceablePoint, "a"> a;
+  Exported<DeferenceablePoint, "b"> b;
+  Exported<DeferenceablePoint, "c"> c;
+
+  Circle3Points(const Point& a, const Point& b, const Point& c);
+};
+
+
+/**
+ * An oriented circle defined by two points and one distance.
+ *
+ * Take the oriented line segment a --> b.
+ * Rotate it 90 degrees counter-clockwise. Place it over the midpoint (a+b)/2.
+ * Walk the provided distance and you are standing over the circle center.
+ */
+class Circle2Points
+    : IExport<DeferenceablePoint>
+    , IExport<Real>
+{
+public:
+  Exported<DeferenceablePoint, "a"> a;
+  Exported<DeferenceablePoint, "b"> b;
+  Exported<Real, "chord_to_center"> chord_to_center;
+
+  Circle3Points(const Point& a, const Point& b, Real chord_to_center);
+};
+
+#endif
 

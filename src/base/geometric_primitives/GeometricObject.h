@@ -20,29 +20,24 @@
  *                                                                          *
  ***************************************************************************/
 
+#ifndef GeometricPrimitives_GeometricObject
+#define GeometricPrimitives_GeometricObject
+
 #include "types.h"
 
-namespace glm {
-class mat3;
-}
+#include <base/naming_scheme/Exporter.h>
 
-namespace Check
+/**
+ * Common class for geometric objects.
+ *
+ * @todo Do we really need it?
+ */
+class GeometricObject : Exporter
 {
-  bool epsilonZero(Real a);
-  bool epsilonEqual(Real a, Real b);
+public:
+  using Exporter::Exporter;
+  virtual ~GeometricObject() = default;
+};
 
-  void assertOrthogonality(Vector x, Vector y);
-  void assertTwoByTwoOrthogonality(Vector x, Vector y, Vector z);
-
-  /** If not linearly independent, throws @class NeedsLI.
-  */
-  /// @{
-  /// @return The cross-product.
-  Vector assertLI(Vector x, Vector y);
-  /// @return The determinant.
-  Real assertLI(Vector x, Vector y, Vector z);
-  /// @return The determinant.
-  Real assertLI(glm::mat3 M);
-  /// @{
-}
+#endif
 

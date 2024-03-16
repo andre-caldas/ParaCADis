@@ -20,10 +20,12 @@
  *                                                                          *
  ***************************************************************************/
 
+#ifndef GeometricPrimitives_CoordinateSystem
+#define GeometricPrimitives_CoordinateSystem
+
 #include "types.h"
 
-#include <glm/gtc/quaternion.hpp>
-#include <glm/vec3>
+#include <CGAL/Aff_transformation_3.h>
 
 /** Stores and manages the placement of a coordinate system.
  *
@@ -40,26 +42,16 @@
  * to appear on the right place. Also, the user wants methods
  * to place and manipulate the whole "container" in such a way that
  * everything inside moves along.
- *
- * We use double precision when storing and transforming the values
- * to minimize the error of incremental changes.
- *
- * @attention **Small rant (sorry!):**
- * Please, stop talking about quaternions, matrices, column vectors,
- * row vectors, etc.. Of course, it is okay to talk about quaternions
- * and linear/affine transforms (or even matrices) if you are talking
- * about the internal implementation. The public interface shall be
- * geometric (like "mid-school-geometric") and intuitive.
  */
 class CoordinateSystem
 {
 private:
-  /// We also deal with reflections. So we need an extra bit for that: 1.0 or -1.0.
-  Real       orientation = 1.0;
-  glm::dquat rotation    = 1.0;
-  glm::dvec3 origin;
+  using AffineTransform = Aff_transformation_3<K>;
+  AffineTransform transform;
 
 public:
+  CoordinateSystem();
+
   /** Places the coordinate system at @a origin,
    * with the x-axis pointing in direction @a x, etc.
    *
@@ -71,22 +63,10 @@ public:
    * The axis vectors do need to be orthogonal.
    */
   /// @{
-  void set(PrecisePoint origin, PreciseVector x, PreciseVector y, PreciseVector z);
-  void set(PrecisePoint origin, Real orientation, PreciseVector y, PreciseVector z);
-  void set(PrecisePoint origin, PreciseVector x, Real orientation, PreciseVector z);
-  void set(PrecisePoint origin, PreciseVector x, PreciseVector y, Real orientation);
-  /// @}
-
-  /** Rotate about an oriented straight line (axis/base point).
-   *
-   * There are two versions `rotate_in` and `rotate_out`.
-   * Using the `_in` version, vectors and points are "inside" the coordinate system.
-   * In its turn, using the `_out` version, vectors and points are "outside".
-   */
-  /// @{
-  void rotate_in(PreciseVector axis, Real angle, PrecisePoint base = PrecisePoint());
-  void rotate_out(
-      PreciseVector axis, Real angle, PrecisePoint base = PrecisePoint());
+  set(const Point& origin, const Vector& x, const Vector& y, const Vector& z);
+  set(const Point& origin, Real orientation, const Vector& y, const Vector& z);
+  set(const Point& origin, const Vector& x, Real orientation, const Vector& z);
+  set(const Point& origin, const Vector& x, const Vector& y, Real orientation);
   /// @}
 
   /** Translate the amount `displacement`.
@@ -96,8 +76,8 @@ public:
    * coordinate system. In its turn, using the `_out` version, it is  "outside".
    */
   /// @{
-  void translate_in(PreciseVector displacement);
-  void translate_out(PreciseVector displacement);
+  void translate_in(Vector displacement);
+  void translate_out(Vector displacement);
   /// @}
 
   /** Move the coordinate system's origin to the indicated point.
@@ -107,8 +87,8 @@ public:
    * system. In its turn, using the `_out` version, it is  "outside".
    */
   /// @{
-  void move_to_in(PrecisePoint position);
-  void move_to_out(PrecisePoint position);
+  void move_to_in(Point position);
+  void move_to_out(Point position);
   /// @}
 
   /** Apply the corresponding transform to points and vectors.
@@ -120,8 +100,8 @@ public:
    * A translation does not change vectors, only points.
    */
   /// @{
-  PrecisePoint  transform_point(PrecisePoint p) const;
-  PreciseVector transform_Vector(PreciseVector v) const;
+  Point  transform_point(Point p) const;
+  Vector transform_Vector(Vector v) const;
   /// @}
 
   /** Compose two coordinate systems.
@@ -148,4 +128,6 @@ public:
   CoordinateSystem operator*(const CoordinateSystem c) const;
   /// @}
 };
+
+#endif
 

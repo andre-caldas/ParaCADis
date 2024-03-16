@@ -32,7 +32,7 @@
 namespace NamingScheme
 {
 
-  template <typename T>
+  template<typename T>
   class NameSearchResult;
 
   /**
@@ -52,7 +52,7 @@ namespace NamingScheme
   {
   public:
     using NameSearchResult = NameSearchResult<T>;
-    using token_iterator = NamingScheme::token_iterator;
+    using token_iterator   = NamingScheme::token_iterator;
 
     SharedPtr<T> resolve(token_iterator& tokens);
 
@@ -74,6 +74,25 @@ namespace NamingScheme
      * we have added a T* to the end of the methods signature.
      */
     virtual SharefPtr<T> resolve_share(token_iterator& tokens, T* = nullptr);
+
+  private:
+    std::map<std::string, T*> registeredMembers;
+
+  public:
+    void registerMember(T* member_var);
+  };
+
+
+  template<typename T, const char* name, const char*... aliases>
+  class Exported : public T
+  {
+  public:
+    template<typename... Args>
+    NamedExporter(IExport<T>* parent, Args... args)
+        : T(args..., name, {name, aliases...})
+    {
+      parent->registerMember(this);
+    }
   };
 
 }  // namespace NamingScheme

@@ -20,29 +20,16 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "types.h"
+#include "lines.h"
 
-namespace glm {
-class mat3;
+Line2Points::Line2Points(const Point& start, const Point& end, std::string name)
+    : start(start), end(end), GeometricObject(std::move(name))
+{
 }
 
-namespace Check
+
+LinePointDirection::LinePointDirection(const Point& start, Direction direction, std::string name)
+    : start(start), direction(direction), GeometricObject(std::move(name))
 {
-  bool epsilonZero(Real a);
-  bool epsilonEqual(Real a, Real b);
-
-  void assertOrthogonality(Vector x, Vector y);
-  void assertTwoByTwoOrthogonality(Vector x, Vector y, Vector z);
-
-  /** If not linearly independent, throws @class NeedsLI.
-  */
-  /// @{
-  /// @return The cross-product.
-  Vector assertLI(Vector x, Vector y);
-  /// @return The determinant.
-  Real assertLI(Vector x, Vector y, Vector z);
-  /// @return The determinant.
-  Real assertLI(glm::mat3 M);
-  /// @{
 }
 

@@ -20,39 +20,17 @@
  *                                                                          *
  ***************************************************************************/
 
-#include <glm/vec3.hpp>
+#include <CGAL/Gmpz.h>
+#include <CGAL/Simple_homogeneous.h>
+#include <CGAL/Quotient.h>
 
-/** Single precision scalars, vectors and points
- *
- * @attention Although we use different names for points and vectors,
- * they are actually the same type. So, care must be taken.
- * Adding two vectors or a point and a vector is a meaningful operation.
- * Adding two points, however, is usually not very meaningful.
- */
- /// *{
-typedef float     Real;
-typedef glm::vec3 Point;
-typedef glm::vec3 Vector;
-typedef glm::vec2 Point2;
-typedef glm::vec2 Vector2;
- /// *}
+// TODO: Use/develop a Ring with square root.
+typedef CGAL::Simple_homogeneous<CGAL::Gmpz> K;
 
-
-/** Double precision scalars, vectors and points.
- *
- * @attention If you don't have a good reason to use double precision,
- * prefer single precision, instead.
- *
- * @attention Although we use different names for points and vectors,
- * they are actually the same type. So, care must be taken.
- * Adding two vectors or a point and a vector is a meaningful operation.
- * Adding two points, however, is usually not very meaningful.
- */
- /// *{
-typedef double     PreciseReal;
-typedef glm::dvec3 PrecisePoint;
-typedef glm::dvec3 PreciseVector;
-typedef glm::dvec2 PrecisePoint2;
-typedef glm::dvec2 PreciseVector2;
- /// *}
+typedef K::FT       Real;
+typedef K::RT       Ring;
+typedef K::Point_3  Point;
+typedef K::Vector_3 Vector;
+typedef K::Point_2  Point2;
+typedef K::Vector_2 Vector2;
 

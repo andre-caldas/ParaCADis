@@ -20,29 +20,36 @@
  *                                                                          *
  ***************************************************************************/
 
+#ifndef GeometricPrimitives_DeferenceablePoint
+#define GeometricPrimitives_DeferenceablePoint
+
+#include "GeometricObject.h"
 #include "types.h"
 
-namespace glm {
-class mat3;
-}
+#include <base/naming_scheme/IExport.h>
 
-namespace Check
+/**
+ * A point that exports its coordinates.
+ *
+ * This is not a native point. It is to be used only when you need a point
+ * that exports its coordinates. In particular, if it is a geometric object
+ * to be placed in the DocumenTree, use this and not the kernel native Point.
+ *
+ * @todo Maybe we should warrant we use a CGAL kernel that may have its
+ * coordinates directly accessed and simply use it.
+ */
+class DeferenceablePoint
+    : public GeometricObject
+    , public IExport<Real>
 {
-  bool epsilonZero(Real a);
-  bool epsilonEqual(Real a, Real b);
+public:
+  Exported<Real, "x"> x;
+  Exported<Real, "y"> y;
+  Exported<Real, "z"> z;
 
-  void assertOrthogonality(Vector x, Vector y);
-  void assertTwoByTwoOrthogonality(Vector x, Vector y, Vector z);
+  DeferenceablePoint(cont Point& p, std::string name);
+  DeferenceablePoint(Real x, Real y, Real z, std::string name);
+};
 
-  /** If not linearly independent, throws @class NeedsLI.
-  */
-  /// @{
-  /// @return The cross-product.
-  Vector assertLI(Vector x, Vector y);
-  /// @return The determinant.
-  Real assertLI(Vector x, Vector y, Vector z);
-  /// @return The determinant.
-  Real assertLI(glm::mat3 M);
-  /// @{
-}
+#endif
 

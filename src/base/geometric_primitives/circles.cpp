@@ -20,29 +20,22 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "types.h"
+#include "circles.h"
 
-namespace glm {
-class mat3;
+CircleRadiusPoint::CircleRadiusPoint(const Point& center, Real radius)
+    : center(center), radius(std::move(radius))
+{
 }
 
-namespace Check
+
+Circle3Points::Circle3Points(const Point& a, const Point& b, const Point& c)
+    : a(a), b(b), c(c)
 {
-  bool epsilonZero(Real a);
-  bool epsilonEqual(Real a, Real b);
+}
 
-  void assertOrthogonality(Vector x, Vector y);
-  void assertTwoByTwoOrthogonality(Vector x, Vector y, Vector z);
 
-  /** If not linearly independent, throws @class NeedsLI.
-  */
-  /// @{
-  /// @return The cross-product.
-  Vector assertLI(Vector x, Vector y);
-  /// @return The determinant.
-  Real assertLI(Vector x, Vector y, Vector z);
-  /// @return The determinant.
-  Real assertLI(glm::mat3 M);
-  /// @{
+Circle2Points::Circle2Points(const Point& a, const Point& b, Real chord_distance)
+    : a(a), b(b), chord_distance(std::move(chord_distance))
+{
 }
 

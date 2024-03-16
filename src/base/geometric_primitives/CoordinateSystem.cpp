@@ -24,28 +24,30 @@
 #include "exceptions.h"
 #include "types.h"
 
-#include <glm/gtc/quaternion.hpp>
-#include <glm/vec3>
-
-void CoordinateSystem::set(
-    PrecisePoint origin, PreciseVector x, PreciseVector y, PreciseVector z)
+CoordinateSystem::CoordinateSystem()
+    : transform(IDENTITY)
 {
-  origin = orig;
-
-  Check::assertTwoByTwoOrthogonality(x, y, z);
-  glm::mat3 M(x.normalize(), y.normalize(), z.normalize());
-
-  auto det = M.determinant();
-  assert(!Check::epsilonZero(det));
-  if (det < 0.0) {
-    orientation = -1.0;
-    M *= -1.0;
-  }
-  rotation = glm::cast_quat(std::move(M));
 }
 
-void CoordinateSystem::set(
-    PrecisePoint origin, Real orientation, PreciseVector y, PreciseVector z)
+void CoordinateSystem::set(Point origin, Vector x, Vector y, Vector z)
+{
+  Check::assertTwoByTwoOrthogonal(x, y, z);
+
+  auto& o = origin;
+  auto  a = y.hw() * z.hw() * o.hw();
+  auto  b = x.hw() * z.hw() * o.hw();
+  auto  c = x.hw() * y.hw() * o.hw();
+  auto  d = x.hw() * y.hw() * z.hw();
+  // clang-format off
+  transform = AffineTransform(
+        a * x.hx(), b * y.hx(), c * z.hx(), d * o.hx(),
+        a * x.hy(), b * y.hy(), c * z.hy(), d * o.hy(),
+        a * x.hz(), b * y.hz(), c * z.hz(), d * o.hz(),
+        /*             zero              */ d * o.hw());
+  // clang-format on
+}
+
+void CoordinateSystem::set(Point origin, Real orientation, Vector y, Vector z)
 {
   auto a = (orientation > 0.0) ? y : z;
   auto b = (orientation > 0.0) ? z : y;
@@ -53,8 +55,7 @@ void CoordinateSystem::set(
   set(origin, x, y, z);
 }
 
-void CoordinateSystem::set(
-    PrecisePoint origin, PreciseVector x, Real orientation, PreciseVector z)
+void CoordinateSystem::set(Point origin, Vector x, Real orientation, Vector z)
 {
   auto a = (orientation > 0.0) ? z : x;
   auto b = (orientation > 0.0) ? x : z;
@@ -62,8 +63,7 @@ void CoordinateSystem::set(
   set(origin, x, y, z);
 }
 
-void CoordinateSystem::set(
-    PrecisePoint orig, PreciseVector x, PreciseVector y, Real orientation)
+void CoordinateSystem::set(Point orig, Vector x, Vector y, Real orientation)
 {
   auto a = (orientation > 0.0) ? x : y;
   auto b = (orientation > 0.0) ? y : z;
@@ -71,60 +71,48 @@ void CoordinateSystem::set(
   set(origin, x, y, z);
 }
 
-void CoordinateSystem::rotate_in(
-    PreciseVector axis, Real angle, PrecisePoint base = PrecisePoint())
+void CoordinateSystem::translate_in(Vector displacement)
 {
-  axis = transform_vector(axis);
-  base = transform_point(base);
-  rotate_out(axis, angle, base);
+  translate_out(transform_vector(displacement));
 }
 
-void CoordinateSystem::rotate_out(
-    PreciseVector axis, Real angle, PrecisePoint base = PrecisePoint())
+void CoordinateSystem::translate_out(Vector displacement)
 {
-  CoordinateSystem affine_transform;
-  affine_transform.origin   = base;
-  affine_transform.rotation = glm::angleAxis(angle, axis);
-  *this                     = affine_transform * (*this);
+  move_to_out(origin + displacement);
 }
 
-void CoordinateSystem::translate_in(PreciseVector displacement)
+void CoordinateSystem::move_to_in(Point position)
 {
-  origin += transform_vector(displacement);
+  move_to_out(transform_point(position));
 }
 
-void CoordinateSystem::translate_out(PreciseVector displacement)
+void CoordinateSystem::move_to_out(Point position)
 {
-  origin += displacement;
+  auto& t = *transform;
+  auto  v = p.hw();
+  auto  w = t.hm(3,3);
+  // clang-format off
+  transform = AffineTransform(
+        v * t.hm(0,0), v * t.hm(1,0), v * t.hm(2,2), w * position.hx(),
+        v * t.hm(1,0), v * t.hm(1,1), v * t.hm(2,2), w * position.hy(),
+        v * t.hm(2,0), v * t.hm(1,2), v * t.hm(2,2), w * position.hz(),
+        /*                   zero                 */ w * v);
+  // clang-format on
 }
 
-void CoordinateSystem::move_to_in(PrecisePoint position)
+Point transform_point(Point p) const
 {
-  origin = transform_point(position);
+  return transform->transform(p);
 }
 
-void CoordinateSystem::move_to_out(PrecisePoint position)
+Vector transform_Vector(Vector v) const
 {
-  origin = position;
-}
-
-PrecisePoint transform_point(PrecisePoint p) const
-{
-  return origin + orientation * (rotation * p);
-}
-
-PreciseVector transform_Vector(PreciseVector v) const
-{
-  return orientation * (rotation * p);
+  return transform->transform(v);
 }
 
 CoordinateSystem compose(const CoordinateSystem c) const
 {
-  CoordinateSystem result;
-  result.origin      = transform_point(c.origin);
-  result.orientation = orientation * c.orientation;
-  result.rotation    = rotation * c.rotation;
-  return result;
+  return *transform * *c.transform;
 }
 
 CoordinateSystem operator*(const CoordinateSystem c) const

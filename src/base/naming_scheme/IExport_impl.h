@@ -49,6 +49,17 @@ namespace NamingScheme
   template<typename T>
   SharedPtr<T> IExport<T>::resolve(token_iterator& token_list)
   {
+    if (!token_list) { return {}; }
+
+    // Look for registered member variables.
+    const auto& token = token_list.front();
+    assert(token.isName());
+    for (const auto& name: token.getNameAndAliases()) {
+      if (exportedMember.contains(name)) {
+        return std::shared_ptr(current_lock, exportedMember.at(name));
+      }
+    }
+
     auto share = resolve_share(token_list);
     if (share) { return share; }
 
@@ -64,10 +75,18 @@ namespace NamingScheme
   }
 
   template<typename T>
-  SharedPtr<T>
-  IExport<T>::resolve_share(token_iterator& /* token_list */)
+  SharedPtr<T> IExport<T>::resolve_share(token_iterator& /* token_list */)
   {
     return {};
+  }
+
+  template<typename T>
+  void IExport<T> registerMember(T* member)
+  {
+    assert(member.name_and_uuid.hasName());
+    std::string name = member.name_and_uuid.getName();
+    assert(!exportedMember.contains(name));
+    exportedMember[std::move(name)] = member;
   }
 
 }  // namespace NamingScheme

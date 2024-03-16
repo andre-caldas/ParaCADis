@@ -20,29 +20,49 @@
  *                                                                          *
  ***************************************************************************/
 
+#ifndef GeometricPrimitives_Lines
+#define GeometricPrimitives_Lines
+
+#include "DeferenceablePoint.h"
 #include "types.h"
 
-namespace glm {
-class mat3;
-}
+#include <base/naming_scheme/IExport.h>
 
-namespace Check
+/**
+ * An oriented line determined by two points.
+ *
+ * It can be bounded by the any of the two points.
+ */
+class Line2Points
+    : IExport<DeferenceablePoint>
+    , IExport<bool>
 {
-  bool epsilonZero(Real a);
-  bool epsilonEqual(Real a, Real b);
+public:
+  Exported<DeferenceablePoint, "start", "a"> start;
+  Exported<DeferenceablePoint, "end", "b"> start;
+  Exported<bool, "is_bounded_start"> is_bounded_start = false;
+  Exported<bool, "is_bounded_end"> end = false;
 
-  void assertOrthogonality(Vector x, Vector y);
-  void assertTwoByTwoOrthogonality(Vector x, Vector y, Vector z);
+  Line2Points(const Point& start, const Point& end, std::string name);
+};
 
-  /** If not linearly independent, throws @class NeedsLI.
-  */
-  /// @{
-  /// @return The cross-product.
-  Vector assertLI(Vector x, Vector y);
-  /// @return The determinant.
-  Real assertLI(Vector x, Vector y, Vector z);
-  /// @return The determinant.
-  Real assertLI(glm::mat3 M);
-  /// @{
-}
+/**
+ * An oriented line determined by a (starting) point and a direction.
+ *
+ * It can be bounded in the starting point, or not.
+ */
+class LinePointDirection
+    : IExport<DeferenceablePoint>
+    , IExport<Direction>
+{
+public:
+  Exported<DeferenceablePoint, "start", "a"> start;
+  Exported<DeferenceableDirection, "direction", "v"> direction;
+  Exported<bool, "is_bounded_start"> is_bounded_start = false;
+  Exported<bool, "is_bounded_end"> end = false;
+
+  LinePointDirection(const Point& start, Direction direction, std::string name);
+};
+
+#endif
 
