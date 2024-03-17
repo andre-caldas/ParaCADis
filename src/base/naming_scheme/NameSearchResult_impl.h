@@ -34,7 +34,7 @@ namespace NamingScheme
 {
 
   template<typename T>
-  bool NameSearchResult::resolve(token_iterator tokens)
+  bool NameSearchResult::resolve(const token_vector& tokens)
   {
     // Resolve a chain of exporters.
     resolveExporter(tokens);

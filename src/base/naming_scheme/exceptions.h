@@ -24,9 +24,7 @@
 #define NamedScheme_Exception_H
 
 #include <base/exceptions.h>
-#include <base/expected_behaviour/shared_ptr.h>
-
-#include <string>
+#include <base/expected_behaviour/SharedPtr.h>
 
 namespace NamedScheme
 {
@@ -39,14 +37,16 @@ namespace NamedScheme
         std::source_location location = std::source_location::current());
   };
 
+#if 0
   class ExceptionCannotResolve : public Base::RunTimeError
   {
   public:
     ExceptionCannotResolve(
-        const shared_ptr<Exporter>& parent_lock,
-        std::ranges::subrange<token_range>      tokens,
+        const shared_ptr<Exporter>&        parent_lock,
+        std::ranges::subrange<token_range> tokens,
         std::source_location location = std::source_location::current());
   };
+#endif
 
   class ExceptionNoExport : public Base::RunTimeError
   {
@@ -58,4 +58,3 @@ namespace NamedScheme
 }  // namespace NamedScheme
 
 #endif  // NamedScheme_Exception_H
-

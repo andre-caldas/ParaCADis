@@ -21,10 +21,9 @@
  ***************************************************************************/
 
 #include "Exporter.h"
-#include "Exporter_impl.h"
 #include "NameAndUuid.h"
 
-#include <base/thread_safe_structs/ThreadSafeMap.h>
+#include <base/threads/safe_structs/ThreadSafeMap.h>
 #include <base/threads/locks/LockPolicy.h>
 
 namespace NamingScheme
@@ -32,25 +31,25 @@ namespace NamingScheme
 
   namespace
   {
-    ThreadSafeStructs::ThreadSafeMap<Uuid::uuid_type, std::weak_ptr<Exporter>> map;
+    Threads::SafeStructs::ThreadSafeMap<Uuid::uuid_type, std::weak_ptr<Exporter>> map;
   }
 
-  Exporter::Exporter(std::string name, std::vector<std::string> name_and_aliases)
+  Exporter::Exporter(std::string name, std::vector<std::string> aliases)
       : name_and_uuid(std::move(name))
-      , name_and_aliases(std::move(name_and_aliases))
+      , name_and_aliases(std::move(aliases))
   {
-  }
-
-  Uuid::uuid_type Exporter::getUuid() const
-  {
-    return nameAndUuid.getUuid();
+    if(name_and_aliases.empty())
+    {
+      name_and_aliases.emplace_back(name_and_uuid.getName());
+    }
   }
 
   void Exporter::registerUuid(const SharedPtr<Exporter>& shared_ptr)
   {
-    auto uuid = ptr->getUuid();
+    auto uuid = shared_ptr->getUuid();
     assert(uuid.isValid());
-    map.emplace({uuid, ptr});
+    auto l = map.getWriter
+    map.emplace({uuid, shared_ptr});
   }
 
   SharedPtr<Exporter> Exporter::getSharedPtr(std::string_view uuid)
@@ -61,7 +60,7 @@ namespace NamingScheme
 
   SharedPtr<Exporter> Exporter::getSharedPtr(Uuid::uuid_type uuid)
   {
-    SharedLockFreeLock lock(map);
+    SharedLock lock(map);
     if (lock->count(uuid) == 0) {
       return SharedPtr<Exporter>();
     }

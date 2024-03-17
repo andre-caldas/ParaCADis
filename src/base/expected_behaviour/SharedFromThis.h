@@ -23,59 +23,63 @@
 #ifndef ExpectedBehaviour_SharedFromThis_H
 #define ExpectedBehaviour_SharedFromThis_H
 
+#include "SharedPtr.h"
+
 #include <memory>
 
 /**
- * @brief A class with some improvements over std::enable_shared_from_this.
+ * A class with some improvements over std::enable_shared_from_this.
  */
 template<typename Default>
 class SharedFromThis
-    : public std::enable_shared_from_this<SharedFromThis<Default>>
+    : public std::enable_shared_from_this<Default>
 {
 public:
   virtual ~SharedFromThis() = default;
 
   template<typename X = Default>
-  std::shared_ptr<X> SharedFromThis();
+  SharedPtr<X> sharedFromThis();
   template<typename X = Default>
-  std::shared_ptr<const X> SharedFromThis() const;
+  SharedPtr<const X> sharedFromThis() const;
 
   template<typename X = Default>
-  std::weak_ptr<X> WeakFromThis();
+  WeakPtr<X> weakFromThis();
   template<typename X = Default>
-  std::weak_ptr<const X> WeakFromThis() const;
+  WeakPtr<const X> weakFromThis() const;
 };
 
 template<typename D>
 template<typename X>
-std::shared_ptr<X> SharedFromThis<D>::SharedFromThis()
+SharedPtr<X> SharedFromThis<D>::sharedFromThis()
 {
-  auto shared = shared_from_this();
+  auto shared = this->shared_from_this();
   assert(shared);
   return std::static_pointer_cast<X>(std::move(shared));
 }
 
 template<typename D>
 template<typename X>
-std::shared_ptr<const X> SharedFromThis<D>::SharedFromThis() const
+SharedPtr<const X> SharedFromThis<D>::sharedFromThis() const
 {
-  return std::static_pointer_cast<const X>(this->shared_from_this());
+  auto shared = this->shared_from_this();
+  assert(shared);
+  return std::static_pointer_cast<const X>(std::move(shared));
 }
 
 template<typename D>
 template<typename X>
-std::weak_ptr<X> SharedFromThis<D>::WeakFromThis()
+WeakPtr<X> SharedFromThis<D>::weakFromThis()
 {
   // We cannot cast a weak_ptr. :-(
-  return SharedFromThis<X>();
+  return sharedFromThis<X>();
 }
 
 template<typename D>
 template<typename X>
-std::weak_ptr<const X> SharedFromThis<D>::WeakFromThis() const
+WeakPtr<const X> SharedFromThis<D>::weakFromThis() const
 {
   // We cannot cast a weak_ptr. :-(
-  return SharedFromThis<const X>();
+  return sharedFromThis<const X>();
 }
 
 #endif  // ExpectedBehaviour_SharedFromThis_H

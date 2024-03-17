@@ -21,31 +21,36 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef NamingScheme_Types_H
-#define NamingScheme_Types_H
+#ifndef BASE_Threads_ThreadSafeVector_H
+#define BASE_Threads_ThreadSafeVector_H
 
-#include <base/expected_behaviour/SharedPtr.h>
-
-#include <concepts>
-#include <ranges>
 #include <vector>
 
-template<typename T>
-class WeakPtr;
+#include "ThreadSafeContainer.h"
 
-namespace NamingScheme
+namespace Threads::SafeStructs
 {
 
-  class NameOrUuid;
-  class Exporter;
+/**
+ * @brief This wraps an std::vector and provides a shared_mutex
+ * to make the map readable by many only when the map structure
+ * is not being modified.
+ * The map elements are not protected, just the map structure.
+ * To protect each element, use std::atomic.
+ *
+ * Iterators use SharedLock.
+ * Methods that change the map structure use a lock.
+ */
+template<typename Val>
+class ThreadSafeVector
+    : public ThreadSafeContainer<std::vector<Val>>
+{
+public:
+    using parent_t = ThreadSafeContainer<std::vector<Val>>;
+    using parent_t::ThreadSafeContainer;
+    friend class ExclusiveLock;
+};
 
-  using token_item         = NameOrUuid;
-  template <typename R>
-  concept C_TokenRange = std::ranges::range<R> && std::convertible_to<std::ranges::range_value_t<R>, const token_item&>;
-  using token_vector = std::vector<NameOrUuid>;
-  using token_iterator = std::ranges::subrange<token_vector::iterator>;
-  static_assert(C_TokenRange<token_vector>);
+} //namespace Threads::SafeStructs
 
-}  // namespace NamingScheme
-
-#endif
+#endif // BASE_Threads_ThreadSafeVector_H

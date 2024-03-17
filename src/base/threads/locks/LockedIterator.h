@@ -25,9 +25,6 @@
 
 #include "LockPolicy.h"
 
-#include <shared_mutex>
-#include <type_traits>
-
 namespace Threads
 {
 
@@ -42,16 +39,18 @@ namespace Threads
     using iterator_category = typename ItType::iterator_category;
 
     // Attention: do not lock mutex again!
-    LockedIterator(const LockedIterator& other) : ItType(other) {}
+    LockedIterator(const LockedIterator& other)
+        : ItType(other)
+    {
+    }
 
     /**
      * @brief An iterator (wrapper) that locks the mutex using SharedLock.
      * @param mutex - the mutex to lock.
      * @param it - original iterator to be wrapped.
      */
-    LockedIterator(MutexPair& mutex, ItType it)
-        : ItType(std::move(it))
-        , lock(mutex)
+    LockedIterator(MutexData& mutex, ItType it)
+        : ItType(std::move(it)), lock(mutex)
     {
     }
 
@@ -69,6 +68,7 @@ namespace Threads
     {
       return ItType::operator==(other);
     }
+
     constexpr bool operator!=(const LockedIterator& other) const
     {
       return ItType::operator!=(other);
@@ -79,6 +79,7 @@ namespace Threads
       ItType::operator++();
       return *this;
     }
+
     LockedIterator operator++(int)
     {
       LockedIterator result(*this);
@@ -103,10 +104,11 @@ namespace Threads
     }
 
     operator const ItType&() const { return *this; }
+
     operator ItType&() { return *this; }
 
   private:
-    mutable SharedLockFreeLock lock;
+    mutable SharedLock lock;
 
     /**
      * @brief A wrapper that does not actually lock anything.
@@ -117,10 +119,12 @@ namespace Threads
      * Therefore, we also wrap the "end()" iterator.
      * But, since it might be short lived, we do not want the lock to be tied to it.
      */
-    explicit LockedIterator(ItType&& it) : ItType(std::move(it)) {}
+    explicit LockedIterator(ItType&& it)
+        : ItType(std::move(it))
+    {
+    }
   };
 
 }  // namespace Threads
 
-#endif  // Threads_LockedIterator_H
-
+#endif

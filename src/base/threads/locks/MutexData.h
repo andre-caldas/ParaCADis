@@ -54,7 +54,7 @@ namespace Threads
     YesItIsAMutex mutex;
     const int     layer = 0;
 
-    static constexpr int LOCKFREE = std::numeric_limits<int>::max;
+    static constexpr int LOCKFREE = std::numeric_limits<int>::max();
 
     /// Default #layer and not "lock free".
     MutexData() = default;

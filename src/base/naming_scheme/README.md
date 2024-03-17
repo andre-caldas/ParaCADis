@@ -22,15 +22,15 @@ it declares so by subclassing the template `Accessor::IExport<T>`.
 For example:
 ```
 class Line
-    : public ReferencedObject
+    : public Exporter
     , public IExport<Point>
     , public IExport<double>
 {
 public:
     ...
-    double* IExport<double>::resolve_ptr(token_iterator& start, const token_iterator& end) override;
-    Point* IExport<Point>::resolve_ptr(token_iterator& start, const token_iterator& end) override;
-    Point* IExport<Point>::resolve_share(token_iterator& start, const token_iterator& end) override;
+    double* resolve_ptr(token_iterator& tokens, double* = nullptr) override;
+    resolve_ptr(token_iterator& tokens, Point* = nullptr) override;
+    resolve_share(token_iterator& tokens, Point* = nullptr) override;
 
 private:
     double value_i_export;

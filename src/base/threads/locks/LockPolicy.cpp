@@ -31,11 +31,11 @@
 namespace Threads
 {
 
-  thread_local std::unordered_set<const MutexPair*> threadExclusiveMutexes;
-  thread_local std::unordered_set<const MutexPair*> threadNonExclusiveMutexes;
+  thread_local std::unordered_set<const MutexData*> threadExclusiveMutexes;
+  thread_local std::unordered_set<const MutexData*> threadNonExclusiveMutexes;
   thread_local std::stack<bool>                     isLayerExclusive;
   thread_local std::stack<int>                      layerNumber;
-  thread_local std::stack<std::unordered_set<const MutexPair*>> threadMutexLayers;
+  thread_local std::stack<std::unordered_set<const MutexData*>> threadMutexLayers;
 
   bool LockPolicy::hasAnyLock()
   {
@@ -45,24 +45,24 @@ namespace Threads
     return !threadMutexLayers.empty();
   }
 
-  bool LockPolicy::isLocked(const MutexPair* mutex)
+  bool LockPolicy::isLocked(const MutexData* mutex)
   {
     bool has_exclusive     = threadExclusiveMutexes.contains(mutex);
     bool has_non_exclusive = threadNonExclusiveMutexes.contains(mutex);
     return has_exclusive || has_non_exclusive;
   }
 
-  bool LockPolicy::isLocked(const MutexPair& mutex)
+  bool LockPolicy::isLocked(const MutexData& mutex)
   {
     return isLocked(&mutex);
   }
 
-  bool LockPolicy::isLockedExclusively(const MutexPair* mutex)
+  bool LockPolicy::isLockedExclusively(const MutexData* mutex)
   {
     return threadExclusiveMutexes.contains(mutex);
   }
 
-  bool LockPolicy::isLockedExclusively(const MutexPair& mutex)
+  bool LockPolicy::isLockedExclusively(const MutexData& mutex)
   {
     return isLockedExclusively(&mutex);
   }
@@ -114,7 +114,7 @@ namespace Threads
         std::max<>());
   }
 
-  const std::unordered_set<const MutexPair*>& LockPolicy::getMutexes() const
+  const std::unordered_set<const MutexData*>& LockPolicy::getMutexes() const
   {
     return mutexes;
   }
@@ -306,7 +306,7 @@ namespace Threads
     _detachFromThread();
   }
 
-  SharedLock::SharedLock(MutexPair& mutex)
+  SharedLock::SharedLock(MutexData& mutex)
       : LockPolicy(false, &mutex)
   {
     if (!getMutexes().empty()) {
@@ -316,7 +316,7 @@ namespace Threads
     }
   }
 
-  SharedLockFreeLock::SharedLockFreeLock(MutexPair& mutex)
+  SharedLock::SharedLock(MutexData& mutex)
       : SharedLock(true, mutex)
   {
   }

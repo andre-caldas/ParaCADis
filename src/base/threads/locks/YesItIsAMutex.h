@@ -21,31 +21,48 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef NamingScheme_Types_H
-#define NamingScheme_Types_H
+#ifndef Threads_YesItIsAMutex_H
+#define Threads_YesItIsAMutex_H
 
-#include <base/expected_behaviour/SharedPtr.h>
+#include <mutex>
+#include <condition_variable>
 
-#include <concepts>
-#include <ranges>
-#include <vector>
-
-template<typename T>
-class WeakPtr;
-
-namespace NamingScheme
+namespace Threads
 {
 
-  class NameOrUuid;
-  class Exporter;
+/**
+ * @brief Like a shared_mutex. But it is not bound to a thread.
+ */
+class YesItIsAMutex
+{
+public:
+    YesItIsAMutex() = default;
+    YesItIsAMutex(const YesItIsAMutex&) = delete;
+    YesItIsAMutex operator=(const YesItIsAMutex&) = delete;
 
-  using token_item         = NameOrUuid;
-  template <typename R>
-  concept C_TokenRange = std::ranges::range<R> && std::convertible_to<std::ranges::range_value_t<R>, const token_item&>;
-  using token_vector = std::vector<NameOrUuid>;
-  using token_iterator = std::ranges::subrange<token_vector::iterator>;
-  static_assert(C_TokenRange<token_vector>);
+    void lock();
+    bool try_lock();
+    void unlock();
 
-}  // namespace NamingScheme
+    void lock_shared();
+    bool try_lock_shared();
+    void unlock_shared();
+
+private:
+    /*
+     * This should be implemented with two semaphores: one binary and one counter.
+     * But we are still in C++17 in FreeCAD.
+     */
+    std::mutex pivot;
+    int shared_counter = 0;
+    bool is_exclusively_locked = false;
+    /**
+     * @brief Locking consists of trying to lock and waiting for the condition to change.
+     */
+    std::condition_variable released;
+    std::mutex released_condition_lock;
+};
+
+} //namespace Threads
 
 #endif

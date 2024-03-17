@@ -21,31 +21,47 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef NamingScheme_Types_H
-#define NamingScheme_Types_H
+#ifndef BASE_Threads_WeakPtrRecord_H
+#define BASE_Threads_WeakPtrRecord_H
 
-#include <base/expected_behaviour/SharedPtr.h>
+#include <memory>
 
-#include <concepts>
-#include <ranges>
-#include <vector>
+#include "../ThreadSafeMultiIndex.h"
 
-template<typename T>
-class WeakPtr;
-
-namespace NamingScheme
+namespace Threads::SafeStructs
 {
 
-  class NameOrUuid;
-  class Exporter;
+template<typename T>
+struct WeakPtrRecord
+{
+    WeakPtrRecord(std::shared_ptr<T> smart)
+        : raw_pointer(smart.get())
+        , smart_pointer(std::move(smart))
+    {}
 
-  using token_item         = NameOrUuid;
-  template <typename R>
-  concept C_TokenRange = std::ranges::range<R> && std::convertible_to<std::ranges::range_value_t<R>, const token_item&>;
-  using token_vector = std::vector<NameOrUuid>;
-  using token_iterator = std::ranges::subrange<token_vector::iterator>;
-  static_assert(C_TokenRange<token_vector>);
+    T* raw_pointer;
+    std::weak_ptr<T> smart_pointer;
 
-}  // namespace NamingScheme
+    std::shared_ptr<T> lock() const
+    {return smart_pointer.lock();}
 
-#endif
+    // TODO: use <=> when we pass to C++20
+    bool operator==(WeakPtrRecord& other)
+    {return raw_pointer == other.raw_pointer;}
+
+    // TODO: use <=> when we pass to C++20
+    bool operator==(T* other)
+    {return raw_pointer == other;}
+};
+
+/**
+ * @brief A list of weak_ptr that can be iterated in insertion order,
+ * and can be searched by raw pointer.
+ */
+template<typename T>
+using ThreadSafeWeakPtrList = ThreadSafeMultiIndex<WeakPtrRecord<T>,
+                                                   &WeakPtrRecord<T>::raw_pointer>;
+
+} // namespace Threads::SafeStructs
+
+#endif // BASE_Threads_WeakPtrRecord_H

@@ -21,31 +21,71 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef NamingScheme_Types_H
-#define NamingScheme_Types_H
+#include <cassert>
+#include <functional>
 
-#include <base/expected_behaviour/SharedPtr.h>
+#include "YesItIsAMutex.h"
 
-#include <concepts>
-#include <ranges>
-#include <vector>
-
-template<typename T>
-class WeakPtr;
-
-namespace NamingScheme
+namespace Base::Threads
 {
 
-  class NameOrUuid;
-  class Exporter;
+void YesItIsAMutex::lock()
+{
+    if (try_lock()) {
+        return;
+    }
+    std::unique_lock lock {released_condition_lock};
+    released.wait(lock, std::bind(&YesItIsAMutex::try_lock, this));
+}
 
-  using token_item         = NameOrUuid;
-  template <typename R>
-  concept C_TokenRange = std::ranges::range<R> && std::convertible_to<std::ranges::range_value_t<R>, const token_item&>;
-  using token_vector = std::vector<NameOrUuid>;
-  using token_iterator = std::ranges::subrange<token_vector::iterator>;
-  static_assert(C_TokenRange<token_vector>);
+bool YesItIsAMutex::try_lock()
+{
+    [[maybe_unused]] std::lock_guard lock {pivot};
+    if (shared_counter > 0 || is_exclusively_locked) {
+        return false;
+    }
+    is_exclusively_locked = true;
+    return true;
+}
 
-}  // namespace NamingScheme
+void YesItIsAMutex::unlock()
+{
+    {
+        [[maybe_unused]] std::lock_guard lock {pivot};
+        assert(is_exclusively_locked);
+        is_exclusively_locked = false;
+    }
+    released.notify_one();
+}
 
-#endif
+
+void YesItIsAMutex::lock_shared()
+{
+    if (try_lock_shared()) {
+        return;
+    }
+    std::unique_lock lock {released_condition_lock};
+    released.wait(lock, std::bind(&YesItIsAMutex::try_lock_shared, this));
+}
+
+bool YesItIsAMutex::try_lock_shared()
+{
+    [[maybe_unused]] std::lock_guard lock {pivot};
+    if (is_exclusively_locked) {
+        return false;
+    }
+    ++shared_counter;
+    return true;
+}
+
+void YesItIsAMutex::unlock_shared()
+{
+    [[maybe_unused]] std::lock_guard lock {pivot};
+    assert(shared_counter > 0);
+    --shared_counter;
+    if (shared_counter <= 0) {
+        released.notify_one();
+    }
+}
+
+}  // namespace Base::Threads

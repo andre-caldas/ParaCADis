@@ -114,5 +114,4 @@ namespace NamingScheme
 
 }  // namespace NamingScheme
 
-#endif  // BASE_Accessor_PathToObject_H
-
+#endif

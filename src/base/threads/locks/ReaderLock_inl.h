@@ -21,31 +21,42 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef NamingScheme_Types_H
-#define NamingScheme_Types_H
+#include "exceptions.h"
+#include "ReaderLock.h"
 
-#include <base/expected_behaviour/SharedPtr.h>
-
-#include <concepts>
-#include <ranges>
-#include <vector>
-
-template<typename T>
-class WeakPtr;
-
-namespace NamingScheme
+namespace Threads
 {
 
-  class NameOrUuid;
-  class Exporter;
+template<typename MutexHolder>
+ReaderLock<MutexHolder>::ReaderLock(const MutexHolder& mutex_holder)
+    : mutexPair(*mutex_holder.getMutexData())
+    , sharedLock(std::make_unique<SharedLock>(mutexPair))
+    , gate(mutex_holder.getReaderGate(sharedLock.get()))
+{}
 
-  using token_item         = NameOrUuid;
-  template <typename R>
-  concept C_TokenRange = std::ranges::range<R> && std::convertible_to<std::ranges::range_value_t<R>, const token_item&>;
-  using token_vector = std::vector<NameOrUuid>;
-  using token_iterator = std::ranges::subrange<token_vector::iterator>;
-  static_assert(C_TokenRange<token_vector>);
 
-}  // namespace NamingScheme
+template<typename MutexHolder>
+void ReaderLock<MutexHolder, nullptr>::release()
+{
+    assert(sharedLock);
+    sharedLock.reset();
+}
 
-#endif
+template<typename MutexHolder>
+void ReaderLock<MutexHolder>::resume()
+{
+    assert(!sharedLock);
+    sharedLock = std::make_unique<SharedLock>(mutexPair);
+}
+
+template<typename MutexHolder>
+auto ReaderLock<MutexHolder>::operator->() const
+{
+    assert(sharedLock);
+    if(!sharedLock) {
+        throw ExceptionNeedLock{};
+    }
+    return &*gate;
+}
+
+} //namespace Base::Threads

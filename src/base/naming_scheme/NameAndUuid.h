@@ -26,6 +26,7 @@
 #include <string>
 
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace NamingScheme
 {
@@ -33,7 +34,7 @@ namespace NamingScheme
   class Uuid
   {
   public:
-    use uuid_type = boost::uuids::uuid;
+    using uuid_type = boost::uuids::uuid;
 
     Uuid();
     Uuid(const Uuid&) = default;
@@ -41,11 +42,10 @@ namespace NamingScheme
     virtual ~Uuid() = default;
 
     bool isValid() const;
-    bool operator==(uuid_type x) const { return (uuid == x); }
 
     uuid_type getUuid() const { return uuid; }
-    operator std::string() const { return to_string(uuid); }
-    operator uuid_type() const { return getUuid(); }
+    operator uuid_type() const { return uuid; }
+    operator std::string() const { return boost::uuids::to_string(uuid); }
     void setUuid(std::string_view uuid_str);
 
   protected:
@@ -54,7 +54,7 @@ namespace NamingScheme
 
 
   /**
-   * @brief Each token in a path is a name or uuid, represented by @class NameOrUuid.
+   * Each token in a path is a name or uuid, represented by NameOrUuid.
    */
   class NameOrUuid
   {
@@ -74,6 +74,8 @@ namespace NamingScheme
 
     bool isName() const { return !uuid.isValid(); }
     bool isUuid() const { return uuid.isValid(); }
+
+    operator Uuid::uuid_type() const {return uuid;}
   };
 
 
@@ -87,6 +89,7 @@ namespace NamingScheme
 
   public:
     using Uuid::Uuid;
+    using Uuid::operator Uuid::uuid_type;
 
     /**
      * @brief Names cannot look like a UUID.
@@ -114,4 +117,3 @@ namespace NamingScheme
 }  // namespace NamingScheme
 
 #endif  // NamingScheme_NameAndUuid_H
-

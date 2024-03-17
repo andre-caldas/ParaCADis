@@ -20,13 +20,14 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "LockedIterator.h"
-#include "ThreadSafeContainer.h"
-#include "locks/LockPolicy.h"
+#ifndef SafeStructs_ThreadSafeContainer_inl_H
+#define SafeStructs_ThreadSafeContainer_inl_H
 
-#include <mutex>
+#ifndef SafeStructs_ThreadSafeContainer_H  // Make clangd happy.
+#  include "ThreadSafeContainer.h"
+#endif
 
-namespace ThreadSafeStructs
+namespace Threads::SafeStructs
 {
 
   /*
@@ -74,31 +75,24 @@ namespace ThreadSafeStructs
   template<typename ContainerType>
   size_t ThreadSafeContainer<ContainerType>::size() const
   {
-    SharedLockFreeLock lock(mutex);
+    SharedLock lock(mutex);
     return container.size();
   }
 
   template<typename ContainerType>
   bool ThreadSafeContainer<ContainerType>::empty() const
   {
-    SharedLockFreeLock lock(mutex);
+    SharedLock lock(mutex);
     return container.empty();
   }
 
   template<typename ContainerType>
   void ThreadSafeContainer<ContainerType>::clear()
   {
-    ExclusiveLockFreeLock lock(*this);
+    ExclusiveLock lock(*this);
     container.clear();
   }
 
-  template<typename ContainerType>
-  template<typename SomeHolder>
-  void ThreadSafeContainer<ContainerType>::setParentMutex(SomeHolder& tsc)
-  {
-    auto gate         = tsc.getWriterGate(this);
-    mutex.parent_pair = gate.getMutexPtr();
-  }
+}  // namespace Threads::SafeStructs
 
-}  // namespace ThreadSafeStructs
-
+#endif

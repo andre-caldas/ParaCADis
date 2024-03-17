@@ -20,10 +20,17 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "LockPolicy.h"
+#ifndef Threads_LockPolicy_inc_H
+#define Threads_LockPolicy_inc_H
+
+#ifndef Threads_LockPolicy_H  // Keep clangd happy.
+#  include "LockPolicy.h"
+#endif
+
 #include "exceptions.h"
 
 #include <algorithm>
+#include <cassert>
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
@@ -31,12 +38,12 @@
 namespace Threads
 {
 
-  template<IsMutxexPair... MutN>
+  template<C_MutexData... MutN>
   LockPolicy::LockPolicy(bool is_exclusive, MutN*... mutex)
       : mutexes{mutex...}
   {
     // Shared locks are acquired one by one.
-    assert(!is_esclusive || mutexes.size() <= 1);
+    assert(!is_exclusive || mutexes.size() <= 1);
     _processLock(is_exclusive);
   }
 
@@ -97,22 +104,24 @@ namespace Threads
     return locks;
   }
 
-  template<C_MutexHolder FirstHolder, C_C_MutexHolder... MutexHolder>
+  template<C_MutexHolder FirstHolder, C_MutexHolder... MutexHolder>
   ExclusiveLockGate<FirstHolder, MutexHolder...>::ExclusiveLockGate(
       FirstHolder& first_holder, MutexHolder&... holder)
-      : ExclusiveLock(first_holder.getMutexData(), holder.getMutexData()...)
+      : ExclusiveLock<MutexData, TypeTraits::ForEach_t<MutexData, MutexHolder>...>(first_holder.getMutexData(), holder.getMutexData()...)
       , FirstHolder(first_holder)
   {
   }
 
   template<C_MutexHolder FirstHolder, C_MutexHolder... MutexHolder>
-  template<C_MutexHolderWithGate SomeHolder>
-  auto& ExclusiveLockGate<FirstHolder, MutexHolder...>::operator[](SomeHolder& tsc) const
+  template<C_MutexHolderWithGates SomeHolder>
+  auto& ExclusiveLockGate<FirstHolder, MutexHolder...>::operator[](
+      SomeHolder& whichHolder) const
   {
-    if (!isLockedExclusively(tsc.getMutexData())) {
+    if (!isLockedExclusively(whichHolder.getMutexData())) {
       throw ExceptionNeedLockToAccessContainer();
     }
-    auto& gate = tsc.getWriterGate(this);
+    // TODO: check if we actually hold this "whichHolder" before handling a gate.
+    auto& gate = whichHolder.getWriterGate(this);
     return *gate;
   }
 
@@ -120,12 +129,13 @@ namespace Threads
   template<typename>
   auto ExclusiveLockGate<FirstHolder, MutexHolder...>::operator->() const
   {
-    if (!isLockedExclusively(FirstHolder.getMutexData())) {
+    if (!isLockedExclusively(firstHolder.getMutexData())) {
       throw ExceptionNeedLockToAccessContainer();
     }
-    auto& gate = FirstHolder.getWriterGate(this);
+    auto& gate = firstHolder.getWriterGate(this);
     return &*gate;
   }
 
 }  // namespace Threads
 
+#endif

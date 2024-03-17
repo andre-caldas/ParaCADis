@@ -20,36 +20,37 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef ThreadSafeStructs_ThreadSafeContainer_H
-#define ThreadSafeStructs_ThreadSafeContainer_H
-
-#include <type_traits>
-#include <shared_mutex>
+#ifndef SafeStructs_ThreadSafeContainer_H
+#define SafeStructs_ThreadSafeContainer_H
 
 #include <base/threads/locks/LockPolicy.h>
+#include <base/threads/locks/LockedIterator.h>
 
-namespace ThreadSafeStructs
+namespace Threads::SafeStructs
 {
 
-template<typename ItType>
-class LockedIterator;
+  template<typename ItType>
+  class LockedIterator;
 
-template<typename ContainerType>
-class ThreadSafeContainer
-{
-public:
+  template<typename ContainerType>
+  class ThreadSafeContainer
+  {
+  public:
     using self_t = ThreadSafeContainer;
-    typedef ContainerType unsafe_container_t;
+    typedef ContainerType                         unsafe_container_t;
     typedef typename unsafe_container_t::iterator container_iterator;
     typedef typename unsafe_container_t::const_iterator container_const_iterator;
 
-    typedef LockedIterator<container_iterator> iterator;
+    typedef LockedIterator<container_iterator>       iterator;
     typedef LockedIterator<container_const_iterator> const_iterator;
 
     ThreadSafeContainer() = default;
 
     template<typename MutexHolder>
-    ThreadSafeContainer(MutexHolder& holder) : mutex(holder.getMutexPair()) {}
+    ThreadSafeContainer(MutexHolder& holder)
+        : mutex(holder.getMutexData())
+    {
+    }
 
     auto begin();
     auto begin() const;
@@ -60,35 +61,46 @@ public:
     auto cend() const;
 
     size_t size() const;
-    bool empty() const;
-    void clear();
+    bool   empty() const;
+    void   clear();
 
-    struct WriterGate
-    {
-        WriterGate(self_t* self) : self(self) {}
-        self_t* self;
-        auto operator->() const {return &self->container;}
-        auto& operator*() const {return self->container;}
+    struct WriterGate {
+      WriterGate(self_t* self)
+          : self(self)
+      {
+      }
+
+      self_t* self;
+
+      auto operator->() const { return &self->container; }
+
+      auto& operator*() const { return self->container; }
     };
-    WriterGate& getWriterGate(const ExclusiveLockBase*)
-    {assert(LockPolicy::isLockedExclusively(mutex)); return gate;}
+
+    WriterGate& getWriterGate()
+    {
+      assert(Threads::LockPolicy::isLockedExclusively(mutex));
+      return gate;
+    }
 
     template<typename SomeHolder>
     void setParentMutex(SomeHolder& tsc);
 
-public:
+  public:
     // TODO: eliminate this or the gate version.
-    auto getMutexPair() const {return &mutex;}
+    auto getMutexData() const { return &mutex; }
 
-protected:
+  protected:
     WriterGate gate{this};
 
-    mutable MutexPair mutex;
-    ContainerType container;
-};
+    mutable Threads::MutexData mutex;
+    ContainerType              container;
+  };
 
-} //namespace ThreadSafeStructs
+}  // namespace Threads::SafeStructs
 
-#include "ThreadSafeContainer.inl"
+#ifndef SafeStructs_ThreadSafeContainer_inl_H
+#  include "ThreadSafeContainer_inl.h"
+#endif
 
-#endif // ThreadSafeStructs_ThreadSafeContainer_H
+#endif  // SafeStructs_ThreadSafeContainer_H

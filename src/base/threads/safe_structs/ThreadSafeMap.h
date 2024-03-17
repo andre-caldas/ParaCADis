@@ -20,15 +20,15 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef ThreadSafeStructs_ThreadSafeMap_H
-#define ThreadSafeStructs_ThreadSafeMap_H
+#ifndef SafeStructs_ThreadSafeMap_H
+#define SafeStructs_ThreadSafeMap_H
 
 #include "ThreadSafeContainer.h"
 
 #include <map>
 #include <unordered_map>
 
-namespace ThreadSafeStructs
+namespace Threads::SafeStructs
 {
 
   /**
@@ -64,13 +64,13 @@ namespace ThreadSafeStructs
 
     size_t count(const Key& key) const
     {
-      SharedLockFreeLock l(mutex);
+      SharedLock l(mutex);
       return container.count(key);
     }
 
     bool contains(const Key& key) const
     {
-      SharedLockFreeLock l(mutex);
+      SharedLock l(mutex);
       return container.count(key);
     }
 
@@ -110,7 +110,6 @@ namespace ThreadSafeStructs
   {
   };
 
-}  // namespace ThreadSafeStructs
+}  // namespace Threads::SafeStructs
 
-#endif  // ThreadSafeStructs_ThreadSafeMap_H
-
+#endif

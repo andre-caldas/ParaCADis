@@ -20,53 +20,32 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef ExpectedBehaviour_shared_ptr_H
-#define ExpectedBehaviour_shared_ptr_H
+#include <base/expected_behaviour/SharedPtr.h>
+#include <base/geometric_primitives/CoordinateSystem.h>
+#include <base/naming_scheme/Exporter.h>
+#include <base/naming_scheme/IExport.h>
+#include <base/naming_scheme/NameAndUuid.h>
+#include <base/threads/safe_structs/ThreadSafeMap.h>
 
-#include <memory>
-
-/**
- * @brief Safer to use shared_ptr.
- * Shall be used as the return value of a function
- * instead of a regular std::shared_ptr,
- * so the programmer (may, but) does not need to check
- * for the pointer validity.
- *
- * @example
- * // If you are confident the pointer is valid...
- * getPointer()->doStuff();  // Throws if the pointer is invalid.
- *
- * // Otherwise...
- * auto ptr = getPointer();
- * if(!ptr) {
- *     return;
- * }
- * ptr->doStuff();
- */
-template<typename T>
-class SharedPtr : private std::shared_ptr<T>
+namespace DocumentTree
 {
-public:
-  using value_type = T;
-  SharedPtr(const std::shared_ptr<T>& shared);
-  SharedPtr(std::shared_ptr<T>&& shared);
+  class Container
+      : public NamingScheme::Exporter
+      , public NamingScheme::IExport<NamingScheme::Exporter>
+  {
+    using Exporter = NamingScheme::Exporter;
 
-  constexpr T* operator->();
-  constexpr T& operator*() &;
+  public:
+    void addExporter(Exporter& element);
+    void addContainer(Container& container);
 
-  using std::shared_ptr<T>::get;
-  using std::shared_ptr<T>::operator bool;
+  private:
+    using uuid_type = NamingScheme::Uuid::uuid_type;
+    template<typename Key, typename Val>
+    using UnorderedMap = Threads::SafeStructs::ThreadSafeUnorderedMap<Key, Val>;
 
-  operator std::shared_ptr<T>() const;
-};
+    UnorderedMap<uuid_type, SharedPtr<Exporter>>  non_containers;
+    UnorderedMap<uuid_type, SharedPtr<Container>> containers;
+  };
 
-
-template<typename T>
-class WeakPtr : private std::weak_ptr<T>
-{
-public:
-  SharedPtr<T> lock() const noexcept { return std::weak_ptr<T>::lock(); }
-};
-
-#endif
-
+}  // namespace DocumentTree

@@ -27,7 +27,8 @@
 
 #include <base/expected_behaviour/SharedPtr.h>
 
-#include <ranges>
+#include <map>
+
 
 namespace NamingScheme
 {
@@ -73,7 +74,7 @@ namespace NamingScheme
      * @attention To allow a class to derive from multiple IExport<T> classes,
      * we have added a T* to the end of the methods signature.
      */
-    virtual SharefPtr<T> resolve_share(token_iterator& tokens, T* = nullptr);
+    virtual SharedPtr<T> resolve_share(token_iterator& tokens, T* = nullptr);
 
   private:
     std::map<std::string, T*> registeredMembers;
@@ -88,7 +89,7 @@ namespace NamingScheme
   {
   public:
     template<typename... Args>
-    NamedExporter(IExport<T>* parent, Args... args)
+    Exported(IExport<T>* parent, Args... args)
         : T(args..., name, {name, aliases...})
     {
       parent->registerMember(this);

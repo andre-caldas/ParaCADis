@@ -20,53 +20,13 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef ExpectedBehaviour_shared_ptr_H
-#define ExpectedBehaviour_shared_ptr_H
+#include "Container.h"
 
-#include <memory>
-
-/**
- * @brief Safer to use shared_ptr.
- * Shall be used as the return value of a function
- * instead of a regular std::shared_ptr,
- * so the programmer (may, but) does not need to check
- * for the pointer validity.
- *
- * @example
- * // If you are confident the pointer is valid...
- * getPointer()->doStuff();  // Throws if the pointer is invalid.
- *
- * // Otherwise...
- * auto ptr = getPointer();
- * if(!ptr) {
- *     return;
- * }
- * ptr->doStuff();
- */
-template<typename T>
-class SharedPtr : private std::shared_ptr<T>
+namespace DocumentTree
 {
-public:
-  using value_type = T;
-  SharedPtr(const std::shared_ptr<T>& shared);
-  SharedPtr(std::shared_ptr<T>&& shared);
 
-  constexpr T* operator->();
-  constexpr T& operator*() &;
+  class DocumentTree : public Container
+  {
+  };
 
-  using std::shared_ptr<T>::get;
-  using std::shared_ptr<T>::operator bool;
-
-  operator std::shared_ptr<T>() const;
-};
-
-
-template<typename T>
-class WeakPtr : private std::weak_ptr<T>
-{
-public:
-  SharedPtr<T> lock() const noexcept { return std::weak_ptr<T>::lock(); }
-};
-
-#endif
-
+}

@@ -27,11 +27,11 @@
 
 #include <base/expected_behaviour/SharedFromThis.h>
 #include <base/expected_behaviour/SharedPtr.h>
+#include <base/threads/locks/LockPolicy.h>
 #include <base/threads/locks/MutexData.h>
-#include <base/types.h>
 
-#include <ranges>
 #include <string>
+#include <vector>
 
 namespace NamingScheme
 {
@@ -56,7 +56,7 @@ namespace NamingScheme
     NameAndUuid name_and_uuid;
 
     Exporter() = default;
-    Exporter(std::string name, std::vector<std::string> name_and_aliases = {name});
+    Exporter(std::string name, std::vector<std::string> name_and_aliases = {});
 
     virtual ~Exporter() = default;
 
@@ -64,7 +64,7 @@ namespace NamingScheme
      *
      * You may reimplement this if you have other mutexes in the same class.
      */
-    virtual MutexData* getMutexData() { return &mutex_data; }
+    virtual Threads::MutexData* getMutexData() { return &mutex_data; }
 
     /** Globally registers a Uuid.
      * This is specially useful when serializing (Save)
@@ -92,14 +92,12 @@ namespace NamingScheme
     const auto& getNameAndAliases() const { return name_and_aliases; }
 
   private:
-    MutexData                mutex_data;
+    Threads::MutexData       mutex_data;
     std::vector<std::string> name_and_aliases;
   };
 
   static_assert(Threads::C_MutexHolder<Exporter>);
 
-
 }  // namespace NamingScheme
 
-#endif  // NamingScheme_Exporter_H
-
+#endif

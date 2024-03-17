@@ -23,12 +23,13 @@
 #ifndef Threads_LockPolicy_H
 #define Threads_LockPolicy_H
 
-#include "../type_traits/Utils.h"
+#include "MutexData.h"
 #include "YesItIsAMutex.h"
+
+#include <base/type_traits/Utils.h>
 
 #include <concepts>
 #include <memory>
-#include <mutex>
 #include <shared_mutex>
 #include <type_traits>
 #include <unordered_set>
@@ -36,16 +37,14 @@
 namespace Threads
 {
 
-  class MutexData;
-
   /**
    * Concept of a `MutexHolder`.
    * The `MutexHolder` must define a `getMutexData()` method.
    */
   template<typename T>
-  concept C_MutexHolder = requires (T a) {
+  concept C_MutexHolder = requires(T a) {
     { a.getMutexData() } -> std::convertible_to<MutexData*>;
-  }
+  };
 
   /**
    * Concept of a `MutexHolder` that implements access gates.
@@ -57,12 +56,12 @@ namespace Threads
    *    and returns a WriterGate instance.
    */
   template<typename T>
-  concept C_MutexHolderWithGates = C_MutexHolder<T> && requires (T a) {
-    using R = typename T::ReaderGate;
-    { a.getReaderGate((SharedLock*)nullptr) } -> std::convertible_to<const R&>;
-    using W = typename T::WriterGate;
-    { a.getWriterGate((ExclusiveLock*)nullptr) } -> std::convertible_to<const W&>;
-  }
+  concept C_MutexHolderWithGates = C_MutexHolder<T> && requires(T a) {
+    typename T::ReaderGate;
+    { a.getReaderGate() } -> std::convertible_to<const typename T::ReaderGate&>;
+    typename T::WriterGate;
+    { a.getWriterGate() } -> std::convertible_to<const typename T::WriterGate&>;
+  };
 
   /**
    * Implements the policy for mutex locking.
@@ -100,7 +99,7 @@ namespace Threads
      * and a mutex that if already locked imposes a new layer for
      * threadMutexesLayers.
      */
-    template<IsMutxexPair... MutN>
+    template<C_MutexData... MutN>
     LockPolicy(bool is_exclusive, MutN*... mutex);
 
     LockPolicy() = delete;
@@ -129,7 +128,6 @@ namespace Threads
     void _detachFromThread();
   };
 
-
   class SharedLock : public LockPolicy
   {
   public:
@@ -139,7 +137,6 @@ namespace Threads
     std::shared_lock<YesItIsAMutex> lock;
   };
 
-
   /**
    * Locks many mutexes exclsively (for writing).
    */
@@ -147,16 +144,15 @@ namespace Threads
   class ExclusiveLock : public LockPolicy
   {
   public:
-    [[nodiscard]]
-    ExclusiveLock(FirstMutex& first_mutex, MutexData&... mutex_data);
+    [[nodiscard]] ExclusiveLock(FirstMutex* first_mutex, MutexData*... mutex_data);
 
     void release();
 
     [[maybe_unused]] auto detachFromThread();
 
   private:
-    using locks_t
-        = std::scoped_lock<YesItIsAMutex, ForEach_t<YesItIsAMutex, MutexData>...>;
+    using locks_t = std::scoped_lock<
+        YesItIsAMutex, TypeTraits::ForEach_t<YesItIsAMutex, MutexData>...>;
     /*
      * After constructed, std::scoped_lock cannot be changed.
      * So, we usa a unique_ptr.
@@ -172,31 +168,31 @@ namespace Threads
     std::shared_ptr<locks_t> locks;
   };
 
-
   /**
    * @brief Locks and gives access to locked classes of type "MutexHolder".
    */
   template<C_MutexHolder FirstHolder, C_MutexHolder... MutexHolder>
-  class ExclusiveLockGate : public ExclusiveLock
+  class ExclusiveLockGate
+      : public ExclusiveLock<MutexData, TypeTraits::ForEach_t<MutexData, MutexHolder>...>
   {
   public:
-    [[nodiscard]]
-    ExclusiveLockGate(FirstHolder& first_holder, MutexHolder&... mutex_holder);
+    [[nodiscard]] ExclusiveLockGate(
+        FirstHolder& first_holder, MutexHolder&... mutex_holder);
 
-    // This could actually be static.
-    template<C_MutexHolderWithGate SomeHolder>
-    auto& operator[](SomeHolder& tsc) const;
+    template<C_MutexHolderWithGates SomeHolder>
+    auto& operator[](SomeHolder& whichHolder) const;
 
     template<typename = std::enable_if_t<sizeof...(MutexHolder) == 0>>
     auto operator->() const;
 
   private:
-    FirstHolder& FirstHolder;
+    FirstHolder& firstHolder;
   };
 
 }  // namespace Threads
 
-#include "LockPolicy.inl"
+#ifndef Threads_LockPolicy_inc_H  // Keep clangd happy.
+#  include "LockPolicy_inl.h"
+#endif
 
-#endif  // Threads_LockPolicy_H
-
+#endif

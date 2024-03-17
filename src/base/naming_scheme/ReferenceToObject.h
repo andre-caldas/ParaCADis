@@ -128,7 +128,5 @@ namespace NamingScheme
 
 }  // namespace NamingScheme
 
-#include "ReferenceToObject.inl"
-
 #endif
 

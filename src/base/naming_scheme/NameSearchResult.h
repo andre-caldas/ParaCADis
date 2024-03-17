@@ -67,7 +67,7 @@ namespace NamingScheme
   public:
     using NameSearchResultBase::NameSearchResultBase;
 
-    bool resolve(token_iterator tokens);
+    bool resolve(const token_vector& tokens);
 
     enum {
       not_resolved_yet = '0',  ///< Method resolve() not called, yet.

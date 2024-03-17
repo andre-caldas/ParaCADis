@@ -21,31 +21,73 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef NamingScheme_Types_H
-#define NamingScheme_Types_H
+#ifndef Threads_ReaderLock_H
+#define Threads_ReaderLock_H
 
-#include <base/expected_behaviour/SharedPtr.h>
+#include "LockPolicy.h"
 
-#include <concepts>
-#include <ranges>
-#include <vector>
+#include <base/type_traits/Utils.h>
 
-template<typename T>
-class WeakPtr;
+#include <memory>
 
-namespace NamingScheme
+namespace Threads
 {
 
-  class NameOrUuid;
-  class Exporter;
+  /**
+   * @brief Locks a classes of type "MutexHolder" for "reading".
+   * The MutexHolder must:
+   * 1. Define a MutexHolder::ReaderGate class that implements getStruct().
+   * 2. Define a method that takes a ReaderLock as argument,
+   *    and returns a ReaderGate instance.
+   */
+  template<typename MutexHolder, auto LocalPointer = nullptr>
+  class ReaderLock : public SharedLock
+  {
+  public:
+    using local_data_t = const MemberPointerTo_t<LocalPointer>;
 
-  using token_item         = NameOrUuid;
-  template <typename R>
-  concept C_TokenRange = std::ranges::range<R> && std::convertible_to<std::ranges::range_value_t<R>, const token_item&>;
-  using token_vector = std::vector<NameOrUuid>;
-  using token_iterator = std::ranges::subrange<token_vector::iterator>;
-  static_assert(C_TokenRange<token_vector>);
+    [[nodiscard]]
+    ReaderLock(const MutexHolder& mutex_holder)
+        : SharedLock(*mutex_holder.getMutexData())
+        , gate(mutex_holder.getReaderGate(this))
+        , localData((&*gate)->*LocalPointer)
+    {
+    }
 
-}  // namespace NamingScheme
+    const auto* operator->() const { return &(StripSmartPointer{localData}()); }
+
+  private:
+    typename MutexHolder::ReaderGate gate;
+    local_data_t&                    localData;
+  };
+
+  template<typename MutexHolder>
+  class ReaderLock<MutexHolder, nullptr>
+  {
+  public:
+    [[nodiscard]]
+    ReaderLock(const MutexHolder& mutex_holder);
+
+    /**
+     * @brief Releases the lock.
+     */
+    void release();
+
+    /**
+     * @brief Acquires a shared lock and resumes processing.
+     */
+    void resume();
+
+    auto operator->() const;
+
+  private:
+    MutexData&                              mutexPair;
+    std::unique_ptr<SharedLock>             sharedLock;
+    const typename MutexHolder::ReaderGate& gate;
+  };
+
+}  // namespace Threads
+
+#include "ReaderLock_inl.h"
 
 #endif
