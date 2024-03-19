@@ -1,0 +1,5 @@
+# We include templates implementation in seaprate files.
+# The implementation includes the main header
+# and the main header includes the implementation.
+Diagnostics:
+  Suppress: 'pp_including_mainfile_in_preamble'

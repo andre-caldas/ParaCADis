@@ -27,5 +27,5 @@ safe_containers_lib = shared_library(
   install: true,
   include_directories: inc,
   implicit_include_directories: false,
-  dependencies: threads_safe_containers_dep,
+  dependencies: safe_containers_dep,
 )

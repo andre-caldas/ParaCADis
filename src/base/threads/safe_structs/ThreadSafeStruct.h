@@ -24,8 +24,8 @@
 #ifndef BASE_Threads_ThreadSafeStruct_H
 #define BASE_Threads_ThreadSafeStruct_H
 
-#include "locks/ReaderLock.h"
-#include "locks/WriterLock.h"
+#include <base/threads/locks/ReaderLock.h>
+#include <base/threads/locks/WriterLock.h>
 
 #include <thread>
 
@@ -40,7 +40,7 @@ namespace Threads::SafeStructs
   {
   public:
     using self_t    = ThreadSafeStruct;
-    using element_t = Struct;
+    using record_t = Struct;
 
     using r_lock_t = ReaderLock<ThreadSafeStruct<Struct>>;
     template<auto LocalPointer>

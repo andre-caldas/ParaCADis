@@ -23,9 +23,7 @@
 #ifndef SafeStructs_ThreadSafeContainer_inl_H
 #define SafeStructs_ThreadSafeContainer_inl_H
 
-#ifndef SafeStructs_ThreadSafeContainer_H  // Make clangd happy.
-#  include "ThreadSafeContainer.h"
-#endif
+#include "ThreadSafeContainer.h"
 
 namespace Threads::SafeStructs
 {

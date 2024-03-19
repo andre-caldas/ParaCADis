@@ -99,8 +99,6 @@ namespace Threads::SafeStructs
 
 }  // namespace Threads::SafeStructs
 
-#ifndef SafeStructs_ThreadSafeContainer_inl_H
-#  include "ThreadSafeContainer_inl.h"
-#endif
+#include "ThreadSafeContainer_inl.h"
 
 #endif  // SafeStructs_ThreadSafeContainer_H

@@ -56,6 +56,7 @@ public:
 
   using std::shared_ptr<T>::get;
   using std::shared_ptr<T>::operator bool;
+  using std::shared_ptr<T>::operator==;
 
   operator std::shared_ptr<T>() const;
 };

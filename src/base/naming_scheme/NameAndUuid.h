@@ -28,6 +28,15 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
+namespace std
+{
+  template<>
+  struct hash<boost::uuids::uuid>
+  {
+    size_t operator()(const boost::uuids::uuid& uuid) const noexcept;
+  };
+}
+
 namespace NamingScheme
 {
 
@@ -35,10 +44,12 @@ namespace NamingScheme
   {
   public:
     using uuid_type = boost::uuids::uuid;
+    const uuid_type uuid;
 
     Uuid();
+    Uuid(int i);
     Uuid(const Uuid&) = default;
-    Uuid(const std::string& uuid_str) { setUuid(uuid_str); }
+    Uuid(std::string_view uuid_str);
     virtual ~Uuid() = default;
 
     bool isValid() const;
@@ -46,10 +57,6 @@ namespace NamingScheme
     uuid_type getUuid() const { return uuid; }
     operator uuid_type() const { return uuid; }
     operator std::string() const { return boost::uuids::to_string(uuid); }
-    void setUuid(std::string_view uuid_str);
-
-  protected:
-    uuid_type uuid;
   };
 
 
@@ -69,13 +76,11 @@ namespace NamingScheme
     NameOrUuid(std::string name_or_uuid);
 
     const std::string& getName() const { return name; }
-    bool operator==(std::string_view str) const { return (str == name); }
-    bool operator==(Uuid id) const { return (id == uuid); }
+    Uuid getUuid() const { return uuid; }
+    operator Uuid::uuid_type() const { return uuid; }
 
     bool isName() const { return !uuid.isValid(); }
     bool isUuid() const { return uuid.isValid(); }
-
-    operator Uuid::uuid_type() const {return uuid;}
   };
 
 

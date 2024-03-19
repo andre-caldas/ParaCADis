@@ -29,3 +29,5 @@ locks_lib = shared_library(
   implicit_include_directories: false,
   dependencies: locks_dep,
 )
+
+libs_upto_now += [locks_lib]

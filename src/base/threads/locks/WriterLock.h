@@ -1,37 +1,35 @@
-// SPDX-License-Identifier: LGPL-2.1-or-later
+// SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
  *                                                                          *
- *   This file is part of FreeCAD.                                          *
+ *   This file is part of ParaCADis.                                        *
  *                                                                          *
- *   FreeCAD is free software: you can redistribute it and/or modify it     *
- *   under the terms of the GNU Lesser General Public License as            *
- *   published by the Free Software Foundation, either version 2.1 of the   *
- *   License, or (at your option) any later version.                        *
+ *   ParaCADis is free software: you can redistribute it and/or modify it   *
+ *   under the terms of the GNU General Public License as published         *
+ *   by the Free Software Foundation, either version 2.1 of the License,    *
+ *   or (at your option) any later version.                                 *
  *                                                                          *
- *   FreeCAD is distributed in the hope that it will be useful, but         *
+ *   ParaCADis is distributed in the hope that it will be useful, but       *
  *   WITHOUT ANY WARRANTY; without even the implied warranty of             *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU       *
- *   Lesser General Public License for more details.                        *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                   *
+ *   See the GNU General Public License for more details.                   *
  *                                                                          *
- *   You should have received a copy of the GNU Lesser General Public       *
- *   License along with FreeCAD. If not, see                                *
- *   <https://www.gnu.org/licenses/>.                                       *
+ *   You should have received a copy of the GNU General Public License      *
+ *   along with ParaCADis. If not, see <https://www.gnu.org/licenses/>.     *
  *                                                                          *
  ***************************************************************************/
 
 #ifndef BASE_Threads_WriterLock_H
 #define BASE_Threads_WriterLock_H
 
-#include <thread>
 #include <memory>
 
-#include "../type_traits/Utils.h"
+#include <base/type_traits/Utils.h>
 
 #include "LockPolicy.h"
 
-namespace Base::Threads
+namespace Threads
 {
 
 /**
@@ -44,7 +42,7 @@ template<typename MutexHolder, auto LocalPointer = nullptr>
 class WriterLock
 {
 public:
-    using local_data_t = MemberPointerTo_t<LocalPointer>;
+    using local_data_t = TypeTraits::MemberPointerTo_t<LocalPointer>;
 
     [[nodiscard]] WriterLock(MutexHolder& mutex_holder)
         : exclusiveLock(mutex_holder)
@@ -210,6 +208,6 @@ private:
 
 }  // namespace Base::Threads
 
-#include "WriterLock.inl"
+#include "WriterLock_inl.h"
 
 #endif  // BASE_Threads_WriterLock_H

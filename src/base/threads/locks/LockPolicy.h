@@ -57,6 +57,9 @@ namespace Threads
    */
   template<typename T>
   concept C_MutexHolderWithGates = C_MutexHolder<T> && requires(T a) {
+    // Type of the struct that holds the data for each record.
+    typename T::record_t;
+
     typename T::ReaderGate;
     { a.getReaderGate() } -> std::convertible_to<const typename T::ReaderGate&>;
     typename T::WriterGate;
@@ -191,8 +194,6 @@ namespace Threads
 
 }  // namespace Threads
 
-#ifndef Threads_LockPolicy_inc_H  // Keep clangd happy.
-#  include "LockPolicy_inl.h"
-#endif
+#include "LockPolicy_inl.h"
 
 #endif

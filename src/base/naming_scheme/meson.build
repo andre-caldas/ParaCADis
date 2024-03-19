@@ -24,10 +24,12 @@ install_headers(naming_scheme_includes,
   preserve_path: true,
 )
 
-naming_scheme_lib = shared_library(
+naming_scheme_lib = library(
   'naming_scheme',
   naming_scheme_src,
   install: true,
   include_directories: inc,
   implicit_include_directories: false,
 )
+
+libs_upto_now += [naming_scheme_lib]

@@ -29,19 +29,15 @@
 #ifndef NamingScheme_IExport_impl_H
 #define NamingScheme_IExport_impl_H
 
-#ifndef NamingScheme_IExport_H
+#ifdef NamingScheme_IExport_H
 // The following error is because we do not want to incentivate developers
 // to use "IExport_impl.h" instead of "IExport.h".
 #  error "Include IExport.h before including IExport_impl.h. Do you need 'impl'?"
 #endif
 #include "IExport.h"  // Just to make tools happy!
-#include "exceptions.h"
-#include "types.h"
+#include "NameAndUuid.h"
 
 #include <base/expected_behaviour/SharedPtr.h>
-
-#include <ranges>
-#include <type_traits>
 
 namespace NamingScheme
 {
@@ -54,11 +50,6 @@ namespace NamingScheme
     // Look for registered member variables.
     const auto& token = token_list.front();
     assert(token.isName());
-    for (const auto& name: token.getNameAndAliases()) {
-      if (exportedMember.contains(name)) {
-        return std::shared_ptr(current_lock, exportedMember.at(name));
-      }
-    }
 
     auto share = resolve_share(token_list);
     if (share) { return share; }
@@ -80,16 +71,6 @@ namespace NamingScheme
     return {};
   }
 
-  template<typename T>
-  void IExport<T> registerMember(T* member)
-  {
-    assert(member.name_and_uuid.hasName());
-    std::string name = member.name_and_uuid.getName();
-    assert(!exportedMember.contains(name));
-    exportedMember[std::move(name)] = member;
-  }
-
 }  // namespace NamingScheme
 
-#endif  // NamingScheme_IExport_impl_H
-
+#endif

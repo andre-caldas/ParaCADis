@@ -21,11 +21,21 @@
  ***************************************************************************/
 
 #include "NameAndUuid.h"
+
 #include "exceptions.h"
 
+#include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+
+namespace std
+{
+  size_t hash<boost::uuids::uuid>::operator()(const boost::uuids::uuid& uuid) const noexcept
+  {
+    return boost::uuids::hash_value(uuid);
+  }
+}
 
 namespace NamingScheme
 {
@@ -39,8 +49,7 @@ namespace NamingScheme
   {
     boost::uuids::random_generator random_generator;
     boost::uuids::string_generator string_generator;
-    // A static POD is zero initialized.
-    static boost::uuids::uuid zero_uuid;
+    boost::uuids::nil_generator    zero_generator;
   }
 
   Uuid::Uuid()
@@ -48,22 +57,24 @@ namespace NamingScheme
   {
   }
 
-  void Uuid::isValid() const
+  Uuid::Uuid(int i)
+      : uuid(zero_generator())
   {
-    return uuid != zero_uuid;
+    assert(i == 0);
   }
 
-  void Uuid::setUuid(std::string_view uuid)
-  {
-    try {
-      uuid = string_generator(uuid);
-      assert(isValid);
-    } catch (const std::runtime_error&) {
-      // Zero-initialize.
-      uuid = uuid_type();
-      assert(!isValid());
-    }
+  Uuid::Uuid(std::string_view uuid_str)
+  try : uuid(string_generator(uuid_str.cbegin(), uuid_str.cend())) {
+  } catch (const std::runtime_error&) {
+    // TODO: name an exception.
+    throw;
   }
+
+  bool Uuid::isValid() const
+  {
+    return !uuid.is_nil();
+  }
+
 
   /*
    * NameOrUuid
@@ -116,4 +127,3 @@ namespace NamingScheme
   }
 
 }  // namespace NamingScheme
-

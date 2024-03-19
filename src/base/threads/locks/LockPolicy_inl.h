@@ -23,9 +23,7 @@
 #ifndef Threads_LockPolicy_inc_H
 #define Threads_LockPolicy_inc_H
 
-#ifndef Threads_LockPolicy_H  // Keep clangd happy.
-#  include "LockPolicy.h"
-#endif
+#include "LockPolicy.h"
 
 #include "exceptions.h"
 

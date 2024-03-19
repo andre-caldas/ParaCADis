@@ -20,11 +20,11 @@
  *                                                                          *
  ***************************************************************************/
 
+#include "NameSearchResult.h"
 #include "Exporter.h"
+#include "IExport.h"
 
 #include <base/threads/locks/LockPolicy.h>
-
-#include <memory>
 
 using namespace Threads;
 
@@ -40,7 +40,7 @@ namespace NamingScheme
       }
       [[maybe_unused]]
       auto n_tokens = tokens.size();
-      auto next_exporter = ptr->resolve<Exporter>(tokens);
+      auto next_exporter = ptr->resolve(tokens);
       if (!next_exporter) {
         return;
       }
@@ -66,8 +66,8 @@ namespace NamingScheme
  * Template instantiation for most used exported types.
  */
 
-#include <base/geometric_primitives/Circle.h>
-#include <base/geometric_primitives/Line.h>
+#include <base/geometric_primitives/circles.h>
+#include <base/geometric_primitives/lines.h>
 #include <base/geometric_primitives/types.h>
 
 template class NamingScheme::NameSearchResult<Real>;

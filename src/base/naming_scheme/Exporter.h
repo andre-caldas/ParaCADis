@@ -29,6 +29,7 @@
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/threads/locks/LockPolicy.h>
 #include <base/threads/locks/MutexData.h>
+#include <base/threads/safe_structs/ThreadSafeStruct.h>
 
 #include <string>
 #include <vector>
@@ -53,18 +54,13 @@ namespace NamingScheme
   class Exporter : public SharedFromThis<Exporter>
   {
   public:
-    NameAndUuid name_and_uuid;
-
     Exporter() = default;
-    Exporter(std::string name, std::vector<std::string> name_and_aliases = {});
-
     virtual ~Exporter() = default;
 
-    /** Must satisfy `Threads::C_MutexHolder`.
-     *
-     * You may reimplement this if you have other mutexes in the same class.
+    /**
+     * Must satisfy `Threads::C_MutexHolder`.
      */
-    virtual Threads::MutexData* getMutexData() { return &mutex_data; }
+    virtual Threads::MutexData* getMutexData() = 0;
 
     /** Globally registers a Uuid.
      * This is specially useful when serializing (Save)
@@ -88,15 +84,20 @@ namespace NamingScheme
      * @return A shared_ptr to the referenced object.
      */
     static SharedPtr<Exporter> getByUuid(Uuid::uuid_type uuid);
-
-    const auto& getNameAndAliases() const { return name_and_aliases; }
-
-  private:
-    Threads::MutexData       mutex_data;
-    std::vector<std::string> name_and_aliases;
   };
 
   static_assert(Threads::C_MutexHolder<Exporter>);
+
+
+  template<typename DataStruct>
+  class SafeExporter : public Exporter
+  {
+    using data_t = DataStruct;
+    using safe_struct_t = Threads::SafeStructs::ThreadSafeStruct<data_t>;
+
+  public:
+    safe_struct_t safeData;
+  };
 
 }  // namespace NamingScheme
 
