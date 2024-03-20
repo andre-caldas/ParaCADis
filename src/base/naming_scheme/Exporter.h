@@ -58,6 +58,11 @@ namespace NamingScheme
     virtual ~Exporter() = default;
 
     /**
+     * String for reports and diagnostics.
+     */
+    virtual std::string toString() const = 0;
+
+    /**
      * Must satisfy `Threads::C_MutexHolder`.
      */
     virtual Threads::MutexData* getMutexData() = 0;
@@ -94,6 +99,8 @@ namespace NamingScheme
   {
     using data_t = DataStruct;
     using safe_struct_t = Threads::SafeStructs::ThreadSafeStruct<data_t>;
+
+    Threads::MutexData* getMutexData() override { return safeData.getMutexData(); }
 
   public:
     safe_struct_t safeData;

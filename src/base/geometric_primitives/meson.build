@@ -2,7 +2,7 @@ geometric_primitives_src = [
   'checks.cpp',
   'circles.cpp',
   'CoordinateSystem.cpp',
-  'DeferenceablePoint.cpp',
+  'deferenceables.cpp',
   'GeometricObject.cpp',
   'lines.cpp',
 ]
@@ -11,7 +11,7 @@ geometric_primitives_includes = [
   'checks.h',
   'circles.h',
   'CoordinateSystem.h',
-  'DeferenceablePoint.h',
+  'deferenceables.h',
   'exceptions.h',
   'GeometricObject.h',
   'lines.h',
@@ -29,3 +29,5 @@ geometric_primitives_lib = shared_library(
   include_directories: inc,
   implicit_include_directories: false,
 )
+
+libs_upto_now += [geometric_primitives_lib]

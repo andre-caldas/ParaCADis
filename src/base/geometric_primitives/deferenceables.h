@@ -20,13 +20,21 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef GeometricPrimitives_DeferenceablePoint
-#define GeometricPrimitives_DeferenceablePoint
+#ifndef GeometricPrimitives_deferenceables
+#define GeometricPrimitives_deferenceables
 
 #include "GeometricObject.h"
 #include "types.h"
 
+#include <base/naming_scheme/Exporter.h>
 #include <base/naming_scheme/IExport.h>
+
+/**
+ * DataStruct for DeferenceablePoint and DeferenceableVector.
+ */
+struct TripletStruct {
+  Real x, y, z;
+};
 
 /**
  * A point that exports its coordinates.
@@ -39,17 +47,42 @@
  * coordinates directly accessed and simply use it.
  */
 class DeferenceablePoint
-    : public GeometricObject
-    , public IExport<Real>
+    : public NamingScheme::SafeExporter<TripletStruct>
+    , public NamingScheme::SafeIExport<Real, TripletStruct,
+                                       {&TripletStruct::x, "x"},
+                                       {&TripletStruct::y, "y"},
+                                       {&TripletStruct::z, "z"}>
 {
 public:
-  Exported<Real, "x"> x;
-  Exported<Real, "y"> y;
-  Exported<Real, "z"> z;
-
-  DeferenceablePoint(cont Point& p, std::string name);
+  DeferenceablePoint(const Point& p, std::string name);
   DeferenceablePoint(Real x, Real y, Real z, std::string name);
+
+  std::string toString() const override;
+};
+
+
+/**
+ * A vector that exports its coordinates.
+ *
+ * This is not a native vector. It is to be used only when you need a vector
+ * that exports its coordinates. In particular, if it is a geometric object
+ * to be placed in the DocumenTree, use this and not the kernel native Point.
+ *
+ * @todo Maybe we should warrant we use a CGAL kernel that may have its
+ * coordinates directly accessed and simply use it.
+ */
+class DeferenceableVector
+    : public NamingScheme::SafeExporter<TripletStruct>
+    , public NamingScheme::SafeIExport<Real, TripletStruct,
+                                       {&TripletStruct::x, "x"},
+                                       {&TripletStruct::y, "y"},
+                                       {&TripletStruct::z, "z"}>
+{
+public:
+  DeferenceableVector(const Point& p, std::string name);
+  DeferenceableVector(Real x, Real y, Real z, std::string name);
+
+  std::string toString() const override;
 };
 
 #endif
-

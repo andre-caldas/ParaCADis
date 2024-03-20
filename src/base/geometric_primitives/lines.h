@@ -23,10 +23,23 @@
 #ifndef GeometricPrimitives_Lines
 #define GeometricPrimitives_Lines
 
-#include "DeferenceablePoint.h"
+#include "deferenceables.h"
 #include "types.h"
 
+#include <base/naming_scheme/Exporter.h>
 #include <base/naming_scheme/IExport.h>
+#include <base/threads/safe_structs/ThreadSafeStruct.h>
+
+
+/**
+ * DataStruct for Line2Points.
+ */
+struct Line2PointsData {
+  DeferenceablePoint start;
+  DeferenceablePoint end;
+  bool is_bounded_start;
+  bool is_bounded_end;
+};
 
 /**
  * An oriented line determined by two points.
@@ -34,16 +47,30 @@
  * It can be bounded by the any of the two points.
  */
 class Line2Points
-    : IExport<DeferenceablePoint>
-    , IExport<bool>
+    : NamingScheme::SafeExporter<Line2PointsData>
+    , NamingScheme::SafeIExport<DeferenceablePoint, Line2PointsData,
+                                {&Line2PointsData::start, "start"},
+                                {&Line2PointsData::start, "a"},
+                                {&Line2PointsData::end, "end"},
+                                {&Line2PointsData::end, "b"}>
+    , NamingScheme::SafeIExport<bool, Line2PointsData,
+                                {&Line2PointsData::is_bounded_start, "is_bounded_start"},
+                                {&Line2PointsData::is_bounded_end, "is_bounded_end"}>
 {
 public:
-  Exported<DeferenceablePoint, "start", "a"> start;
-  Exported<DeferenceablePoint, "end", "b"> start;
-  Exported<bool, "is_bounded_start"> is_bounded_start = false;
-  Exported<bool, "is_bounded_end"> end = false;
+  Line2Points(Point start, Point end);
+  std::string toString() const override;
+};
 
-  Line2Points(const Point& start, const Point& end, std::string name);
+
+/**
+ * DataStruct for Line2Points.
+ */
+struct LinePointDirectionData {
+  DeferenceablePoint start;
+  DeferenceableVector direction;
+  bool is_bounded_start;
+  bool is_bounded_end;
 };
 
 /**
@@ -52,17 +79,20 @@ public:
  * It can be bounded in the starting point, or not.
  */
 class LinePointDirection
-    : IExport<DeferenceablePoint>
-    , IExport<Direction>
+    : NamingScheme::SafeExporter<LinePointDirectionData>
+    , NamingScheme::SafeIExport<DeferenceablePoint, LinePointDirectionData,
+                                {&LinePointDirectionData::start, "start"},
+                                {&LinePointDirectionData::start, "a"}>
+    , NamingScheme::SafeIExport<DeferenceableVector, LinePointDirectionData,
+                                {&LinePointDirectionData::direction, "direction"},
+                                {&LinePointDirectionData::direction, "v"}>
+    , NamingScheme::SafeIExport<bool, LinePointDirectionData,
+                                {&LinePointDirectionData::is_bounded_start, "is_bounded_start"},
+                                {&LinePointDirectionData::is_bounded_end, "is_bounded_end"}>
 {
 public:
-  Exported<DeferenceablePoint, "start", "a"> start;
-  Exported<DeferenceableDirection, "direction", "v"> direction;
-  Exported<bool, "is_bounded_start"> is_bounded_start = false;
-  Exported<bool, "is_bounded_end"> end = false;
-
-  LinePointDirection(const Point& start, Direction direction, std::string name);
+  LinePointDirection(Point start, Vector direction);
+  std::string toString() const override;
 };
 
 #endif
-

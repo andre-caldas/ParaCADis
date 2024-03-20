@@ -29,6 +29,7 @@
 #include <base/threads/safe_structs/ThreadSafeStruct.h>
 #include <base/threads/locks/LockPolicy.h>
 
+#include <algorithm>
 #include <map>
 
 
@@ -58,13 +59,9 @@ namespace NamingScheme
     using token_iterator   = NamingScheme::token_iterator;
 
     /**
-     * Exporters can override resolve().
-     *
-     * @attention If you override resolve,
-     * you probably do not want to override resolve_share() or resolve_ptr().
-     * Unless you call this original IExport<T>::resolve() from the override.
+     * Calls resolve_ptr() and resolve_share().
      */
-    virtual SharedPtr<T> resolve(token_iterator& tokens);
+    SharedPtr<T> resolve(token_iterator& tokens);
 
   protected:
     /**
@@ -98,57 +95,70 @@ namespace NamingScheme
   };
 
 
-  /**
-   * Put those as static members of your final class.
-   */
-  template<class C, class T>
+  template<class C, typename T, std::size_t N>
   struct EachExportedData
   {
-    constexpr EachExportedData(T C::* local_ptr, const char* name)
-        : local_ptr(local_ptr), name(name) {}
+    constexpr EachExportedData(T C::* local_ptr, const char (&str)[N])
+        : local_ptr(local_ptr)
+    {
+      static_assert(N <= 20, "Exported variable's name is too long.");
+      std::ranges::copy(str, name);
+    }
     using data_type = T;
     T C::* local_ptr;
-    const char* name;
+    char name[N];
   };
 
 
   /**
    * Holds local pointers to exported data.
    *
-   * @example The file at base/geometric_primitives/lines.h.
+   * @todo REMOVE this if it is not used. Probably it is not,
+   * because it is not thread safe.
+   *
+   * @example
+   * struct ConcurrentData {
+   *   DeferenceablePoint start;
+   *   DeferenceablePoint end;
+   *   bool is_bounded_start;
+   *   bool is_bounded_end;
+   * };
+   * using SafeStruct = Threads::SafeStructs::ThreadSafeStruct<ConcurrentData>;
+   * ConcurrentData concurrentData;
+   *
+   * static NamingScheme::ExportedData<SafeStruct, DeferenceablePoint
+   *   , {&ConcurrentData::start, "start"}
+   *   , {&ConcurrentData::start, "a"}
+   *   , {&ConcurrentData::end, "end"}
+   *   , {&ConcurrentData::end, "b"}
+   *  > exportedPoints;
+   *
+   * static NamingScheme::ExportedData<SafeStruct, bool
+   *   , {&ConcurrentData::is_bounded_start, "is_bounded_start"}
+   *   , {&ConcurrentData::is_bounded_end, "is_bounded_end"}
+   *  > exportedBools;
    */
   template<Threads::C_MutexHolderWithGates C, typename T,
-           EachExportedData<typename C::record_t, T>... dataInfo>
+           EachExportedData... dataInfo>
   struct ExportedData
   {
-    const std::map<std::string, T C::record_t::*> data
+    const std::map<std::string, T C::record_t::*> map
         = {{dataInfo.name,dataInfo.local_ptr}...};
 
-    const T* get(const C::ReaderGate& gate, std::string_view id) const {
-      if(!data.contains(id)) {
-        return nullptr;
-      }
-      return gate->*data.at(id);
-    }
-
-    T* get(const C::WriterGate& gate, std::string_view id) const {
-      if(!data.contains(id)) {
-        return nullptr;
-      }
-      return gate->*data.at(id);
-    }
+    const T* get(const C::ReaderGate& gate, std::string_view id) const;
+    T* get(const C::WriterGate& gate, std::string_view id) const;
   };
 
 
   /**
    * Exports data managed by Exporter<DataStruct>.
    */
-  template<typename T, typename DataStruct,
-           EachExportedData<DataStruct, T>... dataInfo>
+  template<typename T, class DataStruct,
+           EachExportedData... dataInfo>
   class SafeIExport : public IExport<T>
   {
   protected:
-    SharedPtr<T> resolve(token_iterator& tokens) override;
+    T* resolve_ptr(token_iterator& tokens, T* = nullptr) override;
 
   private:
     const std::map<std::string, T DataStruct::*> map

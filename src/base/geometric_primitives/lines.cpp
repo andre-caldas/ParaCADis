@@ -22,14 +22,14 @@
 
 #include "lines.h"
 
-Line2Points::Line2Points(const Point& start, const Point& end, std::string name)
-    : start(start), end(end), GeometricObject(std::move(name))
+Line2Points::Line2Points(const Point& start, const Point& end)
+    : start(start), end(end))
 {
 }
 
 
-LinePointDirection::LinePointDirection(const Point& start, Direction direction, std::string name)
-    : start(start), direction(direction), GeometricObject(std::move(name))
+LinePointDirection::LinePointDirection(const Point& start, Direction direction)
+    : start(start), direction(direction)
 {
 }
 

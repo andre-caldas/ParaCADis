@@ -36,6 +36,7 @@
 #endif
 #include "IExport.h"  // Just to make tools happy!
 #include "NameAndUuid.h"
+#include "Exporter.h"
 
 #include <base/expected_behaviour/SharedPtr.h>
 
@@ -70,6 +71,59 @@ namespace NamingScheme
   {
     return {};
   }
+
+
+  template<
+      Threads::C_MutexHolderWithGates C, typename T,
+      EachExportedData... dataInfo>
+  const T* ExportedData<C, T, dataInfo...>::get(
+      const C::ReaderGate& gate, std::string_view id) const
+  {
+    if (!map.contains(id)) {
+      return nullptr;
+    }
+    return gate->*map.at(id);
+  }
+
+  template<
+      Threads::C_MutexHolderWithGates C, typename T,
+      EachExportedData<typename C::record_t, T>... dataInfo>
+  T* ExportedData<C, T, dataInfo...>::get(
+      const C::WriterGate& gate, std::string_view id) const
+  {
+    if (!map.contains(id)) {
+      return nullptr;
+    }
+
+    return gate->*map.at(id);
+  }
+
+
+  template<typename T, typename DataStruct,
+           EachExportedData<DataStruct, T>... dataInfo>
+  T* SafeIExport<T, DataStruct, dataInfo...>::resolve_ptr(token_iterator& tokens)
+  {
+    if(!tokens) {
+      assert(false && "Why is this being called? There are no more tokens!");
+      return nullptr;
+    }
+
+    const auto& name = tokens.front().getName();
+    if (!map.contains(name)) {
+      return nullptr;
+    }
+
+    auto* ptr = dynamic_cast<SafeExporter<DataStruct>*>(this);
+    assert(ptr && "Exporters must derive from NamingScheme::Exporter.");
+    if(!ptr) {
+      return nullptr;
+    }
+
+    auto& gate = ptr->getWriterGate();
+    T* result = &gate->*map.at(name);
+  }
+    const std::map<std::string, T DataStruct::*> map
+        = {{dataInfo.name,dataInfo.local_ptr}...};
 
 }  // namespace NamingScheme
 
