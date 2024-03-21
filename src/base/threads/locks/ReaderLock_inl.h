@@ -53,7 +53,7 @@ auto ReaderLock<MutexHolder>::operator->() const
 {
     assert(sharedLock);
     if(!sharedLock) {
-        throw ExceptionNeedLock{};
+        throw Exception::NeedLock{};
     }
     return &*gate;
 }

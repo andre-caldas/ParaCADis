@@ -26,7 +26,7 @@
 #include <source_location>
 #include <stdexcept>
 
-namespace Base
+namespace Exception
 {
 
   class RunTimeError : public std::runtime_error
@@ -34,7 +34,7 @@ namespace Base
   public:
     std::source_location location;
     RunTimeError(
-        str::string          str,
+        std::string          str,
         std::source_location location = std::source_location::current());
   };
 
@@ -44,7 +44,6 @@ namespace Base
     NotImplemented(std::source_location location = std::source_location::current());
   };
 
-}  // namespace Base
+}  // namespace Exception
 
-#endif  // Base_Exception_H
-
+#endif

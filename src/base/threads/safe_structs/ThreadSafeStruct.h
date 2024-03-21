@@ -55,6 +55,9 @@ namespace Threads::SafeStructs
     template<typename... Args>
     ThreadSafeStruct(Args&&... args);
 
+    template<C_MutexHolder MutexHolder, typename... Args>
+    ThreadSafeStruct(MutexHolder& holder, Args&&... args);
+
     virtual ~ThreadSafeStruct();
 
     [[maybe_unused, nodiscard]] auto lockForReading() const;

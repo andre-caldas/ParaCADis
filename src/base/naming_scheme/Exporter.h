@@ -32,7 +32,6 @@
 #include <base/threads/safe_structs/ThreadSafeStruct.h>
 
 #include <string>
-#include <vector>
 
 namespace NamingScheme
 {
@@ -44,8 +43,7 @@ namespace NamingScheme
   class IExport;
 
   /**
-   * @brief A Exporter is an object that can be queried
-   * to resolve the next step in a path.
+   * A Exporter is an object that can be queried to resolve the next step in a path.
    *
    * @attention For each exported type, you need to subclass @class IExport<X>.
    * @attention Probably you do not want to derive from this class.
@@ -62,22 +60,29 @@ namespace NamingScheme
      */
     virtual std::string toString() const = 0;
 
+    Uuid getUuid() const;
+    std::string getName() const;
+
     /**
      * Must satisfy `Threads::C_MutexHolder`.
      */
-    virtual Threads::MutexData* getMutexData() = 0;
-
-    /** Globally registers a Uuid.
-     * This is specially useful when serializing (Save)
-     * and unserializing (Restore).
-     * @param shared_ptr - a shared_ptr to the @class Exporter.
-     */
-    static void registerUuid(const SharedPtr<Exporter>& shared_ptr);
+    constexpr Threads::MutexData* getMutexData() { return &mutex; }
 
     /**
-     * @brief When serializing (Save), uuids are saved as strings.
-     * When unserializing (Restore), the string can be used
-     * to get a pointer to @class Exporter.
+     * Globally registers a Uuid.
+     *
+     * This is specially useful when serializing
+     * and unserializing.
+     *
+     * @param shared_ptr - a shared_ptr to the Exporter.
+     */
+    static void registerUuid(SharedPtr<Exporter> shared_ptr);
+
+    /**
+     * When serializing, uuids are saved as strings.
+     * When unserializing, the string can be used
+     * to get a pointer to Exporter.
+     *
      * @param uuid - string representation of the uuid.
      * @return A shared_ptr to the referenced object.
      */
@@ -89,6 +94,10 @@ namespace NamingScheme
      * @return A shared_ptr to the referenced object.
      */
     static SharedPtr<Exporter> getByUuid(Uuid::uuid_type uuid);
+
+  private:
+    Threads::MutexData mutex;
+    NameAndUuid id;
   };
 
   static_assert(Threads::C_MutexHolder<Exporter>);
@@ -99,10 +108,10 @@ namespace NamingScheme
   {
     using data_t = DataStruct;
     using safe_struct_t = Threads::SafeStructs::ThreadSafeStruct<data_t>;
-
-    Threads::MutexData* getMutexData() override { return safeData.getMutexData(); }
-
   public:
+    template<typename... Args>
+    SafeExporter(Args&&... args) : safeData(*this, args...) {}
+
     safe_struct_t safeData;
   };
 

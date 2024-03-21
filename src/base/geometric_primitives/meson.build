@@ -3,7 +3,6 @@ geometric_primitives_src = [
   'circles.cpp',
   'CoordinateSystem.cpp',
   'deferenceables.cpp',
-  'GeometricObject.cpp',
   'lines.cpp',
 ]
 
@@ -13,7 +12,6 @@ geometric_primitives_includes = [
   'CoordinateSystem.h',
   'deferenceables.h',
   'exceptions.h',
-  'GeometricObject.h',
   'lines.h',
   'types.h',
 ]

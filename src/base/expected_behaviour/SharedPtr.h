@@ -20,10 +20,13 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef ExpectedBehaviour_shared_ptr_H
-#define ExpectedBehaviour_shared_ptr_H
+#ifndef ExpectedBehaviour_SharedPtr_H
+#define ExpectedBehaviour_SharedPtr_H
 
 #include <memory>
+
+template<typename T>
+class WeakPtr;
 
 /**
  * @brief Safer to use shared_ptr.
@@ -51,14 +54,17 @@ public:
   SharedPtr(const std::shared_ptr<T>& shared);
   SharedPtr(std::shared_ptr<T>&& shared);
 
-  constexpr T* operator->();
-  constexpr T& operator*() &;
+  T* operator->() const;
+  T& operator*() const;
 
   using std::shared_ptr<T>::get;
   using std::shared_ptr<T>::operator bool;
-  using std::shared_ptr<T>::operator==;
+  bool operator==(const SharedPtr<T>& other) { return get() == other.get(); }
+
+  WeakPtr<T> getWeakPtr() const;
 
   operator std::shared_ptr<T>() const;
+  operator const std::shared_ptr<T>&() const;
 };
 
 
@@ -66,8 +72,9 @@ template<typename T>
 class WeakPtr : private std::weak_ptr<T>
 {
 public:
+  using std::weak_ptr<T>::weak_ptr;
+  WeakPtr(const SharedPtr<T>& shared) : std::weak_ptr<T>(shared.getWeakPtr()) {}
   SharedPtr<T> lock() const noexcept { return std::weak_ptr<T>::lock(); }
 };
 
 #endif
-

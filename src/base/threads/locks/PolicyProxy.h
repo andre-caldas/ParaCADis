@@ -20,24 +20,49 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef GeometricPrimitives_GeometricObject
-#define GeometricPrimitives_GeometricObject
+#ifndef Threads_PolicyProxy_H
+#define Threads_PolicyProxy_H
 
-#include "types.h"
+#include "LockPolicy.h"
+#include "MutexData.h"
 
-#include <base/naming_scheme/Exporter.h>
-
-/**
- * Common class for geometric objects.
- *
- * @todo Do we really need it?
- */
-class GeometricObject : Exporter
+namespace Threads
 {
-public:
-  using Exporter::Exporter;
-  virtual ~GeometricObject() = default;
-};
+
+  /**
+   * Do not allow variable access if mutex is not locked.
+   *
+   * @example In order to allow template deduction,
+   * you can use the constructor. The "this" pointer is passed
+   * ```
+   * class A
+   * {
+   *   // ...
+   *   // With default MyType constructor:
+   *   DataProxy<MyType> proxied_mytype = {this};
+   *   // With MyType(arg1, arg2):
+   *   DataProxy<MyType> proxied_mytype = {this, arg1, arg2};
+   * };
+   * ```
+   */
+  template<typename T, C_MutexHolder MutexHolder, MutexHolder* holder>
+  class DataProxy
+  {
+  public:
+    template<typename... Args>
+    DataProxy(MutexHolder*, Args... args);
+    template<typename... Args>
+    DataProxy(Args... args);
+
+    const T& read() const;
+    T& write() const;
+
+  private:
+    T data;
+  };
+
+}  // namespace Threads
+
+#include "LockPolicy_inl.h"
 
 #endif
-

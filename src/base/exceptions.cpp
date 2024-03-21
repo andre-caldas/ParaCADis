@@ -22,12 +22,14 @@
 
 #include "exceptions.h"
 
-namespace NamedScheme
+#include <format>
+
+namespace Exception
 {
 
   RunTimeError::RunTimeError(
-      str::string          str,
-      std::source_location location = std::source_location::current())
+      std::string          str,
+      std::source_location location)
       : std::runtime_error(str), location(location)
   {
   }
@@ -39,5 +41,4 @@ namespace NamedScheme
   {
   }
 
-}  // namespace NamedScheme
-
+}  // namespace Exception

@@ -78,7 +78,7 @@ namespace NamingScheme
      *
      * @todo REMOVE this T* = nullptr.
      */
-    virtual T* resolve_ptr(token_iterator& tokens, T* = nullptr);
+    virtual T* resolve_ptr(token_iterator& tokens);
 
     /**
      * @brief Implement, to return a @class SharedPtr to any object.
@@ -91,7 +91,7 @@ namespace NamingScheme
      *
      * @todo REMOVE this T* = nullptr.
      */
-    virtual SharedPtr<T> resolve_share(token_iterator& tokens, T* = nullptr);
+    virtual SharedPtr<T> resolve_share(token_iterator& tokens);
   };
 
 
@@ -158,7 +158,7 @@ namespace NamingScheme
   class SafeIExport : public IExport<T>
   {
   protected:
-    T* resolve_ptr(token_iterator& tokens, T* = nullptr) override;
+    T* resolve_ptr(token_iterator& tokens) override;
 
   private:
     const std::map<std::string, T DataStruct::*> map

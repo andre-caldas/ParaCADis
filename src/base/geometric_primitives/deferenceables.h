@@ -23,7 +23,6 @@
 #ifndef GeometricPrimitives_deferenceables
 #define GeometricPrimitives_deferenceables
 
-#include "GeometricObject.h"
 #include "types.h"
 
 #include <base/naming_scheme/Exporter.h>

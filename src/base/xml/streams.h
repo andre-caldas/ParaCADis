@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
+ *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,48 +20,20 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef Threads_YesItIsAMutex_H
-#define Threads_YesItIsAMutex_H
+#ifndef Xml_streams_H
+#define Xml_streams_H
 
-#include <condition_variable>
-#include <mutex>
-
-namespace Threads
+namespace Xml
 {
 
-  /**
-   * Like a shared_mutex. But it is not bound to a thread.
-   */
-  class YesItIsAMutex
+  class Reader
   {
-  public:
-    YesItIsAMutex()                               = default;
-    YesItIsAMutex(const YesItIsAMutex&)           = delete;
-    YesItIsAMutex operator=(const YesItIsAMutex&) = delete;
-
-    void lock();
-    bool try_lock();
-    void unlock();
-
-    void lock_shared();
-    bool try_lock_shared();
-    void unlock_shared();
-
-  private:
-    /*
-     * This should be implemented with two semaphores: one binary and one counter.
-     * But we are still in C++17 in FreeCAD.
-     */
-    std::mutex pivot;
-    int        shared_counter        = 0;
-    bool       is_exclusively_locked = false;
-    /**
-     * Locking consists of trying to lock and waiting for the condition to change.
-     */
-    std::condition_variable released;
-    std::mutex              released_condition_lock;
   };
 
-}  // namespace Threads
+  class Writer
+  {
+  };
+
+}  // namespace Xml
 
 #endif

@@ -2,7 +2,7 @@ project(
   'ParaCADis', 'cpp',
   version: '0.0.1',
   license: 'GPL3+',
-  default_options: ['cpp_std=c++23'],
+  default_options: ['cpp_std=c++26'],
 )
 
 subdir('src')

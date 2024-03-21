@@ -23,38 +23,37 @@
 #ifndef NamedScheme_Exception_H
 #define NamedScheme_Exception_H
 
+#include "types.h"
+
 #include <base/exceptions.h>
 #include <base/expected_behaviour/SharedPtr.h>
 
-namespace NamedScheme
+namespace NamingScheme::Exception
 {
+  using namespace ::Exception;
 
-  class ExceptionInvalidName : public Base::RunTimeError
+  class InvalidName : public RunTimeError
   {
   public:
-    ExceptionInvalidName(
+    InvalidName(
         std::string_view     name,
         std::source_location location = std::source_location::current());
   };
 
-#if 0
-  class ExceptionCannotResolve : public Base::RunTimeError
+  class CannotResolve : public RunTimeError
   {
   public:
-    ExceptionCannotResolve(
-        const shared_ptr<Exporter>&        parent_lock,
-        std::ranges::subrange<token_range> tokens,
+    CannotResolve(
+        SharedPtr<Exporter> parent_lock, const token_iterator& tokens,
         std::source_location location = std::source_location::current());
   };
+
+  class NoExport : public RunTimeError
+  {
+  public:
+    NoExport(std::source_location location = std::source_location::current());
+  };
+
+}  // namespace NamingScheme::Exception
+
 #endif
-
-  class ExceptionNoExport : public Base::RunTimeError
-  {
-  public:
-    ExceptionNoExport(
-        std::source_location location = std::source_location::current());
-  };
-
-}  // namespace NamedScheme
-
-#endif  // NamedScheme_Exception_H

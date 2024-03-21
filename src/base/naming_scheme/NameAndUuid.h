@@ -44,11 +44,10 @@ namespace NamingScheme
   {
   public:
     using uuid_type = boost::uuids::uuid;
-    const uuid_type uuid;
+    uuid_type uuid;
 
     Uuid();
     Uuid(int i);
-    Uuid(const Uuid&) = default;
     Uuid(std::string_view uuid_str);
     virtual ~Uuid() = default;
 
@@ -70,22 +69,23 @@ namespace NamingScheme
     std::string name;
 
   public:
-    NameOrUuid(const NameOrUuid&) = default;
-    NameOrUuid(NameOrUuid&&)      = default;
     NameOrUuid(auto uuid) : uuid(uuid) {}
     NameOrUuid(std::string name_or_uuid);
 
+    std::string toString() const;
     const std::string& getName() const { return name; }
     Uuid getUuid() const { return uuid; }
-    operator Uuid::uuid_type() const { return uuid; }
 
     bool isName() const { return !uuid.isValid(); }
     bool isUuid() const { return uuid.isValid(); }
+
+    operator Uuid::uuid_type() const { return uuid; }
+    operator std::string() const { return toString(); }
   };
 
 
   /**
-   * @brief Object held by things that have an UUID and possibly a name.
+   * Object held by things that have an UUID and possibly a name.
    */
   class NameAndUuid : private Uuid
   {
@@ -93,7 +93,22 @@ namespace NamingScheme
     std::string name;
 
   public:
-    using Uuid::Uuid;
+    /**
+     * Uuid must be unique. So we forbid copy.
+     */
+    /// @{
+    NameAndUuid(const NameAndUuid&)    = delete;
+    void operator=(const NameAndUuid&) = delete;
+    /// @}
+
+    /**
+     * On the other hand, we would like to be able to unserialize Uuid.
+     */
+    /// @{
+    NameAndUuid(const Uuid& uuid);
+    NameAndUuid(const Uuid& uuid, std::string name = {});
+    /// @}
+
     using Uuid::operator Uuid::uuid_type;
 
     /**
@@ -103,7 +118,7 @@ namespace NamingScheme
 
     /**
      * @brief If @a name_str is a valid name, set it.
-     * Otherwise, throws `ExceptionInvalidName()`.
+     * Otherwise, throws `Exception::InvalidName()`.
      */
     void setName(std::string name_str);
     void unsetName() { setName(""); }

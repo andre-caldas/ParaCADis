@@ -20,16 +20,26 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "GeometricObject.h"
+#ifndef Threads_PolicyProxy_inl_H
+#define Threads_PolicyProxy_inl_H
 
-#include <base/naming_scheme/NameAndUuid.h>
+#include "LockPolicy.h"
 
-template<typename T>
-T* GeometricObject::resolve_ptr(const token_iterator& tokens, T*) override
+namespace Threads
 {
-  if (tokens.front() == "native_object") {
-    tokens.advance(1);
-    return &obj;
-  }
-}
 
+  template<C_MutexHolder MutexHolder, typename T>
+  const T& DataProxy<MutexHolder, T>read() const {}
+  class DataProxy
+  {
+  public:
+    const T& read() const;
+    T& write() const;
+
+  private:
+    T data;
+  };
+
+}  // namespace Threads
+
+#endif

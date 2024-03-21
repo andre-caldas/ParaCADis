@@ -21,28 +21,27 @@
  ***************************************************************************/
 
 #include "exceptions.h"
-using namespace Base;
 
-namespace NamedScheme
+#include <format>
+
+namespace NamingScheme::Exception
 {
 
-  ExceptionInvalidName::ExceptionInvalidName(
-      std::string_view name, std::source_location location)
+  InvalidName::InvalidName(std::string_view name, std::source_location location)
       : RunTimeError(std::format("Name cannot look like a UUID ({}).", name), location)
   {
   }
 
-  ExceptionCannotResolve::ExceptionCannotResolve(
-      const shared_ptr<Exporter>& parent_lock,
-      std::ranges::subrange<token_range> tokens, std::source_location location)
+  CannotResolve::CannotResolve(
+      SharedPtr<Exporter> parent_lock,
+      const token_iterator& tokens, std::source_location location)
       : RunTimeError("Cannot resolve accessor reference.", location)
   {
   }
 
-  ExceptionNoExport::ExceptionNoExport(std::source_location location)
+  NoExport::NoExport(std::source_location location)
       : RunTimeError("Object does not export required type.", location)
   {
   }
 
-}  // namespace NamedScheme
-
+}  // namespace NamedScheme::Exception

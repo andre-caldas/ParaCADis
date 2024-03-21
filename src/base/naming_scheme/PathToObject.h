@@ -23,7 +23,10 @@
 #ifndef NamingScheme_PathToObject_H
 #define NamingScheme_PathToObject_H
 
+#include "NameAndUuid.h"
+
 #include <base/expected_behaviour/SharedPtr.h>
+#include <base/xml/streams.h>
 
 #include <deque>
 #include <initializer_list>
@@ -31,7 +34,6 @@
 namespace NamingScheme
 {
 
-  class NameOrUuid;
   class Exporter;
 
   /**
@@ -58,8 +60,8 @@ namespace NamingScheme
     ListOfPathTokens& operator<<(NameOrUuid extra_token);
     ListOfPathTokens& operator<<(ListOfPathTokens extra_tokens);
 
-    void                    serialize(Files::XmlWriter& writer) const;
-    static ListOfPathTokens unserialize(Files::XmlReader& reader);
+    void                    serialize(Xml::Writer& writer) const;
+    static ListOfPathTokens unserialize(Xml::Reader& reader);
   };
 
 
@@ -85,7 +87,7 @@ namespace NamingScheme
   protected:
     WeakPtr<Exporter> root_weak_ptr;  ///< Try first.
     Uuid              root_uuid;      ///< Try second.
-    std::string       document_url;   ///< Try this third. (not implemented)
+    std::string       root_url;       ///< Try this third. (not implemented)
 
   public:
     PathToObject(PathToObject&&)                 = default;
@@ -98,15 +100,15 @@ namespace NamingScheme
      * @example `PathToObject(root, {"geometries", "second_line"});`
      */
     /// @{
-    PathToObject(SharedPtr<Exporter> root, ListOfPathTokens tokens = {});
+    PathToObject(const SharedPtr<Exporter>& root, ListOfPathTokens tokens = {});
     PathToObject(Uuid root_uuid, ListOfPathTokens tokens = {});
     PathToObject(std::string root_url, ListOfPathTokens tokens = {});
     /// @}
 
     virtual ~PathToObject() = default;
 
-    void                serialize(Files::XmlWriter& writer) const;
-    static PathToObject unserialize(Files::XmlReader& reader);
+    void                serialize(Xml::Writer& writer) const;
+    static PathToObject unserialize(Xml::Reader& reader);
 
     PathToObject operator+(NameOrUuid extra_token) const;
     PathToObject operator+(ListOfPathTokens extra_tokens) const;

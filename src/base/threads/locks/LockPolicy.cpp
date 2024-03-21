@@ -25,6 +25,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <numeric>
 #include <stack>
 #include <unordered_set>
 
@@ -71,7 +72,7 @@ namespace Threads
   {
     if (has_ignored_mutexes) {
       assert(false);
-      throw ExceptionNewThreadRequiresReleaseableLock{};
+      throw Exception::NewThreadRequiresReleaseableLock{};
     }
     assert(!mutexes.empty());
 
@@ -81,7 +82,7 @@ namespace Threads
     for (auto mutex: mutexes) {
       if (!layer.contains(mutex)) {
         assert(false);
-        throw ExceptionNewThreadRequiresReleaseableLock{};
+        throw Exception::NewThreadRequiresReleaseableLock{};
       }
     }
 
@@ -100,18 +101,18 @@ namespace Threads
 
   int LockPolicy::minLayerNumber() const
   {
-    auto red = [](m) { return m.layer; };
     return std::transform_reduce(
-        mutexes.cbegin(), mutexes.cend(), std::numeric_limits<int>::max(), red,
-        std::min<>());
+        mutexes.cbegin(), mutexes.cend(), std::numeric_limits<int>::max(),
+        [](int a, int b){return std::min(a,b);},
+        [](const MutexData* m) { return m->layer; });
   }
 
   int LockPolicy::maxLayerNumber() const
   {
-    auto red = [](m) { return m.layer; };
     return std::transform_reduce(
-        mutexes.cbegin(), mutexes.cend(), std::numeric_limits<int>::min(), red,
-        std::max<>());
+        mutexes.cbegin(), mutexes.cend(), std::numeric_limits<int>::min(),
+        [](int a, int b){return std::max(a,b);},
+        [](const MutexData* m) { return m->layer; });
   }
 
   const std::unordered_set<const MutexData*>& LockPolicy::getMutexes() const
@@ -157,9 +158,9 @@ namespace Threads
     assert(!has_ignored_mutexes);
     if (!is_detached) {
       assert(false);
-      throw ExceptionNewThreadRequiresMovedLock{};
+      throw Exception::NewThreadRequiresMovedLock{};
     }
-    _processLock(is_exclusive, false);
+    _processLock(is_exclusive);
     assert(
         mutexes.size() == threadExclusiveMutexes.size()
         || mutexes.size() == threadNonExclusiveMutexes.size());
@@ -233,7 +234,7 @@ namespace Threads
     for (auto mutex: mutexes) {
       if (threadNonExclusiveMutexes.contains(mutex)) {
         // We cannot exclusively lock if it is already shared.
-        throw ExceptionNoExclusiveOverNonExclusive();
+        throw Exception::NoExclusiveOverNonExclusive();
       }
     }
 
@@ -241,10 +242,11 @@ namespace Threads
     int min = minLayerNumber();
     assert(!layerNumber.empty());
     if (min <= layerNumber.top()) {
-      throw ExceptionAlreadyHasLayer(min);
+      throw Exception::AlreadyHasLayer{min};
     }
 
-    threadExclusiveMutexes.insert_range(mutexes);
+    /// @todo search those inserts and substitute for insert_range().
+    threadExclusiveMutexes.insert(mutexes.cbegin(), mutexes.cend());
     threadMutexLayers.push(mutexes);
     isLayerExclusive.push(true);
     layerNumber.push(maxLayerNumber());
@@ -285,10 +287,10 @@ namespace Threads
       int min = minLayerNumber();
       assert(!layerNumber.empty());
       if (min < layerNumber.top()) {
-        throw ExceptionAlreadyHasBiggerLayer(min);
+        throw Exception::AlreadyHasBiggerLayer(min);
       }
       if (min == layerNumber.top() && isLayerExclusive.top()) {
-        throw ExceptionNoLocksAfterExclusiveLock();
+        throw Exception::NoLocksAfterExclusiveLock();
       }
       threadMutexLayers.emplace();
       isLayerExclusive.push(false);
@@ -297,8 +299,8 @@ namespace Threads
       assert(isLayerExclusive.size() == layerNumber.size());
     }
 
-    threadMutexLayers.top().insert_range(mutexes);
-    threadNonExclusiveMutexes.insert_range(mutexes);
+    threadMutexLayers.top().insert(mutexes.cbegin(), mutexes.cend());
+    threadNonExclusiveMutexes.insert(mutexes.cbegin(), mutexes.cend());
   }
 
   LockPolicy::~LockPolicy()
@@ -314,11 +316,6 @@ namespace Threads
       assert(getMutexes().contains(&mutex));
       lock = std::shared_lock(mutex.mutex);
     }
-  }
-
-  SharedLock::SharedLock(MutexData& mutex)
-      : SharedLock(true, mutex)
-  {
   }
 
 }  // namespace Threads

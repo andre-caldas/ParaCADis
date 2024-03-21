@@ -45,7 +45,7 @@ typename ReferenceTo<X>::locked_resource ReferenceTo<X>::
         X* ptr = dynamic_cast<X*>(lock.last_object.get());
         if(!ptr)
         {
-            FC_THROWM(ExceptionCannotResolve, "Last object is not a reference the requested type.");
+            FC_THROWM(Exception::CannotResolve, "Last object is not a reference the requested type.");
         }
         return locked_resource{std::move(lock.last_object), ptr};
     }
@@ -53,18 +53,18 @@ typename ReferenceTo<X>::locked_resource ReferenceTo<X>::
     IExport<X>* ref_obj = dynamic_cast<IExport<X>*>(lock.last_object.get());
     if(!ref_obj)
     {
-        FC_THROWM(ExceptionCannotResolve, "Last object does not reference the requested type.");
+        FC_THROWM(Exception::CannotResolve, "Last object does not reference the requested type.");
     }
 
     locked_resource shared_resource = ref_obj->resolve(lock.last_object, lock.remaining_tokens_start, lock.remaining_tokens_end);
     if(!shared_resource)
     {
-        FC_THROWM(ExceptionCannotResolve, "Object does not recognize key: '" << pathString() << "'.");
+        FC_THROWM(Exception::CannotResolve, "Object does not recognize key: '" << pathString() << "'.");
     }
 
     if(lock.remaining_tokens_start != lock.remaining_tokens_end)
     {
-        FC_THROWM(ExceptionCannotResolve, "Did not use all keys when resolving object. Remaining keys: '" << pathString(lock.remaining_tokens_start, lock.remaining_tokens_end) << "'.");
+        FC_THROWM(Exception::CannotResolve, "Did not use all keys when resolving object. Remaining keys: '" << pathString(lock.remaining_tokens_start, lock.remaining_tokens_end) << "'.");
     }
 
     return shared_resource;

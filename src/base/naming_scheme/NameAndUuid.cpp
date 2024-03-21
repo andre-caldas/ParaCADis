@@ -90,10 +90,28 @@ namespace NamingScheme
     }
   }
 
+  std::string NameOrUuid::toString() const
+  {
+    if (isName()) { return name; }
+    return uuid;
+  }
+
+
   /*
    * NameAnduuid
    * ===========
    */
+
+  NameAndUuid::NameAndUuid(const Uuid& uuid)
+      : Uuid(uuid)
+  {
+  }
+
+  NameAndUuid::NameAndUuid(const Uuid& uuid, std::string name)
+      : Uuid(uuid)
+      , name(std::move(name))
+  {
+  }
 
   bool NameAndUuid::isValidName(std::string_view name_str)
   {
@@ -108,22 +126,23 @@ namespace NamingScheme
   {
     assert(isValid());  // We have a valid uuid.
     if (!isValidName(name_str)) {
-      throw ExceptionInvalidName(std::move(name_str));
+      throw Exception::InvalidName(std::move(name_str));
     }
     name = std::move(name_str);
   }
 
-  bool NameAndUuid::pointsToMe(NameOrUuid& name_or_uuid) const
+  bool NameAndUuid::pointsToMe(const NameOrUuid& name_or_uuid) const
   {
     if (name_or_uuid.isUuid()) {
-      return (uuid == name_or_uuid.uuid);
+      return (uuid == name_or_uuid);
     }
-    return !name.empty() && (name == name_or_uuid.name);
+    return !name.empty() && (name == name_or_uuid.getName());
   }
 
   std::string NameAndUuid::toString() const
   {
-    return name.empty() ? to_string(uuid) : name;
+    if(hasName()) return name;
+    return Uuid::toString();
   }
 
 }  // namespace NamingScheme

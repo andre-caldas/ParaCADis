@@ -57,7 +57,7 @@ namespace NamingScheme
 
     auto ptr = resolve_ptr(token_list);
     if (ptr) { return std::shared_ptr(current_lock, ptr); }
-    throw ExceptionNoExport();
+    throw Exception::NoExport();
   }
 
   template<typename T>

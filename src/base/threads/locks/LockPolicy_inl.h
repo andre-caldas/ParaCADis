@@ -116,7 +116,7 @@ namespace Threads
       SomeHolder& whichHolder) const
   {
     if (!isLockedExclusively(whichHolder.getMutexData())) {
-      throw ExceptionNeedLockToAccessContainer();
+      throw Exception::NeedLockToAccessContainer();
     }
     // TODO: check if we actually hold this "whichHolder" before handling a gate.
     auto& gate = whichHolder.getWriterGate(this);
@@ -128,7 +128,7 @@ namespace Threads
   auto ExclusiveLockGate<FirstHolder, MutexHolder...>::operator->() const
   {
     if (!isLockedExclusively(firstHolder.getMutexData())) {
-      throw ExceptionNeedLockToAccessContainer();
+      throw Exception::NeedLockToAccessContainer();
     }
     auto& gate = firstHolder.getWriterGate(this);
     return &*gate;

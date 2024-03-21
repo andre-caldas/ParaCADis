@@ -19,3 +19,5 @@ expected_behaviour_lib = shared_library(
   include_directories: inc,
   implicit_include_directories: false,
 )
+
+libs_upto_now += [expected_behaviour_lib]

@@ -54,19 +54,23 @@ namespace NamingScheme
 
   ListOfPathTokens& ListOfPathTokens::operator<<(ListOfPathTokens extra_tokens)
   {
-    tokens.append_range(std::move(extra_tokens.tokens));
+    // TODO: change to "append_range" when available.
+//    tokens.append_range(std::move(extra_tokens.tokens));
+    auto end = std::make_move_iterator(extra_tokens.tokens.end());
+    auto begin = std::make_move_iterator(extra_tokens.tokens.begin());
+    tokens.emplace_back(begin, end);
     return *this;
   }
 
 
-  void ListOfPathTokens::serialize(Files::XmlWriter& writer) const
+  void ListOfPathTokens::serialize(Xml::Writer&) const
   {
-    throw NotImplemented();
+    throw Exception::NotImplemented();
   }
 
-  ListOfPathTokens ListOfPathTokens::unserialize(Files::XmlReader& reader)
+  ListOfPathTokens ListOfPathTokens::unserialize(Xml::Reader&)
   {
-    throw NotImplemented();
+    throw Exception::NotImplemented();
   }
 
   /*
@@ -74,24 +78,29 @@ namespace NamingScheme
    * ============
    */
 
-  PathToObject::PathToObject(const Uuid& uuid, ListOfPathTokens tokens)
-      : root_uuid(uuid), tokens(std::move(tokens))
+  PathToObject::PathToObject(Uuid root_uuid, ListOfPathTokens tokens)
+      : ListOfPathTokens(std::move(tokens))
+      , root_uuid(std::move(root_uuid))
   {
   }
 
-  PathToObject::PathToObject(SharedPtr<Exporter> root, ListOfPathTokens tokens)
-      : root_weak_ptr(root), root_uuid(root->getUuid()), tokens(std::move(tokens))
+  PathToObject::PathToObject(const SharedPtr<Exporter>& root, ListOfPathTokens tokens)
+      : ListOfPathTokens(std::move(tokens))
+      , root_weak_ptr(root.getWeakPtr())
+      , root_uuid(root->getUuid())
   {
+  }
+
+  PathToObject::PathToObject(std::string root_url, ListOfPathTokens tokens)
+      : ListOfPathTokens(std::move(tokens))
+      , root_url(root_url)
+  {
+    throw Exception::NotImplemented();
   }
 
   PathToObject PathToObject::operator+(NameOrUuid extra_token) const
   {
-    ListOfPathTokens path(*this);
-    path << std::move(extra_token);
-    PathToObject result(root_uuid, std::move(path));
-    result.root_weak_ptr = root_weak_ptr;
-    result.url           = url;
-    return result;
+    return *this + ListOfPathTokens({extra_token});
   }
 
   PathToObject PathToObject::operator+(ListOfPathTokens extra_tokens) const
@@ -100,12 +109,12 @@ namespace NamingScheme
     path << std::move(extra_tokens);
     PathToObject result(root_uuid, std::move(path));
     result.root_weak_ptr = root_weak_ptr;
-    result.url           = url;
+    result.root_url      = root_url;
     return result;
   }
 
 
-  void PathToObject::serialize(Files::XmlWriter& writer) const
+  void PathToObject::serialize(Xml::Writer& writer) const
   {
     auto sentinel = writer.newTag("PathToObject");
     try {
@@ -113,16 +122,16 @@ namespace NamingScheme
       for (const auto& token: tokens) {
         token.serialize(writer);
       }
-    } catch (Files::XmlWriter::SerializeError s) {
+    } catch (Xml::Writer::SerializeError s) {
       writer.reportError(s);
     }
   }
 
-  PathToObject PathToObject::unserialize(Files::XmlReader& reader)
+  PathToObject PathToObject::unserialize(Xml::Reader& reader)
   {
     auto sentinel = reader.readOpenElement("PathToObject");
-    auto root_uuid = Uuid::unserialize();
-    auto list_of_tags = ListOfPathTokens::unserialize();
+    auto root_uuid = Uuid::unserialize(reader);
+    auto list_of_tags = ListOfPathTokens::unserialize(reader);
     return PathToObject(std::move(root_uuid), std::move(list_of_tags));
   }
 

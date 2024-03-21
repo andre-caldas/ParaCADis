@@ -20,171 +20,162 @@
  *                                                                          *
  ***************************************************************************/
 
+#include "WriterLock.h"
+#include "exceptions.h"
+
 #include <memory>
 #include <utility>
-
-#include "exceptions.h"
-#include "WriterLock.h"
 
 namespace Threads
 {
 
-template<typename MutexHolder>
-WriterLock<MutexHolder>::WriterLock(MutexHolder& mutex_holder, bool try_to_resume)
-    : exclusiveLock(std::make_unique<ExclusiveLock<MutexHolder>>(mutex_holder))
-    , mutexHolder(mutex_holder)
-    , gate(mutex_holder.getWriterGate(exclusiveLock.get()))
-{
+  template<typename MutexHolder>
+  WriterLock<MutexHolder>::WriterLock(MutexHolder& mutex_holder, bool try_to_resume)
+      : exclusiveLock(std::make_unique<ExclusiveLock<MutexHolder>>(mutex_holder))
+      , mutexHolder(mutex_holder)
+      , gate(mutex_holder.getWriterGate(exclusiveLock.get()))
+  {
     assert(!sharedLock && exclusiveLock);
 
     if (try_to_resume) {
-        if (isThreadObsolete()) {
-            release();
-        }
+      if (isThreadObsolete()) { release(); }
+    } else {
+      markStart();
     }
-    else {
-        markStart();
-    }
-}
+  }
 
-template<typename MutexHolder>
-WriterLock<MutexHolder>::WriterLock(WriterLock<MutexHolder>&& other)
-    : exclusiveLock(std::move(other.exclusiveLock))
-    , sharedLock(std::move(other.sharedLock))
-    , mutexHolder(other.mutexHolder)
-    , gate(other.gate)
-{
+  template<typename MutexHolder>
+  WriterLock<MutexHolder>::WriterLock(WriterLock<MutexHolder>&& other)
+      : exclusiveLock(std::move(other.exclusiveLock))
+      , sharedLock(std::move(other.sharedLock))
+      , mutexHolder(other.mutexHolder)
+      , gate(other.gate)
+  {
     // Makes sure it is locked.
     assert(exclusiveLock);
     // Makes sure it was moved from thread: moveFromThread().
-    assert(mutexHolder.activeThread == std::thread::id {});
-}
+    assert(mutexHolder.activeThread == std::thread::id{});
+  }
 
 
-template<typename MutexHolder>
-bool WriterLock<MutexHolder>::isThreadObsolete() const
-{
+  template<typename MutexHolder>
+  bool WriterLock<MutexHolder>::isThreadObsolete() const
+  {
     return mutexHolder.activeThread != std::this_thread::get_id();
-}
+  }
 
-template<typename MutexHolder>
-void WriterLock<MutexHolder, nullptr>::release()
-{
-    if (!sharedLock && !exclusiveLock) {
-        throw ExceptionCannotReleaseUnlocked {};
-    }
+  template<typename MutexHolder>
+  void WriterLock<MutexHolder, nullptr>::release()
+  {
+    if (!sharedLock && !exclusiveLock) { throw Exception::CannotReleaseUnlocked{}; }
     assert(!sharedLock || !exclusiveLock);
     assert(sharedLock || exclusiveLock);
     exclusiveLock.reset();
     sharedLock.reset();
-}
+  }
 
-template<typename MutexHolder>
-bool WriterLock<MutexHolder>::resume()
-{
+  template<typename MutexHolder>
+  bool WriterLock<MutexHolder>::resume()
+  {
     assert(!sharedLock && !exclusiveLock);
     exclusiveLock = std::make_unique<ExclusiveLock<MutexHolder>>(mutexHolder);
     if (isThreadObsolete()) {
-        release();
-        return false;
+      release();
+      return false;
     }
     return true;
-}
+  }
 
-template<typename MutexHolder>
-bool WriterLock<MutexHolder>::resumeReading()
-{
+  template<typename MutexHolder>
+  bool WriterLock<MutexHolder>::resumeReading()
+  {
     assert(!sharedLock && !exclusiveLock);
     sharedLock = std::make_unique<SharedLock>(*mutexHolder.getMutexData());
     if (isThreadObsolete()) {
-        release();
-        return false;
+      release();
+      return false;
     }
     return true;
-}
+  }
 
-template<typename MutexHolder>
-auto& WriterLock<MutexHolder>::operator->() const
-{
+  template<typename MutexHolder>
+  auto& WriterLock<MutexHolder>::operator->() const
+  {
     assert(!exclusiveLock || !sharedLock);
     assert(exclusiveLock || sharedLock);
-    if (!exclusiveLock && !sharedLock) {
-        throw ExceptionNeedLock {};
-    }
+    if (!exclusiveLock && !sharedLock) { throw Exception::NeedLock{}; }
     // TODO: somehow, use reader_gate for sharedLock.
     return gate;
-}
+  }
 
-template<typename MutexHolder>
-WriterLock<MutexHolder>::operator bool() const
-{
+  template<typename MutexHolder>
+  WriterLock<MutexHolder>::operator bool() const
+  {
     return !isThreadObsolete();
-}
+  }
 
-template<typename MutexHolder>
-template<class Function, class... Args>
-void WriterLock<MutexHolder>::startNewThread(Function&& f, Args&&... args) &&
-{
+  template<typename MutexHolder>
+  template<class Function, class... Args>
+  void WriterLock<MutexHolder>::startNewThread(Function&& f, Args&&... args) &&
+  {
     if (mutexHolder.dedicatedThread.joinable()) {
-        assert(false);
-        throw ExceptionNoNestedThreads {};
+      assert(false);
+      throw Exception::NoNestedThreads{};
     }
 
     // Hold the lock while we set mutexHolder.dedicatedThread.
-    auto hold = moveFromThread();
-    mutexHolder.dedicatedThread =
-        std::thread {std::forward<Function>(f), std::move(*this), std::forward<Args>(args)...};
-}
+    auto hold                   = moveFromThread();
+    mutexHolder.dedicatedThread = std::thread{
+        std::forward<Function>(f), std::move(*this), std::forward<Args>(args)...};
+  }
 
 
-template<typename MutexHolder>
-void WriterLock<MutexHolder>::markStart()
-{
-    ExclusiveLock l {mutexHolder};
+  template<typename MutexHolder>
+  void WriterLock<MutexHolder>::markStart()
+  {
+    ExclusiveLock l{mutexHolder};
     mutexHolder.activeThread = std::this_thread::get_id();
-    if (mutexHolder.dedicatedThread.joinable()) {
-        mutexHolder.dedicatedThread.detach();
-    }
-}
+    if (mutexHolder.dedicatedThread.joinable()) { mutexHolder.dedicatedThread.detach(); }
+  }
 
-template<typename MutexHolder>
-auto WriterLock<MutexHolder>::moveFromThread()
-{
+  template<typename MutexHolder>
+  auto WriterLock<MutexHolder>::moveFromThread()
+  {
     if (!exclusiveLock) {
-        assert(false);
-        throw ExceptionNewThreadRequiresLock {};
+      assert(false);
+      throw Exception::NewThreadRequiresLock{};
     }
     assert(!sharedLock);
 
     // Prevent this thread from hijacking back the lock.
     // Makes bool(lock) evaluate to false;
-    mutexHolder.activeThread = std::thread::id {};
+    mutexHolder.activeThread = std::thread::id{};
     return exclusiveLock->detachFromThread();
-}
+  }
 
-template<typename MutexHolder>
-void WriterLock<MutexHolder>::resumeInNewThread()
-{
+  template<typename MutexHolder>
+  void WriterLock<MutexHolder>::resumeInNewThread()
+  {
     if (!exclusiveLock) {
-        assert(false);
-        throw ExceptionNewThreadRequiresLock {};
+      assert(false);
+      throw Exception::NewThreadRequiresLock{};
     }
 
-    if (std::thread::id {} != mutexHolder.activeThread) {
-        assert(false);
-        throw ExceptionNewThreadRequiresMovedLock {};
+    if (std::thread::id{} != mutexHolder.activeThread) {
+      assert(false);
+      throw Exception::NewThreadRequiresMovedLock{};
     }
 
     // Prevent this thread from hijacking (continueWriting) it back.
     mutexHolder.activeThread = std::this_thread::get_id();
     exclusiveLock->attachToThread(true);
-}
+  }
 
-template<typename MutexHolder>
-void WriterLock<MutexHolder>::releaseInNewThread()
-{
+  template<typename MutexHolder>
+  void WriterLock<MutexHolder>::releaseInNewThread()
+  {
     resumeInNewThread();
     release();
-}
+  }
 
-}
+}  // namespace Threads

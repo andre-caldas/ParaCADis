@@ -1,23 +1,22 @@
-// SPDX-License-Identifier: LGPL-2.1-or-later
+// SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
  *                                                                          *
- *   This file is part of FreeCAD.                                          *
+ *   This file is part of ParaCADis.                                        *
  *                                                                          *
- *   FreeCAD is free software: you can redistribute it and/or modify it     *
- *   under the terms of the GNU Lesser General Public License as            *
- *   published by the Free Software Foundation, either version 2.1 of the   *
- *   License, or (at your option) any later version.                        *
+ *   ParaCADis is free software: you can redistribute it and/or modify it   *
+ *   under the terms of the GNU General Public License as published         *
+ *   by the Free Software Foundation, either version 2.1 of the License,    *
+ *   or (at your option) any later version.                                 *
  *                                                                          *
- *   FreeCAD is distributed in the hope that it will be useful, but         *
+ *   ParaCADis is distributed in the hope that it will be useful, but       *
  *   WITHOUT ANY WARRANTY; without even the implied warranty of             *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU       *
- *   Lesser General Public License for more details.                        *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                   *
+ *   See the GNU General Public License for more details.                   *
  *                                                                          *
- *   You should have received a copy of the GNU Lesser General Public       *
- *   License along with FreeCAD. If not, see                                *
- *   <https://www.gnu.org/licenses/>.                                       *
+ *   You should have received a copy of the GNU General Public License      *
+ *   along with ParaCADis. If not, see <https://www.gnu.org/licenses/>.     *
  *                                                                          *
  ***************************************************************************/
 
@@ -26,118 +25,89 @@
 
 #include <base/exceptions.h>
 
-namespace Threads
+namespace Threads::Exception
 {
 
-  class ExceptionNeedLock : public Base::RunTimeError
+  using namespace ::Exception;
+
+  class NeedLock : public RunTimeError
   {
   public:
-    ExceptionNeedLock()
-        : Base::RunTimeError("Cannot access unlocked data.")
-    {
-    }
+    NeedLock();
   };
 
-  class ExceptionNoExclusiveOverNonExclusive : public Base::RunTimeError
+  class NoExclusiveOverNonExclusive : public RunTimeError
   {
   public:
-    ExceptionNoExclusiveOverNonExclusive()
-        : Base::RunTimeError(
-              "Cannot lock exclusively a mutex that is already non-exclusive.")
-    {
-    }
+    NoExclusiveOverNonExclusive();
   };
 
-  class ExceptionExclusiveParentNotLocked : public Base::RunTimeError
+  class ExclusiveParentNotLocked : public RunTimeError
   {
   public:
-    ExceptionExclusiveParentNotLocked()
-        : Base::RunTimeError(
-              "An exclusive lock cannot come after non-chainable locks.")
-    {
-    }
+    ExclusiveParentNotLocked();
   };
 
-  class ExceptionNoLocksAfterExclusiveLock : public Base::RunTimeError
+  class NoLocksAfterExclusiveLock : public RunTimeError
   {
   public:
-    ExceptionNoLocksAfterExclusiveLock()
-        : Base::RunTimeError(
-              "After an exclusive lock there can be no other locks.")
-    {
-    }
+    NoLocksAfterExclusiveLock();
   };
 
-  class ExceptionNoLocksAfterLockFree : public Base::RunTimeError
+  class NoLocksAfterLockFree : public RunTimeError
   {
   public:
-    ExceptionNoLocksAfterLockFree()
-        : Base::RunTimeError(
-              "You cannot lock anything while holding a 'lock free' lock.")
-    {
-    }
+    NoLocksAfterLockFree();
   };
 
-  class ExceptionNeedLockToAccessContainer : public Base::RunTimeError
+  class NeedLockToAccessContainer : public RunTimeError
   {
   public:
-    ExceptionNeedLockToAccessContainer()
-        : Base::RunTimeError("You do not have a lock for the container you are "
-                          "trying to access.")
-    {
-    }
+    NeedLockToAccessContainer();
   };
 
-  class ExceptionCannotReleaseUnlocked : public Base::RunTimeError
+  class CannotReleaseUnlocked : public RunTimeError
   {
   public:
-    ExceptionCannotReleaseUnlocked()
-        : Base::RunTimeError("Cannot release lock that is not locked.")
-    {
-    }
+    CannotReleaseUnlocked();
   };
 
-  class ExceptionNewThreadRequiresLock : public Base::RunTimeError
+  class NewThreadRequiresLock : public RunTimeError
   {
   public:
-    ExceptionNewThreadRequiresLock()
-        : Base::RunTimeError(
-              "To transfer a lock to a new thread, it has to be locked.")
-    {
-    }
+    NewThreadRequiresLock();
   };
 
-  class ExceptionNewThreadRequiresReleaseableLock : public Base::RunTimeError
+  class NewThreadRequiresReleaseableLock : public RunTimeError
   {
   public:
-    ExceptionNewThreadRequiresReleaseableLock()
-        : Base::RunTimeError(
-              "Cannot move lock: thread remains locked even after release().")
-    {
-    }
+    NewThreadRequiresReleaseableLock();
   };
 
-  class ExceptionNewThreadRequiresMovedLock : public Base::RunTimeError
+  class NewThreadRequiresMovedLock : public RunTimeError
   {
   public:
-    ExceptionNewThreadRequiresMovedLock()
-        : Base::RunTimeError(
-              "To be transfered to a new thread, "
-              "you need to call moveFromThread() in the original thread.")
-    {
-    }
+    NewThreadRequiresMovedLock();
   };
 
-  class ExceptionNoNestedThreads : public Base::RunTimeError
+  class NoNestedThreads : public RunTimeError
   {
   public:
-    ExceptionNoNestedThreads()
-        : Base::RunTimeError(
-              "Threads to process the same locked resource cannot be nested.")
-    {
-    }
+    NoNestedThreads();
   };
 
-}  // namespace Threads
+  class AlreadyHasLayer : public RunTimeError
+  {
+  public:
+    AlreadyHasLayer(int layer);
+  };
 
-#endif  // BASE_Threads_Exception_H
+  class AlreadyHasBiggerLayer : public RunTimeError
+  {
+  public:
+    AlreadyHasBiggerLayer(int layer);
+  };
+
+}  // namespace Threads::Exception
+
+#endif

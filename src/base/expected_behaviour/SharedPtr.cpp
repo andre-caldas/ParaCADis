@@ -25,5 +25,4 @@
 
 #include <base/naming_scheme/Exporter.h>
 
-template class SharedPtr<naming_scheme::Exporter>;
-
+template class SharedPtr<NamingScheme::Exporter>;

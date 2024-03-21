@@ -33,6 +33,13 @@ ThreadSafeStruct<Struct>::ThreadSafeStruct(Args&&... args)
 {}
 
 template<typename Struct>
+template<C_MutexHolder MutexHolder, typename... Args>
+ThreadSafeStruct<Struct>::ThreadSafeStruct(MutexHolder& holder, Args&&... args)
+    : mutex(holder.getMutexData())
+    , theStruct(args...)
+{}
+
+template<typename Struct>
 ThreadSafeStruct<Struct>::~ThreadSafeStruct()
 {
     /*

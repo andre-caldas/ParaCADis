@@ -20,71 +20,61 @@
  *                                                                          *
  ***************************************************************************/
 
+#include "YesItIsAMutex.h"
+
 #include <cassert>
 #include <functional>
 
-#include "YesItIsAMutex.h"
-
-namespace Base::Threads
+namespace Threads
 {
 
-void YesItIsAMutex::lock()
-{
-    if (try_lock()) {
-        return;
-    }
-    std::unique_lock lock {released_condition_lock};
+  void YesItIsAMutex::lock()
+  {
+    if (try_lock()) { return; }
+    std::unique_lock lock{released_condition_lock};
     released.wait(lock, std::bind(&YesItIsAMutex::try_lock, this));
-}
+  }
 
-bool YesItIsAMutex::try_lock()
-{
-    [[maybe_unused]] std::lock_guard lock {pivot};
-    if (shared_counter > 0 || is_exclusively_locked) {
-        return false;
-    }
+  bool YesItIsAMutex::try_lock()
+  {
+    [[maybe_unused]] std::lock_guard lock{pivot};
+    if (shared_counter > 0 || is_exclusively_locked) { return false; }
     is_exclusively_locked = true;
     return true;
-}
+  }
 
-void YesItIsAMutex::unlock()
-{
+  void YesItIsAMutex::unlock()
+  {
     {
-        [[maybe_unused]] std::lock_guard lock {pivot};
-        assert(is_exclusively_locked);
-        is_exclusively_locked = false;
+      [[maybe_unused]] std::lock_guard lock{pivot};
+      assert(is_exclusively_locked);
+      is_exclusively_locked = false;
     }
     released.notify_one();
-}
+  }
 
 
-void YesItIsAMutex::lock_shared()
-{
-    if (try_lock_shared()) {
-        return;
-    }
-    std::unique_lock lock {released_condition_lock};
+  void YesItIsAMutex::lock_shared()
+  {
+    if (try_lock_shared()) { return; }
+    std::unique_lock lock{released_condition_lock};
     released.wait(lock, std::bind(&YesItIsAMutex::try_lock_shared, this));
-}
+  }
 
-bool YesItIsAMutex::try_lock_shared()
-{
-    [[maybe_unused]] std::lock_guard lock {pivot};
-    if (is_exclusively_locked) {
-        return false;
-    }
+  bool YesItIsAMutex::try_lock_shared()
+  {
+    [[maybe_unused]] std::lock_guard lock{pivot};
+    if (is_exclusively_locked) { return false; }
     ++shared_counter;
     return true;
-}
+  }
 
-void YesItIsAMutex::unlock_shared()
-{
-    [[maybe_unused]] std::lock_guard lock {pivot};
+  void YesItIsAMutex::unlock_shared()
+  {
+    [[maybe_unused]] std::lock_guard lock{pivot};
     assert(shared_counter > 0);
     --shared_counter;
-    if (shared_counter <= 0) {
-        released.notify_one();
-    }
-}
+    if (shared_counter <= 0) { released.notify_one(); }
+  }
 
-}  // namespace Base::Threads
+}  // namespace Threads

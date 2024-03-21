@@ -46,17 +46,24 @@ SharedPtr<T>::SharedPtr(std::shared_ptr<T>&& shared)
 }
 
 template<typename T>
-constexpr T* SharedPtr<T>::operator->()
+T* SharedPtr<T>::operator->() const
 {
   if (!*this) { throw std::bad_optional_access{}; }
   return std::shared_ptr<T>::operator->();
 }
 
 template<typename T>
-constexpr T& SharedPtr<T>::operator*() &
+T& SharedPtr<T>::operator*() const
 {
   if (!*this) { throw std::bad_optional_access{}; }
   return std::shared_ptr<T>::operator*();
+}
+
+template<typename T>
+WeakPtr<T> SharedPtr<T>::getWeakPtr() const
+{
+  if (!*this) { throw std::bad_optional_access{}; }
+  return WeakPtr<T>(static_cast<const std::shared_ptr<T>*>(*this));
 }
 
 template<typename T>
@@ -64,6 +71,13 @@ SharedPtr<T>::operator std::shared_ptr<T>() const
 {
   if (!*this) { throw std::bad_optional_access{}; }
   return std::shared_ptr<T>(*this);
+}
+
+template<typename T>
+SharedPtr<T>::operator const std::shared_ptr<T>&() const
+{
+  if (!*this) { throw std::bad_optional_access{}; }
+  return *this;
 }
 
 #endif  // ExpectedBehaviour_SharedPtr_impl_H

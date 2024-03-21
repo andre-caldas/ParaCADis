@@ -24,6 +24,8 @@
 #ifndef NamingScheme_Types_H
 #define NamingScheme_Types_H
 
+#include "NameAndUuid.h"
+
 #include <base/expected_behaviour/SharedPtr.h>
 
 #include <concepts>
@@ -36,7 +38,6 @@ class WeakPtr;
 namespace NamingScheme
 {
 
-  class NameOrUuid;
   class Exporter;
 
   using token_item         = NameOrUuid;

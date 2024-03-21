@@ -47,18 +47,18 @@ AlignTrailingComments:
   Kind:            Always
   OverEmptyLines:  0
 AllowAllArgumentsOnNextLine: true
-AllowAllParametersOfDeclarationOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: false
 AllowBreakBeforeNoexceptSpecifier: OnlyWithParen
-AllowShortBlocksOnASingleLine: Empty
+AllowShortBlocksOnASingleLine: Always
 AllowShortCaseLabelsOnASingleLine: false
 AllowShortCompoundRequirementOnASingleLine: true
 AllowShortEnumsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: InlineOnly
-AllowShortIfStatementsOnASingleLine: Never
+AllowShortIfStatementsOnASingleLine: Always
 AllowShortLambdasOnASingleLine: All
-AllowShortLoopsOnASingleLine: false
+AllowShortLoopsOnASingleLine: true
+
 BreakAfterReturnType: ExceptShortType
-AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: false
 AlwaysBreakTemplateDeclarations: Yes
 AttributeMacros:
@@ -97,7 +97,7 @@ BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: BeforeComma
 BreakInheritanceList: BeforeComma
 BreakStringLiterals: true
-ColumnLimit:     80
+ColumnLimit:     90
 CommentPragmas:  '^ IWYU pragma:'
 CompactNamespaces: false
 ConstructorInitializerIndentWidth: 4
@@ -165,7 +165,7 @@ ObjCBlockIndentWidth: 2
 ObjCBreakBeforeNestedBlockParam: true
 ObjCSpaceAfterProperty: false
 ObjCSpaceBeforeProtocolList: true
-PackConstructorInitializers: NextLineOnly
+PackConstructorInitializers: CurrentLine
 
 #
 # Idea:
@@ -174,17 +174,17 @@ PackConstructorInitializers: NextLineOnly
 #    before breaking lines.
 # 3. Add numbers less than 10 to distinguish cases.
 #
-PenaltyBreakAssignment: 2
-PenaltyBreakBeforeFirstCallParameter: 100
-PenaltyBreakComment: 102
-PenaltyBreakFirstLessLess: 101
-PenaltyBreakOpenParenthesis: 0
+PenaltyBreakAssignment: 51
+PenaltyBreakBeforeFirstCallParameter: 101
+PenaltyBreakComment: 104
+PenaltyBreakFirstLessLess: 103
+PenaltyBreakOpenParenthesis: 102
 PenaltyBreakScopeResolution: 200
-PenaltyBreakString: 90
+PenaltyBreakString: 91
 PenaltyBreakTemplateDeclaration: 0
 PenaltyExcessCharacter: 10
 PenaltyIndentedWhitespace: 0
-PenaltyReturnTypeOnItsOwnLine: 3
+PenaltyReturnTypeOnItsOwnLine: 71
 
 PointerAlignment: Left
 PPIndentWidth:   -1
@@ -196,7 +196,7 @@ RemoveParentheses: Leave
 RemoveSemicolon: true
 RequiresClausePosition: OwnLine
 RequiresExpressionIndentation: OuterScope
-SeparateDefinitionBlocks: Always
+SeparateDefinitionBlocks: Leave
 ShortNamespaceLines: 10
 SkipMacroDefinitionBody: false
 SortIncludes:    CaseSensitive

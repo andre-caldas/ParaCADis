@@ -46,7 +46,7 @@ namespace Threads::SafeStructs
 
     ThreadSafeContainer() = default;
 
-    template<typename MutexHolder>
+    template<C_MutexHolder MutexHolder>
     ThreadSafeContainer(MutexHolder& holder)
         : mutex(holder.getMutexData())
     {
@@ -65,15 +65,13 @@ namespace Threads::SafeStructs
     void   clear();
 
     struct WriterGate {
-      WriterGate(self_t* self)
-          : self(self)
-      {
-      }
+      WriterGate(self_t* self) : self(self) {}
+      WriterGate(const WriterGate&) = delete;
+      void operator=(const WriterGate&) = delete;
 
       self_t* self;
 
       auto operator->() const { return &self->container; }
-
       auto& operator*() const { return self->container; }
     };
 

@@ -21,7 +21,7 @@ install_headers(safe_containers_includes,
   preserve_path: true,
 )
 
-safe_containers_lib = shared_library(
+safe_containers_lib = library(
   'safe_containers',
   safe_containers_src,
   install: true,

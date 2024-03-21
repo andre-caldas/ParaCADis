@@ -20,13 +20,15 @@
  *                                                                          *
  ***************************************************************************/
 
-DeferenceablePoint::DeferenceablePoint(const Point& p, std::string name)
-    : x(p.x()), y(p.y()), z(p.z()), GeometricObject(std::move(name))
+#include "deferenceables.h"
+
+DeferenceablePoint::DeferenceablePoint(const Point& p)
+    : SafeExporter{p.x(), p.y(), p.z()}
 {
 }
 
-DeferenceablePoint::DeferenceablePoint(Real x, Real y, Real z, std::string name)
-    : x(x), y(y), z(z), GeometricObject(std::move(name))
+DeferenceablePoint::DeferenceablePoint(Real x, Real y, Real z)
+    : SafeExporter{x, y, z}
 {
 }
 
