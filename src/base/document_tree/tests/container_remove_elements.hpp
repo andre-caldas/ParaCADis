@@ -20,40 +20,16 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef DocumentTree_Container_H
-#define DocumentTree_Container_H
+#include <base/document_tree/Container.h>
 
-#include <base/expected_behaviour/SharedPtr.h>
-#include <base/geometric_primitives/CoordinateSystem.h>
-#include <base/naming_scheme/Exporter.h>
-#include <base/naming_scheme/IExport.h>
-#include <base/threads/safe_structs/ThreadSafeMap.h>
+#include <catch2/catch_test_macros.hpp>
 
-namespace DocumentTree
+using namespace DocumentTree;
+
+SCENARIO("REMOVE", "[simple]")
 {
-  class Container
-      : public NamingScheme::Exporter
-      , public NamingScheme::IExport<NamingScheme::Exporter>
+  GIVEN("an assert(false)...")
   {
-    using Exporter = NamingScheme::Exporter;
-
-  public:
-    std::string toString() const override;
-
-    void addExporter(Exporter& element);
-    void addContainer(Container& container);
-
-  private:
-    using uuid_type = NamingScheme::Uuid::uuid_type;
-    template<typename Key, typename Val>
-    using UnorderedMap = Threads::SafeStructs::ThreadSafeUnorderedMap<Key, Val>;
-
-    UnorderedMap<uuid_type, SharedPtr<Exporter>>  non_containers;
-    UnorderedMap<uuid_type, SharedPtr<Container>> containers;
-
-    CoordinateSystem coordinate_system;
-  };
-
-}  // namespace DocumentTree
-
-#endif
+    REQUIRE(false);
+  }
+}

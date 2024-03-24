@@ -20,6 +20,9 @@
  *                                                                          *
  ***************************************************************************/
 
+#ifndef DocumentTree_DocumentTree_H
+#define DocumentTree_DocumentTree_H
+
 #include "Container.h"
 
 namespace DocumentTree
@@ -32,3 +35,5 @@ namespace DocumentTree
   };
 
 }
+
+#endif

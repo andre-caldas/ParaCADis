@@ -1,35 +1,30 @@
-#include <catch2/catch_test_macros.hpp>
+// SPDX-License-Identifier: GPL-3.0-or-later
+/****************************************************************************
+ *                                                                          *
+ *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
+ *                                                                          *
+ *   This file is part of ParaCADis.                                        *
+ *                                                                          *
+ *   ParaCADis is free software: you can redistribute it and/or modify it   *
+ *   under the terms of the GNU General Public License as published         *
+ *   by the Free Software Foundation, either version 2.1 of the License,    *
+ *   or (at your option) any later version.                                 *
+ *                                                                          *
+ *   ParaCADis is distributed in the hope that it will be useful, but       *
+ *   WITHOUT ANY WARRANTY; without even the implied warranty of             *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                   *
+ *   See the GNU General Public License for more details.                   *
+ *                                                                          *
+ *   You should have received a copy of the GNU General Public License      *
+ *   along with ParaCADis. If not, see <https://www.gnu.org/licenses/>.     *
+ *                                                                          *
+ ***************************************************************************/
 
-#include <base/document_tree/Container.h>
-
-using namespace DocumentTree;
-
-SCENARIO("Container basic manipulations", "[simple]")
-{
-  GIVEN("a Container")
-  {
-    Container a;
-    WHEN("we do nothing")
-    {
-      THEN("name is unset and the uuid is valid")
-      {
-        REQUIRE(a.getName() == "");
-        REQUIRE(a.getUuid().isValid());
-      }
-    }
-    AND_WHEN("we set a name") {
-      std::string name("container_name");
-      a.setName(name);
-      THEN("the name must be set") {
-        REQUIRE(a.getName() == name);
-      }
-    }
-    AND_WHEN("we set the name again") {
-      std::string name("another name!!");
-      a.setName(name);
-      THEN("the name must be set") {
-        REQUIRE(a.getName() == name);
-      }
-    }
-  }
-}
+#include "container_construction.hpp"
+#include "container_populate.hpp"
+#include "container_nested.hpp"
+#include "container_transform.hpp"
+#include "container_remove_elements.hpp"
+#include "container_move_elements.hpp"
+#include "container_share_elements.hpp"
+#include "container_serialization.hpp"
