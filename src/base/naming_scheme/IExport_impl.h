@@ -29,14 +29,15 @@
 #ifndef NamingScheme_IExport_impl_H
 #define NamingScheme_IExport_impl_H
 
-#ifdef NamingScheme_IExport_H
+#ifndef NamingScheme_IExport_H
 // The following error is because we do not want to incentivate developers
 // to use "IExport_impl.h" instead of "IExport.h".
 #  error "Include IExport.h before including IExport_impl.h. Do you need 'impl'?"
 #endif
-#include "IExport.h"  // Just to make tools happy!
-#include "NameAndUuid.h"
 #include "Exporter.h"
+#include "IExport.h"  // Just to make tools happy!
+#include "PathToken.h"
+#include "exceptions.h"
 
 #include <base/expected_behaviour/SharedPtr.h>
 
@@ -44,19 +45,21 @@ namespace NamingScheme
 {
 
   template<typename T>
-  SharedPtr<T> IExport<T>::resolve(token_iterator& token_list)
+  SharedPtr<T> IExport<T>::resolve(token_iterator& tokens)
   {
-    if (!token_list) { return {}; }
+    if (!tokens) { return {}; }
 
     // Look for registered member variables.
-    const auto& token = token_list.front();
+    const auto& token = tokens.front();
     assert(token.isName());
 
-    auto share = resolve_share(token_list);
+    auto share = resolve_share(tokens);
     if (share) { return share; }
 
-    auto ptr = resolve_ptr(token_list);
-    if (ptr) { return std::shared_ptr(current_lock, ptr); }
+    auto  ptr          = resolve_ptr(tokens);
+    auto& self         = dynamic_cast<Exporter&>(*this);
+    auto  current_lock = self.sharedFromThis<Exporter>();
+    if (ptr) { return std::shared_ptr<T>(current_lock.sliced(), ptr); }
     throw Exception::NoExport();
   }
 
@@ -73,57 +76,40 @@ namespace NamingScheme
   }
 
 
-  template<
-      Threads::C_MutexHolderWithGates C, typename T,
-      EachExportedData... dataInfo>
-  const T* ExportedData<C, T, dataInfo...>::get(
-      const C::ReaderGate& gate, std::string_view id) const
+  template<Threads::C_MutexHolderWithGates C, typename T, EachExportedData... dataInfo>
+  const T*
+  ExportedData<C, T, dataInfo...>::get(const C::ReaderGate& gate, std::string_view id) const
   {
-    if (!map.contains(id)) {
-      return nullptr;
-    }
+    if (!map.contains(id)) { return nullptr; }
     return gate->*map.at(id);
   }
 
-  template<
-      Threads::C_MutexHolderWithGates C, typename T,
-      EachExportedData<typename C::record_t, T>... dataInfo>
-  T* ExportedData<C, T, dataInfo...>::get(
-      const C::WriterGate& gate, std::string_view id) const
+  template<Threads::C_MutexHolderWithGates C, typename T, EachExportedData... dataInfo>
+  T* ExportedData<C, T, dataInfo...>::get(const C::WriterGate& gate, std::string_view id) const
   {
-    if (!map.contains(id)) {
-      return nullptr;
-    }
-
+    if (!map.contains(id)) { return nullptr; }
     return gate->*map.at(id);
   }
 
 
-  template<typename T, typename DataStruct,
-           EachExportedData<DataStruct, T>... dataInfo>
+  template<typename T, class DataStruct, EachExportedData... dataInfo>
   T* SafeIExport<T, DataStruct, dataInfo...>::resolve_ptr(token_iterator& tokens)
   {
-    if(!tokens) {
+    if (!tokens) {
       assert(false && "Why is this being called? There are no more tokens!");
-      return nullptr;
-    }
-
-    const auto& name = tokens.front().getName();
-    if (!map.contains(name)) {
       return nullptr;
     }
 
     auto* ptr = dynamic_cast<SafeExporter<DataStruct>*>(this);
     assert(ptr && "Exporters must derive from NamingScheme::Exporter.");
-    if(!ptr) {
-      return nullptr;
-    }
+    if (!ptr) { return nullptr; }
 
-    auto& gate = ptr->getWriterGate();
-    T* result = &gate->*map.at(name);
+    auto&       gate = ptr->getWriterGate();
+    const auto& name = tokens.front().getName();
+    if (!map.contains(name)) { return nullptr; }
+
+    return &((*gate).*map.at(name));
   }
-    const std::map<std::string, T DataStruct::*> map
-        = {{dataInfo.name,dataInfo.local_ptr}...};
 
 }  // namespace NamingScheme
 

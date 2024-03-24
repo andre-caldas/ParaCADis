@@ -36,7 +36,7 @@ template<typename Struct>
 template<C_MutexHolder MutexHolder, typename... Args>
 ThreadSafeStruct<Struct>::ThreadSafeStruct(MutexHolder& holder, Args&&... args)
     : mutex(holder.getMutexData())
-    , theStruct(args...)
+    , theStruct(std::forward<Args>(args)...)
 {}
 
 template<typename Struct>

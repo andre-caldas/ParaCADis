@@ -7,6 +7,7 @@ deps = [
 
 test_deps = [
   dependency('catch2'),
+  dependency('catch2-with-main'),
 ]
 
 test_main_src = files('cpp_test.cpp')

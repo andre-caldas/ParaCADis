@@ -23,76 +23,32 @@
 #ifndef NamingScheme_NameAndUuid_H
 #define NamingScheme_NameAndUuid_H
 
+#include "Uuid.h"
+
+#include <base/xml/streams_fwd.h>
+
 #include <string>
-
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
-
-namespace std
-{
-  template<>
-  struct hash<boost::uuids::uuid>
-  {
-    size_t operator()(const boost::uuids::uuid& uuid) const noexcept;
-  };
-}
 
 namespace NamingScheme
 {
 
-  class Uuid
-  {
-  public:
-    using uuid_type = boost::uuids::uuid;
-    uuid_type uuid;
-
-    Uuid();
-    Uuid(int i);
-    Uuid(std::string_view uuid_str);
-    virtual ~Uuid() = default;
-
-    bool isValid() const;
-
-    uuid_type getUuid() const { return uuid; }
-    operator uuid_type() const { return uuid; }
-    operator std::string() const { return boost::uuids::to_string(uuid); }
-  };
-
+  class PathToken;
 
   /**
-   * Each token in a path is a name or uuid, represented by NameOrUuid.
+   * Object held by things that have an UUID and possibly a name.
    */
-  class NameOrUuid
+  class NameAndUuid
   {
   private:
     Uuid        uuid;
     std::string name;
 
   public:
-    NameOrUuid(auto uuid) : uuid(uuid) {}
-    NameOrUuid(std::string name_or_uuid);
+    /**
+     * Default constructor uses a random Uuid.
+     */
+    NameAndUuid() = default;
 
-    std::string toString() const;
-    const std::string& getName() const { return name; }
-    Uuid getUuid() const { return uuid; }
-
-    bool isName() const { return !uuid.isValid(); }
-    bool isUuid() const { return uuid.isValid(); }
-
-    operator Uuid::uuid_type() const { return uuid; }
-    operator std::string() const { return toString(); }
-  };
-
-
-  /**
-   * Object held by things that have an UUID and possibly a name.
-   */
-  class NameAndUuid : private Uuid
-  {
-  private:
-    std::string name;
-
-  public:
     /**
      * Uuid must be unique. So we forbid copy.
      */
@@ -109,8 +65,6 @@ namespace NamingScheme
     NameAndUuid(const Uuid& uuid, std::string name = {});
     /// @}
 
-    using Uuid::operator Uuid::uuid_type;
-
     /**
      * @brief Names cannot look like a UUID.
      */
@@ -126,12 +80,21 @@ namespace NamingScheme
     /**
      * @brief Verifies if @a name_or_uuid refers to this object
      */
-    bool pointsToMe(const NameOrUuid& name_or_uuid) const;
+    bool pointsToMe(const PathToken& name_or_uuid) const;
 
     std::string toString() const;
     operator std::string() const { return toString(); }
     bool               hasName() const { return !name.empty(); }
     const std::string& getName() const { return name; }
+    Uuid               getUuid() const { return uuid; }
+
+
+    void               serialize(Xml::Writer& writer) const noexcept;
+    static NameAndUuid unserialize(Xml::Reader& reader);
+  };
+
+  struct NameAndUuid_Tag : Xml::XmlTag {
+    std::string_view getName() const override { return "NameAndUuid"; }
   };
 
 }  // namespace NamingScheme

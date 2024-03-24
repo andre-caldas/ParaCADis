@@ -27,6 +27,8 @@ namespace DocumentTree
 
   class DocumentTree : public Container
   {
+  public:
+    std::string toString() const override;
   };
 
 }

@@ -28,7 +28,7 @@
 #include <type_traits>
 #include <vector>
 
-#include "NameAndUuid.h"
+#include "PathToken.h"
 #include "PathToObject.h"
 #include "types.h"
 
@@ -109,10 +109,10 @@ namespace NamingScheme
 
     T* getOldReference() const { return old_reference; }
 
-    template<typename X, typename... NameOrUuid>
-    ReferenceTo<X> goFurther(NameOrUuid&&... furtherPath) const;
+    template<typename X, typename... PathToken>
+    ReferenceTo<X> goFurther(PathToken&&... furtherPath) const;
 
-    static ReferenceTo<T> unserialize(Base::XMLReader& reader)
+    static ReferenceTo<T> unserialize(Xml::Reader& reader)
     {
       return ReferenceTo<T>{PathToObject::unserialize(reader)};
     }

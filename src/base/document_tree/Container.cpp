@@ -29,6 +29,11 @@
 namespace DocumentTree
 {
 
+  std::string Container::toString() const
+  {
+    return std::format("Container ({})", getName());
+  }
+
   void Container::addExporter(Exporter& element)
   {
     auto ptr = dynamic_cast<Container*>(&element);
@@ -37,18 +42,20 @@ namespace DocumentTree
       return;
     }
 
-    if (!non_containers.contains(element.name_and_uuid)) {
-      throw Exceptions::ElementAlreadyInContainer(element);
+    auto& gate = non_containers.getWriterGate();
+    if (!gate->contains(element.getUuid())) {
+      throw ElementAlreadyInContainer(element, *this);
     }
-    non_containers[element.name_and_uuid] = element.sharedFromThis<Exporter>();
+    gate->insert({element.getUuid(), element.sharedFromThis<Exporter>()});
   }
 
   void Container::addContainer(Container& container)
   {
-    if (!non_containers.contains(container.name_and_uuid)) {
-      throw Exceptions::ElementAlreadyInContainer(container);
+    auto& gate = containers.getWriterGate();
+    if (!gate->contains(container.getUuid())) {
+      throw ElementAlreadyInContainer(container, *this);
     }
-    containers[container.name_and_uuid] = container.sharedFromThis<Container>();
+    gate->insert({container.getUuid(), container.sharedFromThis<Container>()});
   }
 
 }  // namespace DocumentTree

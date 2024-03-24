@@ -30,73 +30,69 @@
 
 #include <type_traits>
 
-namespace NamingScheme
+using namespace NamingScheme;
+
+template<typename T>
+bool NameSearchResult<T>::resolve(token_iterator& tokens)
 {
+  // Resolve a chain of exporters.
+  resolveExporter(tokens);
 
-  template<typename T>
-  bool NameSearchResult::resolve(const token_vector& tokens)
-  {
-    // Resolve a chain of exporters.
-    resolveExporter(tokens);
-
-    // Do we want an exporter?
-    if constexpr (std::is_same_v<std::remove_cv_t<T>, Exporter>) {
-      if (tokens) {
-        result = too_many_tokens;
-        return false;
-      }
-      result = success;
-      return true;
-    }
-
-    // If there are no more tokens.
-    if (!tokens) {
-      // Is the last exporter also an instance of T?
-      auto ptr = dynamic_cast<T*>(exporter.get());
-      if (ptr) {
-        result = success;
-        return true;
-      }
-      result = too_few_tokens;
-      return false;
-    }
-
-    auto ptr = dynamic_cast<IExport<T>*>(exporter.get());
-    if (!ptr) {
-      result = does_not_export;
-      return false;
-    }
-
-    data = ptr->resolve(tokens);
-    if (!data) {
-      result = not_found;
-      return false;
-    }
-
+  // Do we want an exporter?
+  if constexpr (std::is_same_v<std::remove_cv_t<T>, Exporter>) {
     if (tokens) {
-      result = too_many_tokens;
+      status = too_many_tokens;
       return false;
     }
-    result = success;
+    status = success;
     return true;
   }
+
+  // If there are no more tokens.
+  if (!tokens) {
+    // Is the last exporter also an instance of T?
+    auto ptr = dynamic_cast<T*>(exporter.get());
+    if (ptr) {
+      status = success;
+      return true;
+    }
+    status = too_few_tokens;
+    return false;
+  }
+
+  auto ptr = dynamic_cast<IExport<T>*>(exporter.get());
+  if (!ptr) {
+    status = does_not_export;
+    return false;
+  }
+
+  data = ptr->resolve(tokens);
+  if (!data) {
+    status = not_found;
+    return false;
+  }
+
+  if (tokens) {
+    status = too_many_tokens;
+    return false;
+  }
+  status = success;
+  return true;
 }
 
 
 template<typename T>
-const T* NameSearchResult::getDataForReading() const
+SharedPtr<const T> NameSearchResult<T>::getDataForReading() const
 {
-    assert(LockPolicy::isLocked(exporter.getMutexData());
-    return data;
+  assert(Threads::LockPolicy::isLocked(exporter->getMutexData()));
+  return data;
 }
 
-T* NameSearchResult::getDataForWriting() const
+template<typename T>
+SharedPtr<T> NameSearchResult<T>::getDataForWriting() const
 {
-    assert(LockPolicy::isLockedExclusively(exporter.getMutexData());
-    return data;
+  assert(Threads::LockPolicy::isLockedExclusively(exporter->getMutexData()));
+  return data;
 }
-
-}  // namespace NamingScheme
 
 #endif
-

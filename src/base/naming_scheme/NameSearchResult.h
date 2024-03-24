@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
+ *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -67,7 +67,7 @@ namespace NamingScheme
   public:
     using NameSearchResultBase::NameSearchResultBase;
 
-    bool resolve(const token_vector& tokens);
+    bool resolve(token_iterator& tokens);
 
     enum {
       not_resolved_yet = '0',  ///< Method resolve() not called, yet.
@@ -78,11 +78,13 @@ namespace NamingScheme
       does_not_export  = '*'   ///< Last Exporter does not export requested type.
     } status = not_resolved_yet;
 
-    std::shared_ptr<const T> getDataForReading() const;
-    std::shared_ptr<T>       getDataForWriting() const;
+    SharedPtr<const T> getDataForReading() const;
+    SharedPtr<T>       getDataForWriting() const;
   };
 
 }  // namespace NamingScheme
+
+#include "NameSearchResult_impl.h"
 
 #endif
 

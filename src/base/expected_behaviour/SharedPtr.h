@@ -47,24 +47,28 @@ class WeakPtr;
  * ptr->doStuff();
  */
 template<typename T>
-class SharedPtr : private std::shared_ptr<T>
+class SharedPtr : public std::shared_ptr<T>
 {
 public:
   using value_type = T;
+  SharedPtr()      = default;
   SharedPtr(const std::shared_ptr<T>& shared);
   SharedPtr(std::shared_ptr<T>&& shared);
 
   T* operator->() const;
   T& operator*() const;
 
-  using std::shared_ptr<T>::get;
-  using std::shared_ptr<T>::operator bool;
-  bool operator==(const SharedPtr<T>& other) { return get() == other.get(); }
+  bool operator==(const SharedPtr<T>& other) const noexcept
+  {
+    // TODO: Why do I need "this"??? Remove and wee if compiler complains.
+    return this->get() == other.get();
+  }
 
   WeakPtr<T> getWeakPtr() const;
 
-  operator std::shared_ptr<T>() const;
-  operator const std::shared_ptr<T>&() const;
+  const std::shared_ptr<T>& sliced() const;
+
+  operator SharedPtr<const T>() const { return {sliced()}; }
 };
 
 
@@ -73,8 +77,10 @@ class WeakPtr : private std::weak_ptr<T>
 {
 public:
   using std::weak_ptr<T>::weak_ptr;
-  WeakPtr(const SharedPtr<T>& shared) : std::weak_ptr<T>(shared.getWeakPtr()) {}
+  WeakPtr(const SharedPtr<T>& shared) : WeakPtr(shared.getWeakPtr()) {}
   SharedPtr<T> lock() const noexcept { return std::weak_ptr<T>::lock(); }
 };
+
+#include "SharedPtr_impl.h"
 
 #endif

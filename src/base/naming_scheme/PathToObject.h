@@ -23,7 +23,7 @@
 #ifndef NamingScheme_PathToObject_H
 #define NamingScheme_PathToObject_H
 
-#include "NameAndUuid.h"
+#include "PathToken.h"
 
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/xml/streams.h>
@@ -44,7 +44,7 @@ namespace NamingScheme
   class ListOfPathTokens
   {
   protected:
-    std::deque<NameOrUuid> tokens;
+    std::deque<PathToken> tokens;
 
   public:
     ListOfPathTokens(ListOfPathTokens&&)                 = default;
@@ -52,15 +52,15 @@ namespace NamingScheme
     ListOfPathTokens& operator=(const ListOfPathTokens&) = default;
     ListOfPathTokens& operator=(ListOfPathTokens&&)      = default;
 
-    ListOfPathTokens(std::initializer_list<NameOrUuid> init);
+    ListOfPathTokens(std::initializer_list<PathToken> init);
     virtual ~ListOfPathTokens() = default;
 
     std::string pathString() const;
 
-    ListOfPathTokens& operator<<(NameOrUuid extra_token);
+    ListOfPathTokens& operator<<(PathToken extra_token);
     ListOfPathTokens& operator<<(ListOfPathTokens extra_tokens);
 
-    void                    serialize(Xml::Writer& writer) const;
+    void                    serialize(Xml::Writer& writer) const noexcept;
     static ListOfPathTokens unserialize(Xml::Reader& reader);
   };
 
@@ -71,7 +71,7 @@ namespace NamingScheme
    * It is composed of:
    * 1. A url path to a document.
    * 2. A @class Uuid that identifies a root shared @class Exporter.
-   * 3. A sequence of @class NameOrUuid that identifies the path
+   * 3. A sequence of @class PathToken that identifies the path
    *    to the referenced entity.
    *
    * Instances of the @class PathToObject are not aware of the type
@@ -107,11 +107,16 @@ namespace NamingScheme
 
     virtual ~PathToObject() = default;
 
-    void                serialize(Xml::Writer& writer) const;
-    static PathToObject unserialize(Xml::Reader& reader);
-
-    PathToObject operator+(NameOrUuid extra_token) const;
+    PathToObject operator+(PathToken extra_token) const;
     PathToObject operator+(ListOfPathTokens extra_tokens) const;
+
+    void                serialize(Xml::Writer& writer) const noexcept;
+    static PathToObject unserialize(Xml::Reader& reader);
+  };
+
+  struct PathToObject_Tag : Xml::XmlTag {
+    std::string_view   getName() const override { return "PathToObject"; }
+    const subtag_list& getSubTags() const override;
   };
 
 }  // namespace NamingScheme

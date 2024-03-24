@@ -23,15 +23,59 @@
 #ifndef Xml_streams_H
 #define Xml_streams_H
 
+#include "streams_fwd.h"
+
+#include <iostream>
+#include <vector>
+
 namespace Xml
 {
 
+  /**
+   * Parses XML and generates the corresponding data.
+   *
+   * @attention If no looping and no conditional is used (use readAllSubTags()),
+   * then the XML Schema can also be generated.
+   * For that, just make the unserialize() functions take a templated Reader.
+   * Later, this Reader can be replaced by GenerateXsd.
+   */
   class Reader
   {
+  public:
+    Reader(const XmlTag& current_tag, std::istream& stream)
+        : current_tag(current_tag)
+        , stream(stream)
+    {
+    }
+
+    [[nodiscard]]
+    Reader              readSubTag(const XmlTag& tag);
+    std::vector<Reader> readAllSubTags();
+
+    void reportException(const std::exception& e) const;
+
+  private:
+    const XmlTag& current_tag;
+    std::istream& stream;
   };
+
 
   class Writer
   {
+  public:
+    Writer(const XmlTag& current_tag, std::istream& stream)
+        : current_tag(current_tag)
+        , stream(stream)
+    {
+    }
+
+    [[nodiscard]]
+    Writer newTag(const XmlTag& tag) noexcept;
+    void   reportException(const std::exception& e);
+
+  private:
+    const XmlTag& current_tag;
+    std::istream& stream;
   };
 
 }  // namespace Xml

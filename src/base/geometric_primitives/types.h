@@ -21,11 +21,14 @@
  ***************************************************************************/
 
 #include <CGAL/Gmpz.h>
-#include <CGAL/Simple_homogeneous.h>
+#include <CGAL/Origin.h>
 #include <CGAL/Quotient.h>
+#include <CGAL/Simple_homogeneous.h>
+
+using namespace CGAL;
 
 // TODO: Use/develop a Ring with square root.
-typedef CGAL::Simple_homogeneous<CGAL::Gmpz> K;
+typedef Simple_homogeneous<Gmpz> K;
 
 typedef K::FT       Real;
 typedef K::RT       Ring;
@@ -33,4 +36,3 @@ typedef K::Point_3  Point;
 typedef K::Vector_3 Vector;
 typedef K::Point_2  Point2;
 typedef K::Vector_2 Vector2;
-

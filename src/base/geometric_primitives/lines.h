@@ -59,7 +59,7 @@ class Line2Points
 {
 public:
   Line2Points(Point start, Point end);
-  std::string toString() const override;
+//  std::string toString() const override;
 };
 
 
@@ -92,7 +92,7 @@ class LinePointDirection
 {
 public:
   LinePointDirection(Point start, Vector direction);
-  std::string toString() const override;
+//  std::string toString() const override;
 };
 
 #endif

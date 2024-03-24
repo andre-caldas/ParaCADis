@@ -37,7 +37,7 @@ namespace NamingScheme
 {
 
   template<typename T>
-  class NameSearchResult;
+  class NameSearchResultT;
 
   /**
    * @brief Any class that exports some type T must subclass @class IExport<T>.
@@ -55,7 +55,7 @@ namespace NamingScheme
   class IExport
   {
   public:
-    using NameSearchResult = NameSearchResult<T>;
+    using NameSearchResult = NameSearchResultT<T>;
     using token_iterator   = NamingScheme::token_iterator;
 
     /**
@@ -153,8 +153,7 @@ namespace NamingScheme
   /**
    * Exports data managed by Exporter<DataStruct>.
    */
-  template<typename T, class DataStruct,
-           EachExportedData... dataInfo>
+  template<typename T, class DataStruct, EachExportedData... dataInfo>
   class SafeIExport : public IExport<T>
   {
   protected:
@@ -166,5 +165,8 @@ namespace NamingScheme
   };
 
 }  // namespace NamingScheme
+
+// TODO: remove this and instantiate templates in a cpp file.
+#include "IExport_impl.h"
 
 #endif

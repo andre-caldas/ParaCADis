@@ -29,3 +29,5 @@ safe_containers_lib = library(
   implicit_include_directories: false,
   dependencies: safe_containers_dep,
 )
+
+libs_upto_now += [safe_containers_lib]

@@ -3,7 +3,9 @@ naming_scheme_src = [
   'Exporter.cpp',
   'NameAndUuid.cpp',
   'NameSearchResult.cpp',
+  'PathToken.cpp',
   'PathToObject.cpp',
+  'Uuid.cpp',
 ]
 
 naming_scheme_includes = [
@@ -14,7 +16,9 @@ naming_scheme_includes = [
   'NameAndUuid.h',
   'NameSearchResult.h',
   'NameSearchResult_impl.h',
+  'PathToken.h',
   'PathToObject.h',
+  'Uuid.h',
   'ReferenceToObject.h',
   'ReferenceToObject_impl.h',
   'types.h',
@@ -30,6 +34,7 @@ naming_scheme_lib = library(
   install: true,
   include_directories: inc,
   implicit_include_directories: false,
+  link_with: libs_upto_now,
 )
 
 libs_upto_now += [naming_scheme_lib]

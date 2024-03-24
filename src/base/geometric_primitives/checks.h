@@ -22,15 +22,8 @@
 
 #include "types.h"
 
-namespace glm {
-class mat3;
-}
-
 namespace Check
 {
-  bool epsilonZero(Real a);
-  bool epsilonEqual(Real a, Real b);
-
   void assertOrthogonality(Vector x, Vector y);
   void assertTwoByTwoOrthogonality(Vector x, Vector y, Vector z);
 
@@ -41,8 +34,6 @@ namespace Check
   Vector assertLI(Vector x, Vector y);
   /// @return The determinant.
   Real assertLI(Vector x, Vector y, Vector z);
-  /// @return The determinant.
-  Real assertLI(glm::mat3 M);
   /// @{
 }
 

@@ -106,8 +106,9 @@ namespace Threads::SafeStructs
     const ReaderGate reader_gate{this};
     const WriterGate writer_gate{this};
 
-    mutable MutexData mutex;
-    Struct            theStruct;
+    Threads::MutexData        defaultMutex;
+    Threads::MutexData* const mutex = &defaultMutex;
+    Struct                    theStruct;
 
     std::thread::id activeThread;
     std::thread     dedicatedThread;

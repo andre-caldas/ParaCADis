@@ -24,7 +24,6 @@
 #include <base/geometric_primitives/CoordinateSystem.h>
 #include <base/naming_scheme/Exporter.h>
 #include <base/naming_scheme/IExport.h>
-#include <base/naming_scheme/NameAndUuid.h>
 #include <base/threads/safe_structs/ThreadSafeMap.h>
 
 namespace DocumentTree
@@ -36,6 +35,8 @@ namespace DocumentTree
     using Exporter = NamingScheme::Exporter;
 
   public:
+    std::string toString() const override;
+
     void addExporter(Exporter& element);
     void addContainer(Container& container);
 
@@ -46,6 +47,8 @@ namespace DocumentTree
 
     UnorderedMap<uuid_type, SharedPtr<Exporter>>  non_containers;
     UnorderedMap<uuid_type, SharedPtr<Container>> containers;
+
+    CoordinateSystem coordinate_system;
   };
 
 }  // namespace DocumentTree

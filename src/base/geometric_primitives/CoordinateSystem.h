@@ -25,8 +25,6 @@
 
 #include "types.h"
 
-#include <CGAL/Aff_transformation_3.h>
-
 /** Stores and manages the placement of a coordinate system.
  *
  * Vectors need to be interpreted in some context.
@@ -46,11 +44,15 @@
 class CoordinateSystem
 {
 private:
-  using AffineTransform = Aff_transformation_3<K>;
-  AffineTransform transform;
+  Point origin = {0,0,0,1};
+  Vector bx = {1,0,0,1};
+  Vector by = {0,1,0,1};
+  Vector bz = {0,0,1,1};
 
 public:
-  CoordinateSystem();
+  CoordinateSystem() = default;
+  CoordinateSystem(Point origin);
+  CoordinateSystem(Point origin, Vector x, Vector y, Vector z);
 
   /** Places the coordinate system at @a origin,
    * with the x-axis pointing in direction @a x, etc.
@@ -63,10 +65,10 @@ public:
    * The axis vectors do need to be orthogonal.
    */
   /// @{
-  set(const Point& origin, const Vector& x, const Vector& y, const Vector& z);
-  set(const Point& origin, Real orientation, const Vector& y, const Vector& z);
-  set(const Point& origin, const Vector& x, Real orientation, const Vector& z);
-  set(const Point& origin, const Vector& x, const Vector& y, Real orientation);
+  void set(Point origin, Vector x, Vector y, Vector z);
+  void set(Point origin, Real orientation, Vector y, Vector z);
+  void set(Point origin, Vector x, Real orientation, Vector z);
+  void set(Point origin, Vector x, Vector y, Real orientation);
   /// @}
 
   /** Translate the amount `displacement`.
@@ -76,8 +78,8 @@ public:
    * coordinate system. In its turn, using the `_out` version, it is  "outside".
    */
   /// @{
-  void translate_in(Vector displacement);
-  void translate_out(Vector displacement);
+  void translateIn(const Vector& displacement);
+  void translateOut(const Vector& displacement);
   /// @}
 
   /** Move the coordinate system's origin to the indicated point.
@@ -87,8 +89,8 @@ public:
    * system. In its turn, using the `_out` version, it is  "outside".
    */
   /// @{
-  void move_to_in(Point position);
-  void move_to_out(Point position);
+  void moveToIn(const Point& position);
+  void moveToOut(Point position);
   /// @}
 
   /** Apply the corresponding transform to points and vectors.
@@ -100,8 +102,11 @@ public:
    * A translation does not change vectors, only points.
    */
   /// @{
-  Point  transform_point(Point p) const;
-  Vector transform_Vector(Vector v) const;
+  Point  transform(const Point& p) const;
+  Vector transform(const Vector& v) const;
+
+  Point  operator*(const Point& p) const { return transform(p); }
+  Vector operator*(const Vector& v) const { return transform(v); }
   /// @}
 
   /** Compose two coordinate systems.
@@ -124,10 +129,9 @@ public:
    *    directly on `A` without changing its position.
    */
   /// @{
-  CoordinateSystem compose(const CoordinateSystem c) const;
-  CoordinateSystem operator*(const CoordinateSystem c) const;
+  CoordinateSystem compose(const CoordinateSystem& c) const;
+  CoordinateSystem operator*(const CoordinateSystem& c) const { return compose(c); }
   /// @}
 };
 
 #endif
-

@@ -24,7 +24,7 @@
 #ifndef NamingScheme_Types_H
 #define NamingScheme_Types_H
 
-#include "NameAndUuid.h"
+#include "PathToken.h"
 
 #include <base/expected_behaviour/SharedPtr.h>
 
@@ -40,11 +40,13 @@ namespace NamingScheme
 
   class Exporter;
 
-  using token_item         = NameOrUuid;
-  template <typename R>
-  concept C_TokenRange = std::ranges::range<R> && std::convertible_to<std::ranges::range_value_t<R>, const token_item&>;
-  using token_vector = std::vector<NameOrUuid>;
-  using token_iterator = std::ranges::subrange<token_vector::iterator>;
+  using token_item = PathToken;
+  template<typename R>
+  concept C_TokenRange
+      = std::ranges::range<R>
+        && std::convertible_to<std::ranges::range_value_t<R>, const token_item&>;
+  using token_vector   = std::vector<PathToken>;
+  using token_iterator = std::ranges::subrange<token_vector::const_iterator>;
   static_assert(C_TokenRange<token_vector>);
 
 }  // namespace NamingScheme

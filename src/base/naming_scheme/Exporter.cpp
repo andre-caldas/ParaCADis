@@ -31,8 +31,24 @@ namespace NamingScheme
 
   namespace
   {
-    Threads::SafeStructs::ThreadSafeMap<Uuid::uuid_type, std::weak_ptr<Exporter>> map;
+    Threads::SafeStructs::ThreadSafeMap<Uuid::uuid_type, WeakPtr<Exporter>> map;
   }
+
+  Uuid Exporter::getUuid() const
+  {
+    return id.getUuid();
+  }
+
+  std::string Exporter::getName() const
+  {
+    return id.getName();
+  }
+
+  void Exporter::setName(std::string name)
+  {
+    id.setName(std::move(name));
+  }
+
 
   void Exporter::registerUuid(SharedPtr<Exporter> shared_ptr)
   {

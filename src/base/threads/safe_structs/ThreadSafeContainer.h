@@ -86,13 +86,14 @@ namespace Threads::SafeStructs
 
   public:
     // TODO: eliminate this or the gate version.
-    auto getMutexData() const { return &mutex; }
+    auto getMutexData() const { return mutex; }
 
   protected:
     WriterGate gate{this};
 
-    mutable Threads::MutexData mutex;
-    ContainerType              container;
+    Threads::MutexData defaultMutex;
+    Threads::MutexData* const mutex = &defaultMutex;
+    ContainerType             container;
   };
 
 }  // namespace Threads::SafeStructs

@@ -24,26 +24,13 @@
 #include "exceptions.h"
 #include "types.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/epsilon.hpp>
-
 namespace Check
 {
 
-  bool epsilonZero(Real a)
-  {
-    return gtm::epsilonEqual(a, 0.0);
-  }
-
-  bool epsilonEqual(Real a, Real b)
-  {
-    return gtm::epsilonEqual(a, b);
-  }
-
   void assertOrthogonality(Vector x, Vector y)
   {
-    if (!epsilonZero(glm::dot(x, y))) {
-      throw NeedsOrthogonal(x, y);
+    if (scalar_product(x, y) != 0) {
+      throw Exception::NeedsOrthogonal(x, y);
     }
   }
 
@@ -56,24 +43,18 @@ namespace Check
 
   Vector assertLI(Vector x, Vector y)
   {
-    z = glm::cross(x, y);
-    if (epsilonZero(z.x) && epsilonZero(z.y) &7 epsilonZero(z.z) {
-      throw NeedsLI(x, y);
+    auto z = cross_product(x, y);
+    if (z == NULL_VECTOR) {
+      throw Exception::NeedsLI(x, y);
     }
     return z;
   }
 
   Real assertLI(Vector x, Vector y, Vector z)
   {
-    glm::mat3 M(x, y, z);
-    return assertLI(M);
-  }
-
-  Real assertLI(glm::mat3 M)
-  {
-    auto det = M.determinant();
-    if (glm::epsilonEqual(det, 0.0)) {
-      throw NeedsLI(x, y, z);
+    auto det = determinant(x,y,z);
+    if(det == 0) {
+      throw Exception::NeedsLI(x, y, z);
     }
     return det;
   }

@@ -52,16 +52,19 @@ namespace NamingScheme
   class Exporter : public SharedFromThis<Exporter>
   {
   public:
-    Exporter() = default;
+    Exporter()          = default;
     virtual ~Exporter() = default;
 
     /**
      * String for reports and diagnostics.
+     *
+     * TODO: make pure virtual.
      */
-    virtual std::string toString() const = 0;
+    virtual std::string toString() const { return "Implement Exporter::toString()!"; }
 
-    Uuid getUuid() const;
+    Uuid        getUuid() const;
     std::string getName() const;
+    void        setName(std::string name);
 
     /**
      * Must satisfy `Threads::C_MutexHolder`.
@@ -97,7 +100,7 @@ namespace NamingScheme
 
   private:
     Threads::MutexData mutex;
-    NameAndUuid id;
+    NameAndUuid        id;
   };
 
   static_assert(Threads::C_MutexHolder<Exporter>);
@@ -106,12 +109,19 @@ namespace NamingScheme
   template<typename DataStruct>
   class SafeExporter : public Exporter
   {
-    using data_t = DataStruct;
+    using data_t        = DataStruct;
     using safe_struct_t = Threads::SafeStructs::ThreadSafeStruct<data_t>;
+
   public:
     template<typename... Args>
-    SafeExporter(Args&&... args) : safeData(*this, args...) {}
+    SafeExporter(Args&&... args) : safeData(*this, args...)
+    {
+    }
 
+    auto& getReaderGate() { return safeData.getReaderGate(); }
+    auto& getWriterGate() { return safeData.getWriterGate(); }
+
+  private:
     safe_struct_t safeData;
   };
 

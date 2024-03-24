@@ -134,7 +134,7 @@ namespace Threads
   class SharedLock : public LockPolicy
   {
   public:
-    [[nodiscard]] SharedLock(MutexData& mutex);
+    [[nodiscard]] SharedLock(MutexData* mutex);
 
   private:
     std::shared_lock<YesItIsAMutex> lock;
@@ -172,7 +172,7 @@ namespace Threads
   };
 
   /**
-   * @brief Locks and gives access to locked classes of type "MutexHolder".
+   * Locks and gives access to locked classes of type "MutexHolder".
    */
   template<C_MutexHolder FirstHolder, C_MutexHolder... MutexHolder>
   class ExclusiveLockGate

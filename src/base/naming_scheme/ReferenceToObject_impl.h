@@ -71,8 +71,8 @@ typename ReferenceTo<X>::locked_resource ReferenceTo<X>::
 }
 
 template<typename T>
-template<typename X, typename... NameOrUuid>
-ReferenceTo<X> ReferenceTo<T>::goFurther(NameOrUuid&& ...furtherPath) const
+template<typename X, typename... PathToken>
+ReferenceTo<X> ReferenceTo<T>::goFurther(PathToken&& ...furtherPath) const
 {
     return ReferenceTo<X>{PathToObject::goFurther(furtherPath...)};
 }

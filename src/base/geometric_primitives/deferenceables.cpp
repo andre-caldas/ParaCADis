@@ -28,7 +28,33 @@ DeferenceablePoint::DeferenceablePoint(const Point& p)
 }
 
 DeferenceablePoint::DeferenceablePoint(Real x, Real y, Real z)
-    : SafeExporter{x, y, z}
+    : SafeExporter{std::move(x), std::move(y), std::move(z)}
 {
 }
 
+
+DeferenceableVector::DeferenceableVector(const Vector& v)
+    : SafeExporter{v.x(), v.y(), v.z()}
+{
+}
+
+DeferenceableVector::DeferenceableVector(Real x, Real y, Real z)
+    : SafeExporter{std::move(x), std::move(y), std::move(z)}
+{
+}
+
+
+/**
+ * Template instantiation.
+ * There is no need to include NameSearchResult_impl.h for those.
+ */
+#include <base/naming_scheme/IExport.h>
+#include <base/naming_scheme/IExport_impl.h>
+#include <base/naming_scheme/NameSearchResult.h>
+#include <base/naming_scheme/NameSearchResult_impl.h>
+
+template class NamingScheme::IExport<DeferenceablePoint>;
+template class NamingScheme::IExport<DeferenceableVector>;
+
+template class NamingScheme::NameSearchResult<DeferenceablePoint>;
+template class NamingScheme::NameSearchResult<DeferenceableVector>;

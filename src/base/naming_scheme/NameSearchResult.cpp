@@ -61,18 +61,3 @@ namespace NamingScheme
   }
 
 }  // namespace NamingScheme
-
-/**
- * Template instantiation for most used exported types.
- */
-
-#include <base/geometric_primitives/circles.h>
-#include <base/geometric_primitives/lines.h>
-#include <base/geometric_primitives/types.h>
-
-template class NamingScheme::NameSearchResult<Real>;
-template class NamingScheme::NameSearchResult<Point>;
-template class NamingScheme::NameSearchResult<Vector>;
-template class NamingScheme::NameSearchResult<Line>;
-template class NamingScheme::NameSearchResult<Circle>;
-

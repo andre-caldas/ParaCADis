@@ -20,103 +20,95 @@
  *                                                                          *
  ***************************************************************************/
 
+#include "CoordinateSystem.h"
+
 #include "checks.h"
 #include "exceptions.h"
 #include "types.h"
 
-CoordinateSystem::CoordinateSystem()
-    : transform(IDENTITY)
+CoordinateSystem::CoordinateSystem(Point origin) : origin(std::move(origin))
 {
 }
 
-void CoordinateSystem::set(Point origin, Vector x, Vector y, Vector z)
+CoordinateSystem::CoordinateSystem(Point origin, Vector x, Vector y, Vector z)
+    : origin(std::move(origin))
+    , bx(std::move(x))
+    , by(std::move(y))
+    , bz(std::move(z))
 {
-  Check::assertTwoByTwoOrthogonal(x, y, z);
+}
 
-  auto& o = origin;
-  auto  a = y.hw() * z.hw() * o.hw();
-  auto  b = x.hw() * z.hw() * o.hw();
-  auto  c = x.hw() * y.hw() * o.hw();
-  auto  d = x.hw() * y.hw() * z.hw();
-  // clang-format off
-  transform = AffineTransform(
-        a * x.hx(), b * y.hx(), c * z.hx(), d * o.hx(),
-        a * x.hy(), b * y.hy(), c * z.hy(), d * o.hy(),
-        a * x.hz(), b * y.hz(), c * z.hz(), d * o.hz(),
-        /*             zero              */ d * o.hw());
-  // clang-format on
+
+void CoordinateSystem::set(Point origin_, Vector x, Vector y, Vector z)
+{
+  Check::assertTwoByTwoOrthogonality(x, y, z);
+  origin = std::move(origin_);
+  bx = std::move(x);
+  by = std::move(y);
+  bz = std::move(z);
 }
 
 void CoordinateSystem::set(Point origin, Real orientation, Vector y, Vector z)
 {
-  auto a = (orientation > 0.0) ? y : z;
-  auto b = (orientation > 0.0) ? z : y;
-  auto x = Check::assertLI(a, b);
-  set(origin, x, y, z);
+  auto& a = (orientation > 0.0) ? y : z;
+  auto& b = (orientation > 0.0) ? z : y;
+  auto  x = Check::assertLI(a, b);
+  set(origin, std::move(x), std::move(y), std::move(z));
 }
 
 void CoordinateSystem::set(Point origin, Vector x, Real orientation, Vector z)
 {
-  auto a = (orientation > 0.0) ? z : x;
-  auto b = (orientation > 0.0) ? x : z;
-  auto y = Check::assertLI(a, b);
-  set(origin, x, y, z);
+  auto& a = (orientation > 0.0) ? z : x;
+  auto& b = (orientation > 0.0) ? x : z;
+  auto  y = Check::assertLI(a, b);
+  set(origin, std::move(x), std::move(y), std::move(z));
 }
 
-void CoordinateSystem::set(Point orig, Vector x, Vector y, Real orientation)
+void CoordinateSystem::set(Point origin, Vector x, Vector y, Real orientation)
 {
-  auto a = (orientation > 0.0) ? x : y;
-  auto b = (orientation > 0.0) ? y : z;
-  auto z = Check::assertLI(a, b);
-  set(origin, x, y, z);
+  auto& a = (orientation > 0.0) ? x : y;
+  auto& b = (orientation > 0.0) ? y : x;
+  auto  z = Check::assertLI(a, b);
+  set(origin, std::move(x), std::move(y), std::move(z));
 }
 
-void CoordinateSystem::translate_in(Vector displacement)
+void CoordinateSystem::translateIn(const Vector& displacement)
 {
-  translate_out(transform_vector(displacement));
+  origin = origin + transform(displacement);
 }
 
-void CoordinateSystem::translate_out(Vector displacement)
+void CoordinateSystem::translateOut(const Vector& displacement)
 {
-  move_to_out(origin + displacement);
+  origin = origin + displacement;
 }
 
-void CoordinateSystem::move_to_in(Point position)
+void CoordinateSystem::moveToIn(const Point& position)
 {
-  move_to_out(transform_point(position));
+  origin = transform(position);
 }
 
-void CoordinateSystem::move_to_out(Point position)
+void CoordinateSystem::moveToOut(Point position)
 {
-  auto& t = *transform;
-  auto  v = p.hw();
-  auto  w = t.hm(3,3);
-  // clang-format off
-  transform = AffineTransform(
-        v * t.hm(0,0), v * t.hm(1,0), v * t.hm(2,2), w * position.hx(),
-        v * t.hm(1,0), v * t.hm(1,1), v * t.hm(2,2), w * position.hy(),
-        v * t.hm(2,0), v * t.hm(1,2), v * t.hm(2,2), w * position.hz(),
-        /*                   zero                 */ w * v);
-  // clang-format on
+  origin = std::move(position);
 }
 
-Point transform_point(Point p) const
+Point CoordinateSystem::transform(const Point& p) const
 {
-  return transform->transform(p);
+  // TODO: make use of homogeneous coordinates.
+  return origin + p.x() * bx + p.y() * by + p.z() * bz;
 }
 
-Vector transform_Vector(Vector v) const
+Vector CoordinateSystem::transform(const Vector& v) const
 {
-  return transform->transform(v);
+  // TODO: make use of homogeneous coordinates.
+  return v.x() * bx + v.y() * by + v.z() * bz;
 }
 
-CoordinateSystem compose(const CoordinateSystem c) const
+CoordinateSystem CoordinateSystem::compose(const CoordinateSystem& c) const
 {
-  return *transform * *c.transform;
+  Point  o = transform(c.origin);
+  Vector x = transform(c.bx);
+  Vector y = transform(c.by);
+  Vector z = transform(c.bz);
+  return CoordinateSystem{std::move(o), std::move(x), std::move(y), std::move(z)};
 }
-
-CoordinateSystem operator*(const CoordinateSystem c) const
-{
-  return compose(c);
-}
-

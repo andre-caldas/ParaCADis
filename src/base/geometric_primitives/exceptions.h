@@ -23,6 +23,8 @@
 #ifndef GeometricPrimitives_Exception_H
 #define GeometricPrimitives_Exception_H
 
+#include "types.h"
+
 #include <base/exceptions.h>
 
 namespace Exception
@@ -32,10 +34,10 @@ namespace Exception
   {
   public:
     NeedsLI(
-        Vector x, Vector y,
+        const Vector& x, const Vector& y,
         std::source_location location = std::source_location::current());
     NeedsLI(
-        Vector x, Vector y, Vector z,
+        const Vector& x, const Vector& y, const Vector& z,
         std::source_location location = std::source_location::current());
   };
 
@@ -43,11 +45,10 @@ namespace Exception
   {
   public:
     NeedsOrthogonal(
-        Vector x, Vector y,
+        const Vector& x, const Vector& y,
         std::source_location location = std::source_location::current());
   };
 
 }  // namespace Exception
 
 #endif  // GeometricPrimitives_Exception_H
-

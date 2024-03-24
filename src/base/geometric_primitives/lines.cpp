@@ -22,14 +22,28 @@
 
 #include "lines.h"
 
-Line2Points::Line2Points(const Point& start, const Point& end)
-    : start(start), end(end))
+Line2Points::Line2Points(Point start, Point end)
+    : SafeExporter{std::move(start), std::move(end)}
 {
 }
 
 
-LinePointDirection::LinePointDirection(const Point& start, Direction direction)
-    : start(start), direction(direction)
+LinePointDirection::LinePointDirection(Point start, Vector direction)
+    : SafeExporter{std::move(start), std::move(direction)}
 {
 }
 
+/**
+ * Template instantiation.
+ * There is no need to include NameSearchResult_impl.h for those.
+ */
+#include <base/naming_scheme/IExport.h>
+#include <base/naming_scheme/IExport_impl.h>
+#include <base/naming_scheme/NameSearchResult.h>
+#include <base/naming_scheme/NameSearchResult_impl.h>
+
+template class NamingScheme::IExport<Line2Points>;
+template class NamingScheme::IExport<LinePointDirection>;
+
+template class NamingScheme::NameSearchResult<Line2Points>;
+template class NamingScheme::NameSearchResult<LinePointDirection>;
