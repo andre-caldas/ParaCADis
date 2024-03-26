@@ -63,12 +63,19 @@ namespace Threads
     }
 
     /**
-     * An iterator (wrapper) that locks the mutex using SharedLock.
-     * @param mutex - the mutex to lock.
+     * Operations that return an iterator (to be made LockedIterator),
+     * they do need a lock before doing the search.
+     *
+     * The SharedLock ownership is transfered to the LockedIterator
+     * so it can live as long as the iterator itself.
+     * @param lock - the SharedLock instance.
      * @param it - original iterator to be wrapped.
+     * @attention It might happen that the SharedLock is dummy because
+     * some outter context has already locked it. It is very important that
+     * the iterator does not live longer than the real lock.
      */
-    LockedIterator(MutexData& mutex, ItType it)
-        : originalIterator(std::move(it)), lock(mutex)
+    LockedIterator(SharedLock&& lock, ItType it)
+        : originalIterator(std::move(it)), lock(std::move(lock))
     {
     }
 

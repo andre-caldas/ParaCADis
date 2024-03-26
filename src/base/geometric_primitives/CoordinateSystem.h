@@ -26,6 +26,8 @@
 #include "deferenceables.h"
 #include "types.h"
 
+#include <base/naming_scheme/Chainables.h>
+
 /** Stores and manages the placement of a coordinate system.
  *
  * Vectors need to be interpreted in some context.
@@ -160,6 +162,7 @@ class DeferenceableCoordinateSystem
                                 {&DeferenceableCoordinateSystemData::bz, "bz"},
                                 {&DeferenceableCoordinateSystemData::bz, "z"},
                                 {&DeferenceableCoordinateSystemData::bz, "k"}>
+    , public NamingScheme::Chainables<DeferenceablePoint, DeferenceableVector>
 {
 public:
   DeferenceableCoordinateSystem() = default;

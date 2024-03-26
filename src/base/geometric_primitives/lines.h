@@ -26,6 +26,7 @@
 #include "deferenceables.h"
 #include "types.h"
 
+#include <base/naming_scheme/Chainables.h>
 #include <base/naming_scheme/Exporter.h>
 #include <base/naming_scheme/IExport.h>
 #include <base/threads/safe_structs/ThreadSafeStruct.h>
@@ -56,6 +57,7 @@ class Line2Points
     , public NamingScheme::SafeIExport<bool, Line2PointsData,
                                 {&Line2PointsData::is_bounded_start, "is_bounded_start"},
                                 {&Line2PointsData::is_bounded_end, "is_bounded_end"}>
+    , public NamingScheme::Chainables<DeferenceablePoint>
 {
 public:
   Line2Points(Point start, Point end);
@@ -69,8 +71,8 @@ public:
 struct LinePointDirectionData {
   DeferenceablePoint start;
   DeferenceableVector direction;
-  bool is_bounded_start;
-  bool is_bounded_end;
+  bool is_bounded_start = true;
+  bool is_bounded_end = true;
 };
 
 /**
@@ -89,6 +91,7 @@ class LinePointDirection
     , public NamingScheme::SafeIExport<bool, LinePointDirectionData,
                                 {&LinePointDirectionData::is_bounded_start, "is_bounded_start"},
                                 {&LinePointDirectionData::is_bounded_end, "is_bounded_end"}>
+    , public NamingScheme::Chainables<DeferenceablePoint, DeferenceableVector>
 {
 public:
   LinePointDirection(Point start, Vector direction);

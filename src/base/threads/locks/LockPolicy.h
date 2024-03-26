@@ -139,6 +139,11 @@ namespace Threads
   class SharedLock : public LockPolicy
   {
   public:
+    /**
+     * The movable constructor is so that you can have the mutex locked
+     * and handled to a LockedIterator.
+     */
+    [[nodiscard]] SharedLock(SharedLock&& other_lock) = default;
     [[nodiscard]] SharedLock(MutexData& mutex);
     template<C_MutexHolder Holder>
     [[nodiscard]] SharedLock(const Holder& holder) : SharedLock(holder.getMutexData())

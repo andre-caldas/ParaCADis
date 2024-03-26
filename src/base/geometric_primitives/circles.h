@@ -26,6 +26,7 @@
 #include "deferenceables.h"
 #include "types.h"
 
+#include <base/naming_scheme/Chainables.h>
 #include <base/naming_scheme/IExport.h>
 
 /**
@@ -51,6 +52,7 @@ class CirclePointRadiusNormal
     , public NamingScheme::SafeIExport<Real, CirclePointRadiusNormalData,
                                 {&CirclePointRadiusNormalData::radius, "radius"},
                                 {&CirclePointRadiusNormalData::radius, "r2"}>
+    , public NamingScheme::Chainables<DeferenceablePoint, DeferenceableVector>
 {
 public:
   CirclePointRadiusNormal(Point center, Real radius, Vector normal = {1,0,0});
@@ -79,6 +81,7 @@ class Circle3Points
                                 {&Circle3PointsData::b, "p2"},
                                 {&Circle3PointsData::c, "c"},
                                 {&Circle3PointsData::c, "p3"}>
+    , public NamingScheme::Chainables<DeferenceablePoint>
 {
 public:
   Circle3Points(Point a, Point b, Point c);
@@ -111,6 +114,7 @@ class Circle2PointsDirection
     , public NamingScheme::SafeIExport<DeferenceableVector, Circle2PointsDirectionData,
                                 {&Circle2PointsDirectionData::d, "d"},
                                 {&Circle2PointsDirectionData::d, "to_center"}>
+    , public NamingScheme::Chainables<DeferenceablePoint, DeferenceableVector>
 {
 public:
   Circle2PointsDirection(Point a, Point b, Vector chord_to_center);

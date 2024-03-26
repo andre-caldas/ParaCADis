@@ -97,4 +97,82 @@ namespace DocumentTree
     return false;
   }
 
+
+  SharedPtr<ExporterBase>
+  Container::resolve_share(token_iterator& tokens, ExporterBase*)
+  {
+    if(!tokens)
+    {
+      return {};
+    }
+
+    auto result = Chainables::resolve_share(tokens);
+    if(result)
+    {
+      return result;
+    }
+
+    auto& token = tokens.front();
+    if (token.isUuid())
+    {
+      auto it = non_containers.find(token);
+      if(it != non_containers.end())
+      {
+        return it->second;
+      }
+      return {};
+    }
+
+    for(auto& [uuid, ptr] : non_containers)
+    {
+      if(ptr->getName() == token.getName())
+      {
+        return ptr;
+      }
+    }
+
+    return {};
+  }
+
+  SharedPtr<Container>
+  Container::resolve_share(token_iterator& tokens, Container*)
+  {
+    auto& token = tokens.front();
+    if (token.isUuid())
+    {
+      auto it = containers.find(token);
+      if(it != containers.end())
+      {
+        return it->second;
+      }
+      return {};
+    }
+
+    for(auto& [uuid, ptr] : containers)
+    {
+      if(ptr->getName() == token.getName())
+      {
+        return ptr;
+      }
+    }
+
+    return {};
+  }
+
+  DeferenceableCoordinateSystem*
+  Container::resolve_ptr(token_iterator& tokens, DeferenceableCoordinateSystem*)
+  {
+    if(!tokens)
+    {
+      return nullptr;
+    }
+
+    if(tokens.front() == "axis")
+    {
+      tokens.advance(1);
+      return &coordinate_system;
+    }
+    return nullptr;
+  }
+
 }  // namespace DocumentTree

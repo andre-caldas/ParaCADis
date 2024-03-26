@@ -24,6 +24,7 @@
 #define ExpectedBehaviour_SharedPtr_H
 
 #include <memory>
+#include <utility>
 
 template<typename T>
 class WeakPtr;
@@ -64,9 +65,9 @@ public:
   T& operator*() const;
 
   template<typename... Args>
-  static SharedPtr<T> make_shared(Args... args)
+  static SharedPtr<T> make_shared(Args&&... args)
   {
-    return std::make_shared<T>(args...);
+    return std::make_shared<T>(std::forward<Args>(args)...);
   }
 
   bool operator==(const SharedPtr<T>& other) const noexcept

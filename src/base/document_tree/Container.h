@@ -25,6 +25,7 @@
 
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/geometric_primitives/CoordinateSystem.h>
+#include <base/naming_scheme/Chainables.h>
 #include <base/naming_scheme/Exporter.h>
 #include <base/naming_scheme/IExport.h>
 #include <base/threads/safe_structs/ThreadSafeMap.h>
@@ -34,9 +35,9 @@ namespace DocumentTree
 
   class Container
       : public NamingScheme::ExporterBase
-      , public NamingScheme::IExport<NamingScheme::ExporterBase>
       , public NamingScheme::IExport<Container>
       , public NamingScheme::IExport<DeferenceableCoordinateSystem>
+      , public NamingScheme::Chainables<Container, DeferenceableCoordinateSystem>
   {
     using ExporterBase = NamingScheme::ExporterBase;
     template<typename T>
@@ -57,8 +58,8 @@ namespace DocumentTree
     resolve_share(token_iterator& tokens, ExporterBase* = nullptr) override;
     SharedPtr<Container>
     resolve_share(token_iterator& tokens, Container* = nullptr) override;
-    SharedPtr<DeferenceableCoordinateSystem>
-    resolve_share(token_iterator& tokens, DeferenceableCoordinateSystem* = nullptr) override;
+    DeferenceableCoordinateSystem*
+    resolve_ptr(token_iterator& tokens, DeferenceableCoordinateSystem* = nullptr) override;
 
   private:
     using uuid_type = NamingScheme::Uuid::uuid_type;

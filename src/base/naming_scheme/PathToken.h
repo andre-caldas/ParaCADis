@@ -60,6 +60,8 @@ namespace NamingScheme
     operator Uuid::uuid_type() const { return uuid; }
     operator std::string() const { return toString(); }
 
+    bool operator==(std::string_view name_) const { return name_ == name; }
+
     void             serialize(Xml::Writer& writer) const noexcept;
     static PathToken unserialize(Xml::Reader& reader);
   };

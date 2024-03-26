@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,23 +20,36 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "exceptions.h"
+#ifndef NamingScheme_Chainables_impl_H
+#define NamingScheme_Chainables_impl_H
 
-#include "Container.h"
+#include "Chainables.h"
 
-#include <base/naming_scheme/exceptions.h>
-
-#include <format>
-
-using namespace ::Exception;
-using namespace DocumentTree;
-using namespace DocumentTree::Exception;
 using namespace NamingScheme;
 
-ElementAlreadyInContainer::ElementAlreadyInContainer(
-    SharedPtr<const ExporterBase> element, SharedPtr<const Container> container)
-    : RunTimeError(std::format(
-          "Container ({}) already has element ({}).", container->toString(),
-          element->toString()))
+template<typename... EachChainable>
+SharedPtr<ExporterBase> Chainables<EachChainable...>::resolve_share(token_iterator &tokens, ExporterBase *)
 {
+  return chain_resolve<EachChainable...>(tokens);
 }
+
+
+template<typename... EachChainable>
+template<C_IsChainable First, C_IsChainable... Others>
+SharedPtr<ExporterBase> Chainables<EachChainable...>::chain_resolve(token_iterator& tokens)
+{
+  auto exporter = dynamic_cast<IExport<First>&>(*this);
+  auto result = exporter.resolve(tokens);
+  if(result)
+  {
+    return result;
+  }
+
+  if constexpr (sizeof...(Others) > 0)
+  {
+    return chain_resolve<Others...>(tokens);
+  }
+  return {};
+}
+
+#endif

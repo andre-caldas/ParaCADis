@@ -54,12 +54,15 @@ namespace Threads::SafeStructs
 
     auto find(const Key& key)
     {
-      return LockedIterator(mutex, container.find(key));
+      // We have to lock before seaching container.
+      SharedLock lock(mutex);
+      return LockedIterator(std::move(lock), container.find(key));
     }
 
     auto find(const Key& key) const
     {
-      return LockedIterator(mutex, container.find(key));
+      SharedLock lock(mutex);
+      return LockedIterator(std::move(lock), container.find(key));
     }
 
     size_t count(const Key& key) const
