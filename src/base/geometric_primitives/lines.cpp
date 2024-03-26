@@ -23,13 +23,13 @@
 #include "lines.h"
 
 Line2Points::Line2Points(Point start, Point end)
-    : SafeExporter{std::move(start), std::move(end)}
+    : Exporter{std::move(start), std::move(end)}
 {
 }
 
 
 LinePointDirection::LinePointDirection(Point start, Vector direction)
-    : SafeExporter{std::move(start), std::move(direction)}
+    : Exporter{std::move(start), std::move(direction)}
 {
 }
 

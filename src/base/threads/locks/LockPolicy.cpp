@@ -308,15 +308,14 @@ namespace Threads
     _detachFromThread();
   }
 
-  SharedLock::SharedLock(MutexData* mutex)
+  SharedLock::SharedLock(MutexData& mutex)
       : LockPolicy(false, mutex)
   {
     if (!getMutexes().empty()) {
       assert(getMutexes().size() == 1);
-      assert(getMutexes().contains(mutex));
-      lock = std::shared_lock(mutex->mutex);
+      assert(getMutexes().contains(&mutex));
+      lock = std::shared_lock(mutex.mutex);
     }
   }
 
 }  // namespace Threads
-

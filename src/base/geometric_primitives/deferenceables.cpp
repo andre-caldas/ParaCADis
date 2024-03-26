@@ -23,24 +23,36 @@
 #include "deferenceables.h"
 
 DeferenceablePoint::DeferenceablePoint(const Point& p)
-    : SafeExporter{p.x(), p.y(), p.z()}
+    : Exporter{p.x(), p.y(), p.z()}
 {
 }
 
 DeferenceablePoint::DeferenceablePoint(Real x, Real y, Real z)
-    : SafeExporter{std::move(x), std::move(y), std::move(z)}
+    : Exporter{std::move(x), std::move(y), std::move(z)}
 {
+}
+
+DeferenceablePoint::operator Point() const noexcept
+{
+  auto gate = getReaderGate();
+  return Point{gate->x, gate->y, gate->z};
 }
 
 
 DeferenceableVector::DeferenceableVector(const Vector& v)
-    : SafeExporter{v.x(), v.y(), v.z()}
+    : Exporter{v.x(), v.y(), v.z()}
 {
 }
 
 DeferenceableVector::DeferenceableVector(Real x, Real y, Real z)
-    : SafeExporter{std::move(x), std::move(y), std::move(z)}
+    : Exporter{std::move(x), std::move(y), std::move(z)}
 {
+}
+
+DeferenceableVector::operator Vector() const noexcept
+{
+  auto gate = getReaderGate();
+  return Vector{gate->x, gate->y, gate->z};
 }
 
 

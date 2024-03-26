@@ -79,7 +79,7 @@ PathToObject::PathToObject(Uuid root_uuid, ListOfPathTokens tokens)
 {
 }
 
-PathToObject::PathToObject(const SharedPtr<Exporter>& root, ListOfPathTokens tokens)
+PathToObject::PathToObject(const SharedPtr<ExporterBase>& root, ListOfPathTokens tokens)
     : ListOfPathTokens(std::move(tokens))
     , root_weak_ptr(root.getWeakPtr())
     , root_uuid(root->getUuid())

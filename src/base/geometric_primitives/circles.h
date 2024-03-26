@@ -31,25 +31,29 @@
 /**
  * DataStruct for CircleRadius.
  */
-struct CirclePointRadiusData {
-  DeferenceablePoint center;
-  Real               radius;
+struct CirclePointRadiusNormalData {
+  DeferenceablePoint  center;
+  DeferenceableVector normal;
+  Real                radius;
 };
 
 /**
- * A counter-clockwise oriented circle, if radius is positive.
+ * A counter-clockwise oriented circle, thumbs up (right-hand).
  */
-class CirclePointRadius
-    : NamingScheme::SafeExporter<CirclePointRadiusData>
-    , NamingScheme::SafeIExport<DeferenceablePoint, CirclePointRadiusData,
-                                {&CirclePointRadiusData::center, "center"},
-                                {&CirclePointRadiusData::center, "c"}>
-    , NamingScheme::SafeIExport<Real, CirclePointRadiusData,
-                                {&CirclePointRadiusData::radius, "radius"},
-                                {&CirclePointRadiusData::radius, "r2"}>
+class CirclePointRadiusNormal
+    : public NamingScheme::Exporter<CirclePointRadiusNormalData>
+    , public NamingScheme::SafeIExport<DeferenceablePoint, CirclePointRadiusNormalData,
+                                {&CirclePointRadiusNormalData::center, "center"},
+                                {&CirclePointRadiusNormalData::center, "c"}>
+    , public NamingScheme::SafeIExport<DeferenceableVector, CirclePointRadiusNormalData,
+                                {&CirclePointRadiusNormalData::normal, "normal"},
+                                {&CirclePointRadiusNormalData::normal, "n"}>
+    , public NamingScheme::SafeIExport<Real, CirclePointRadiusNormalData,
+                                {&CirclePointRadiusNormalData::radius, "radius"},
+                                {&CirclePointRadiusNormalData::radius, "r2"}>
 {
 public:
-  CirclePointRadius(Point center, Real radius);
+  CirclePointRadiusNormal(Point center, Real radius, Vector normal = {1,0,0});
 };
 
 
@@ -67,8 +71,8 @@ struct Circle3PointsData {
  * Orientation given by the oriented triangle: a --> b --> c.
  */
 class Circle3Points
-    : NamingScheme::SafeExporter<Circle3PointsData>
-    , NamingScheme::SafeIExport<DeferenceablePoint, Circle3PointsData,
+    : public NamingScheme::Exporter<Circle3PointsData>
+    , public NamingScheme::SafeIExport<DeferenceablePoint, Circle3PointsData,
                                 {&Circle3PointsData::a, "a"},
                                 {&Circle3PointsData::a, "p1"},
                                 {&Circle3PointsData::b, "b"},
@@ -98,13 +102,13 @@ struct Circle2PointsDirectionData {
  * Walk the provided distance and you are standing over the circle center.
  */
 class Circle2PointsDirection
-    : NamingScheme::SafeExporter<Circle2PointsDirectionData>
-    , NamingScheme::SafeIExport<DeferenceablePoint, Circle2PointsDirectionData,
+    : public NamingScheme::Exporter<Circle2PointsDirectionData>
+    , public NamingScheme::SafeIExport<DeferenceablePoint, Circle2PointsDirectionData,
                                 {&Circle2PointsDirectionData::a, "a"},
                                 {&Circle2PointsDirectionData::a, "p1"},
                                 {&Circle2PointsDirectionData::b, "b"},
                                 {&Circle2PointsDirectionData::b, "p2"}>
-    , NamingScheme::SafeIExport<DeferenceableVector, Circle2PointsDirectionData,
+    , public NamingScheme::SafeIExport<DeferenceableVector, Circle2PointsDirectionData,
                                 {&Circle2PointsDirectionData::d, "d"},
                                 {&Circle2PointsDirectionData::d, "to_center"}>
 {

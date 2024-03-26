@@ -1,23 +1,22 @@
-// SPDX-License-Identifier: LGPL-2.1-or-later
+// SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
  *                                                                          *
- *   This file is part of FreeCAD.                                          *
+ *   This file is part of ParaCADis.                                        *
  *                                                                          *
- *   FreeCAD is free software: you can redistribute it and/or modify it     *
- *   under the terms of the GNU Lesser General Public License as            *
- *   published by the Free Software Foundation, either version 2.1 of the   *
- *   License, or (at your option) any later version.                        *
+ *   ParaCADis is free software: you can redistribute it and/or modify it   *
+ *   under the terms of the GNU General Public License as published         *
+ *   by the Free Software Foundation, either version 2.1 of the License,    *
+ *   or (at your option) any later version.                                 *
  *                                                                          *
- *   FreeCAD is distributed in the hope that it will be useful, but         *
+ *   ParaCADis is distributed in the hope that it will be useful, but       *
  *   WITHOUT ANY WARRANTY; without even the implied warranty of             *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU       *
- *   Lesser General Public License for more details.                        *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                   *
+ *   See the GNU General Public License for more details.                   *
  *                                                                          *
- *   You should have received a copy of the GNU Lesser General Public       *
- *   License along with FreeCAD. If not, see                                *
- *   <https://www.gnu.org/licenses/>.                                       *
+ *   You should have received a copy of the GNU General Public License      *
+ *   along with ParaCADis. If not, see <https://www.gnu.org/licenses/>.     *
  *                                                                          *
  ***************************************************************************/
 
@@ -82,7 +81,7 @@ namespace Threads::SafeStructs
       const Struct* operator->() const;
     };
 
-    const ReaderGate& getReaderGate() const;
+    const ReaderGate& getReaderGate() const noexcept;
 
     struct WriterGate {
       WriterGate(self_t* self);
@@ -92,7 +91,7 @@ namespace Threads::SafeStructs
       Struct* operator->() const;
     };
 
-    const WriterGate& getWriterGate();
+    const WriterGate& getWriterGate() noexcept;
 
     void cancelThreads();
 
@@ -100,15 +99,16 @@ namespace Threads::SafeStructs
 
   public:
     // TODO: eliminate this or the gate version.
-    auto getMutexData() const;
+    constexpr MutexData& getMutexData() const { return mutex; }
+    constexpr operator MutexData&() const { return mutex; }
 
   private:
     const ReaderGate reader_gate{this};
     const WriterGate writer_gate{this};
 
-    Threads::MutexData        defaultMutex;
-    Threads::MutexData* const mutex = &defaultMutex;
-    Struct                    theStruct;
+    mutable Threads::MutexData defaultMutex;
+    Threads::MutexData&        mutex = defaultMutex;
+    Struct                     theStruct;
 
     std::thread::id activeThread;
     std::thread     dedicatedThread;

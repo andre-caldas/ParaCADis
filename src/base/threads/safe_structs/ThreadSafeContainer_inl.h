@@ -55,7 +55,7 @@ namespace Threads::SafeStructs
   template<typename ContainerType>
   auto ThreadSafeContainer<ContainerType>::end()
   {
-    return iterator::MakeEndIterator(container.end());
+    return typename iterator::sentinel_t(container.end());
   }
 
   template<typename ContainerType>
@@ -67,7 +67,7 @@ namespace Threads::SafeStructs
   template<typename ContainerType>
   auto ThreadSafeContainer<ContainerType>::cend() const
   {
-    return const_iterator::MakeEndIterator(container.cend());
+    return typename const_iterator::sentinel_t(container.cend());
   }
 
   template<typename ContainerType>

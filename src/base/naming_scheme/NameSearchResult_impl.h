@@ -39,7 +39,7 @@ bool NameSearchResult<T>::resolve(token_iterator& tokens)
   resolveExporter(tokens);
 
   // Do we want an exporter?
-  if constexpr (std::is_same_v<std::remove_cv_t<T>, Exporter>) {
+  if constexpr (std::is_same_v<std::remove_cv_t<T>, ExporterBase>) {
     if (tokens) {
       status = too_many_tokens;
       return false;

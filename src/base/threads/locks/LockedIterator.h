@@ -25,104 +25,106 @@
 
 #include "LockPolicy.h"
 
+#include <iterator>
+
 namespace Threads
 {
 
-  template<typename ItType>
-  class LockedIterator : private ItType
+  template<typename ItType, std::sentinel_for<ItType> Sentinel>
+  class LockedIteratorSentinel
   {
   public:
-    using value_type        = typename ItType::value_type;
-    using difference_type   = typename ItType::difference_type;
-    using pointer           = typename ItType::pointer;
-    using reference         = typename ItType::reference;
-    using iterator_category = typename ItType::iterator_category;
+    Sentinel end;
+    LockedIteratorSentinel(Sentinel&& end) : end(std::move(end)) {}
+
+    LockedIteratorSentinel() = default;
+    LockedIteratorSentinel(const LockedIteratorSentinel&) = default;
+    LockedIteratorSentinel(LockedIteratorSentinel&&) = default;
+
+    LockedIteratorSentinel& operator=(const LockedIteratorSentinel&) = default;
+    LockedIteratorSentinel& operator=(LockedIteratorSentinel&&) = default;
+  };
+
+  template<typename ItType>
+  class LockedIterator
+  {
+  public:
+    template<std::sentinel_for<ItType> Sentinel>
+    using sentinel_t = LockedIteratorSentinel<ItType, Sentinel>;
+    using original_iterator_t = ItType;
+
+    // I hope nobody uses this. Some algorithms may fail. Non-portable.
+    LockedIterator() = default;
 
     // Attention: do not lock mutex again!
     LockedIterator(const LockedIterator& other)
-        : ItType(other)
+        : originalIterator(other.originalIterator)
     {
     }
 
     /**
-     * @brief An iterator (wrapper) that locks the mutex using SharedLock.
+     * An iterator (wrapper) that locks the mutex using SharedLock.
      * @param mutex - the mutex to lock.
      * @param it - original iterator to be wrapped.
      */
     LockedIterator(MutexData& mutex, ItType it)
-        : ItType(std::move(it)), lock(mutex)
+        : originalIterator(std::move(it)), lock(mutex)
     {
     }
 
     // We need LockedIterator to be copy assignable to use algorithms.
     // But we shall never use it. We do not change mutexes, only the iterator.
     // So, this messes with LockPolicy.
+    // I hope nobody uses this. Some algorithms may fail. Non-portable.
     LockedIterator& operator=(const LockedIterator& other)
     {
-      assert(false);
-      ItType::operator=(other);
+      assert(false && "It is a bad idea to assign locks.");
+      originalIterator = other.originalIterator;
       return *this;
     }
 
     constexpr bool operator==(const LockedIterator& other) const
     {
-      return ItType::operator==(other);
+      return originalIterator == other.originalIterator;
     }
 
-    constexpr bool operator!=(const LockedIterator& other) const
+    // TODO: It seems LockedIteratorSentinel<> is NOT a sentinel after all. :-(
+//    template<std::sentinel_for<ItType> Sentinel>
+    template<typename Sentinel>
+    constexpr bool operator==(const Sentinel& sentinel) const
     {
-      return ItType::operator!=(other);
+      return originalIterator == sentinel.end;
     }
 
     LockedIterator& operator++()
     {
-      ItType::operator++();
+      ++originalIterator;
       return *this;
     }
 
     LockedIterator operator++(int)
     {
-      LockedIterator result(*this);
-      ++*this;
+      LockedIterator result{*this};
+      ++originalIterator;
       return result;
     }
 
-    using ItType::operator==;
-    using ItType::operator!=;
-    using ItType::operator*;
-    using ItType::operator->;
-
-    /**
-     * @brief Static method to provide a LockedIterator that does not lock
-     * anything. It shall be used only to construct and "end" iterator.
-     * @param end_it - original container's end iterator.
-     * @return An "end" iterator of type LockedIterator<ItType>.
-     */
-    static LockedIterator<ItType> MakeEndIterator(ItType&& end_it)
+    auto& operator*()
     {
-      return LockedIterator<ItType>(std::move(end_it));
+      return *originalIterator;
     }
 
-    operator const ItType&() const { return *this; }
+    auto operator->()
+    {
+      return originalIterator.operator->();
+    }
 
-    operator ItType&() { return *this; }
+    operator const ItType&() const { return originalIterator; }
+    operator ItType&() { return originalIterator; }
 
   private:
+    ItType originalIterator;
     mutable SharedLock lock;
-
-    /**
-     * @brief A wrapper that does not actually lock anything.
-     * Shall be used only for the "end()" iterator.
-     * @param it - the "end()" iterator to be wrapped.
-     * @attention It is better if the end() iterator and the other iterators
-     * are of the same type.
-     * Therefore, we also wrap the "end()" iterator.
-     * But, since it might be short lived, we do not want the lock to be tied to it.
-     */
-    explicit LockedIterator(ItType&& it)
-        : ItType(std::move(it))
-    {
-    }
   };
 
 }  // namespace Threads

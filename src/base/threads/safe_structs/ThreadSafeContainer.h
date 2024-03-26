@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -28,9 +28,6 @@
 
 namespace Threads::SafeStructs
 {
-
-  template<typename ItType>
-  class LockedIterator;
 
   template<typename ContainerType>
   class ThreadSafeContainer
@@ -64,6 +61,23 @@ namespace Threads::SafeStructs
     bool   empty() const;
     void   clear();
 
+    struct ReaderGate {
+      ReaderGate(self_t* self) : self(self) {}
+      ReaderGate(const ReaderGate&) = delete;
+      void operator=(const ReaderGate&) = delete;
+
+      self_t* self;
+
+      const auto operator->() const { return &self->container; }
+      const auto& operator*() const { return self->container; }
+    };
+
+    const ReaderGate& getReaderGate() const noexcept
+    {
+      assert(Threads::LockPolicy::isLocked(mutex));
+      return rgate;
+    }
+
     struct WriterGate {
       WriterGate(self_t* self) : self(self) {}
       WriterGate(const WriterGate&) = delete;
@@ -78,7 +92,7 @@ namespace Threads::SafeStructs
     WriterGate& getWriterGate()
     {
       assert(Threads::LockPolicy::isLockedExclusively(mutex));
-      return gate;
+      return wgate;
     }
 
     template<typename SomeHolder>
@@ -86,14 +100,16 @@ namespace Threads::SafeStructs
 
   public:
     // TODO: eliminate this or the gate version.
-    auto getMutexData() const { return mutex; }
+    constexpr MutexData& getMutexData() const { return mutex; }
+    constexpr operator MutexData&() const { return mutex; }
 
   protected:
-    WriterGate gate{this};
+    ReaderGate rgate{this};
+    WriterGate wgate{this};
 
-    Threads::MutexData defaultMutex;
-    Threads::MutexData* const mutex = &defaultMutex;
-    ContainerType             container;
+    mutable Threads::MutexData defaultMutex;
+    Threads::MutexData&        mutex = defaultMutex;
+    ContainerType              container;
   };
 
 }  // namespace Threads::SafeStructs

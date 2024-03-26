@@ -24,7 +24,6 @@
 #define Threads_LockPolicy_inc_H
 
 #include "LockPolicy.h"
-
 #include "exceptions.h"
 
 #include <algorithm>
@@ -37,8 +36,7 @@ namespace Threads
 {
 
   template<C_MutexData... MutN>
-  LockPolicy::LockPolicy(bool is_exclusive, MutN*... mutex)
-      : mutexes{mutex...}
+  LockPolicy::LockPolicy(bool is_exclusive, MutN&... mutex) : mutexes{&mutex...}
   {
     // Shared locks are acquired one by one.
     assert(!is_exclusive || mutexes.size() <= 1);
@@ -50,20 +48,18 @@ namespace Threads
    */
   template<typename C>
   struct MutexDataPointer {
-    MutexDataPointer(const C& container)
-        : container(container)
-    {
-    }
+    MutexDataPointer(const C& container) : container(container) {}
 
-    auto getPair() { return container.getMutexData(); }
+    auto& getPair() { return container.getMutexData(); }
 
     const C& container;
   };
 
-  template<C_MutexData FirstMutex, C_MutexData... MutexData>
-  ExclusiveLock<FirstMutex, MutexData...>::ExclusiveLock(
-      FirstMutex* first_mutex, MutexData*... mutex_data)
-      : LockPolicy(true, first_mutex, mutex_data...)
+
+  template<C_MutexData FirstMutex, C_MutexData... Mutex>
+  template<C_MutexHolder FirstHolder, C_MutexHolder... Holder>
+  ExclusiveLock<FirstMutex, Mutex...>::ExclusiveLock(FirstHolder& first_holder, Holder&... holder)
+      : LockPolicy(true, getMutex(first_holder), getMutex(holder)...)
   {
     /*
      * Here we know that if this is not the first lock,
@@ -77,43 +73,42 @@ namespace Threads
      * ExclusiveLock l1(m1, m2);
      * ExclusiveLock l2(m1); // Does nothing.
      */
-    assert(
-        getMutexes().empty() || getMutexes().size() == 1 + sizeof...(MutexData));
-    if (getMutexes().size() == 1 + sizeof...(MutexData)) {
+    assert(getMutexes().empty() || getMutexes().size() == 1 + sizeof...(Holder));
+    if (getMutexes().size() == 1 + sizeof...(Holder)) {
       /*
        * It would be more natural if we could pass "mutexes" to the constructor.
        * But there is only the option to list all mutexes at compile time.
        * Fortunately, mutexes = {container.getMutexPtr()...}.
        */
-      locks = std::make_shared<locks_t>(first_mutex->mutex, mutex_data->mutex...);
+      locks = std::make_shared<locks_t>(getMutex(first_holder).mutex, getMutex(holder).mutex...);
     }
   }
 
-  template<C_MutexData FirstData, C_MutexData... MutexData>
-  void ExclusiveLock<FirstData, MutexData...>::release()
+  template<C_MutexData FirstMutex, C_MutexData... Mutex>
+  void ExclusiveLock<FirstMutex, Mutex...>::release()
   {
     locks.reset();
   }
 
-  template<C_MutexData FirstData, C_MutexData... MutexData>
-  auto ExclusiveLock<FirstData, MutexData...>::detachFromThread()
+  template<C_MutexData FirstMutex, C_MutexData... Mutex>
+  auto ExclusiveLock<FirstMutex, Mutex...>::detachFromThread()
   {
     LockPolicy::detachFromThread();
     return locks;
   }
 
-  template<C_MutexHolder FirstHolder, C_MutexHolder... MutexHolder>
+  template<C_MutexHolderWithGates FirstHolder, C_MutexHolderWithGates... MutexHolder>
   ExclusiveLockGate<FirstHolder, MutexHolder...>::ExclusiveLockGate(
       FirstHolder& first_holder, MutexHolder&... holder)
-      : ExclusiveLock<MutexData, TypeTraits::ForEach_t<MutexData, MutexHolder>...>(first_holder.getMutexData(), holder.getMutexData()...)
+      : ExclusiveLock<MutexData, TypeTraits::ForEach_t<MutexData, MutexHolder>...>(
+            first_holder.getMutexData(), holder.getMutexData()...)
       , FirstHolder(first_holder)
   {
   }
 
-  template<C_MutexHolder FirstHolder, C_MutexHolder... MutexHolder>
+  template<C_MutexHolderWithGates FirstHolder, C_MutexHolderWithGates... MutexHolder>
   template<C_MutexHolderWithGates SomeHolder>
-  auto& ExclusiveLockGate<FirstHolder, MutexHolder...>::operator[](
-      SomeHolder& whichHolder) const
+  auto& ExclusiveLockGate<FirstHolder, MutexHolder...>::operator[](SomeHolder& whichHolder) const
   {
     if (!isLockedExclusively(whichHolder.getMutexData())) {
       throw Exception::NeedLockToAccessContainer();
@@ -123,7 +118,7 @@ namespace Threads
     return *gate;
   }
 
-  template<C_MutexHolder FirstHolder, C_MutexHolder... MutexHolder>
+  template<C_MutexHolderWithGates FirstHolder, C_MutexHolderWithGates... MutexHolder>
   template<typename>
   auto ExclusiveLockGate<FirstHolder, MutexHolder...>::operator->() const
   {

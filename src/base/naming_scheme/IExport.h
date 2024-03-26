@@ -56,7 +56,6 @@ namespace NamingScheme
   {
   public:
     using NameSearchResult = NameSearchResultT<T>;
-    using token_iterator   = NamingScheme::token_iterator;
 
     /**
      * Calls resolve_ptr() and resolve_share().
@@ -76,9 +75,9 @@ namespace NamingScheme
      * @attention To allow a class to derive from multiple IExport<T> classes,
      * we have added a T* to the end of the methods signature.
      *
-     * @todo REMOVE this T* = nullptr.
+     * @todo Is is possible to REMOVE this T* = nullptr.
      */
-    virtual T* resolve_ptr(token_iterator& tokens);
+    virtual T* resolve_ptr(token_iterator& tokens, T* = nullptr);
 
     /**
      * @brief Implement, to return a @class SharedPtr to any object.
@@ -89,9 +88,9 @@ namespace NamingScheme
      * @attention To allow a class to derive from multiple IExport<T> classes,
      * we have added a T* to the end of the methods signature.
      *
-     * @todo REMOVE this T* = nullptr.
+     * @todo Is is possible to REMOVE this T* = nullptr.
      */
-    virtual SharedPtr<T> resolve_share(token_iterator& tokens);
+    virtual SharedPtr<T> resolve_share(token_iterator& tokens, T* = nullptr);
   };
 
 
@@ -157,7 +156,7 @@ namespace NamingScheme
   class SafeIExport : public IExport<T>
   {
   protected:
-    T* resolve_ptr(token_iterator& tokens) override;
+    T* resolve_ptr(token_iterator& tokens, T* = nullptr) override;
 
   private:
     const std::map<std::string, T DataStruct::*> map

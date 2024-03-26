@@ -23,6 +23,7 @@
 #ifndef GeometricPrimitives_CoordinateSystem
 #define GeometricPrimitives_CoordinateSystem
 
+#include "deferenceables.h"
 #include "types.h"
 
 /** Stores and manages the placement of a coordinate system.
@@ -132,6 +133,39 @@ public:
   CoordinateSystem compose(const CoordinateSystem& c) const;
   CoordinateSystem operator*(const CoordinateSystem& c) const { return compose(c); }
   /// @}
+};
+
+/**
+ * DataStruct for CircleRadius.
+ */
+struct DeferenceableCoordinateSystemData {
+  DeferenceablePoint  origin = {0, 0, 0};
+  DeferenceableVector bx     = {1, 0, 0};
+  DeferenceableVector by     = {0, 1, 0};
+  DeferenceableVector bz     = {0, 0, 1};
+};
+
+class DeferenceableCoordinateSystem
+    : public NamingScheme::Exporter<DeferenceableCoordinateSystemData>
+    , public NamingScheme::SafeIExport<DeferenceablePoint, DeferenceableCoordinateSystemData,
+                                {&DeferenceableCoordinateSystemData::origin, "origin"},
+                                {&DeferenceableCoordinateSystemData::origin, "o"}>
+    , public NamingScheme::SafeIExport<DeferenceableVector, DeferenceableCoordinateSystemData,
+                                {&DeferenceableCoordinateSystemData::bx, "bx"},
+                                {&DeferenceableCoordinateSystemData::bx, "x"},
+                                {&DeferenceableCoordinateSystemData::bx, "i"},
+                                {&DeferenceableCoordinateSystemData::by, "by"},
+                                {&DeferenceableCoordinateSystemData::by, "y"},
+                                {&DeferenceableCoordinateSystemData::by, "j"},
+                                {&DeferenceableCoordinateSystemData::bz, "bz"},
+                                {&DeferenceableCoordinateSystemData::bz, "z"},
+                                {&DeferenceableCoordinateSystemData::bz, "k"}>
+{
+public:
+  DeferenceableCoordinateSystem() = default;
+  DeferenceableCoordinateSystem(Point origin) noexcept;
+  DeferenceableCoordinateSystem(Point origin, Vector x, Vector y, Vector z) noexcept;
+  CoordinateSystem getCoordinateSystem() const noexcept;
 };
 
 #endif

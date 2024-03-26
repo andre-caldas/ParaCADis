@@ -56,8 +56,8 @@ namespace NamingScheme
     bool isValid() const;
     static bool isValid(std::string_view uuid_str);
 
-    uuid_type getUuid() const { return uuid; }
-    operator uuid_type() const { return uuid; }
+    constexpr uuid_type getUuid() const { return uuid; }
+    constexpr operator uuid_type() const { return uuid; }
 
     std::string toString() const { return boost::uuids::to_string(uuid); }
     operator std::string() const { return toString(); }

@@ -24,22 +24,25 @@
 #define DocumentTree_exceptions_H
 
 #include <base/exceptions.h>
+#include <base/expected_behaviour/SharedPtr.h>
 
 namespace NamingScheme
 {
-  class Exporter;
+  class ExporterBase;
 }
 
-namespace DocumentTree
+namespace DocumentTree {
+  class Container;
+}
+
+namespace DocumentTree::Exception
 {
 
-  class Container;
-
-  class ElementAlreadyInContainer : public Exception::RunTimeError
+  class ElementAlreadyInContainer : public ::Exception::RunTimeError
   {
   public:
     ElementAlreadyInContainer(
-        const NamingScheme::Exporter& element, const Container& container);
+        SharedPtr<const NamingScheme::ExporterBase> element, SharedPtr<const Container> container);
   };
 
 }  // namespace DocumentTree

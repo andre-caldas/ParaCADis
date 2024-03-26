@@ -52,11 +52,22 @@ class SharedPtr : public std::shared_ptr<T>
 public:
   using value_type = T;
   SharedPtr()      = default;
+  SharedPtr(const SharedPtr&) = default;
+  SharedPtr(SharedPtr&&) = default;
   SharedPtr(const std::shared_ptr<T>& shared);
   SharedPtr(std::shared_ptr<T>&& shared);
 
+  SharedPtr& operator=(const SharedPtr&) = default;
+  SharedPtr& operator=(SharedPtr&&) = default;
+
   T* operator->() const;
   T& operator*() const;
+
+  template<typename... Args>
+  static SharedPtr<T> make_shared(Args... args)
+  {
+    return std::make_shared<T>(args...);
+  }
 
   bool operator==(const SharedPtr<T>& other) const noexcept
   {
@@ -69,6 +80,11 @@ public:
   const std::shared_ptr<T>& sliced() const;
 
   operator SharedPtr<const T>() const { return {sliced()}; }
+  template<typename S>
+  operator SharedPtr<S>() const { return {sliced()}; }
+
+  template<typename S>
+  SharedPtr<S> cast() { return std::dynamic_pointer_cast<S>(sliced()); }
 };
 
 

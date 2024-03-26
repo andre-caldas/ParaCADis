@@ -31,28 +31,47 @@
 
 namespace DocumentTree
 {
+
   class Container
-      : public NamingScheme::Exporter
-      , public NamingScheme::IExport<NamingScheme::Exporter>
+      : public NamingScheme::ExporterBase
+      , public NamingScheme::IExport<NamingScheme::ExporterBase>
+      , public NamingScheme::IExport<Container>
+      , public NamingScheme::IExport<DeferenceableCoordinateSystem>
   {
-    using Exporter = NamingScheme::Exporter;
+    using ExporterBase = NamingScheme::ExporterBase;
+    template<typename T>
+    using IExport = NamingScheme::IExport<T>;
 
   public:
     std::string toString() const override;
 
-    void addExporter(Exporter& element);
-    void addContainer(Container& container);
+    void addElement(SharedPtr<ExporterBase> element);
+    void addContainer(SharedPtr<Container> container);
+
+    bool contains(NamingScheme::Uuid::uuid_type uuid) const;
+    bool contains(const ExporterBase& element) const;
+    bool contains(const Container& container) const;
+    bool contains(std::string_view name) const;
+
+    SharedPtr<ExporterBase>
+    resolve_share(token_iterator& tokens, ExporterBase* = nullptr) override;
+    SharedPtr<Container>
+    resolve_share(token_iterator& tokens, Container* = nullptr) override;
+    SharedPtr<DeferenceableCoordinateSystem>
+    resolve_share(token_iterator& tokens, DeferenceableCoordinateSystem* = nullptr) override;
 
   private:
     using uuid_type = NamingScheme::Uuid::uuid_type;
     template<typename Key, typename Val>
     using UnorderedMap = Threads::SafeStructs::ThreadSafeUnorderedMap<Key, Val>;
 
-    UnorderedMap<uuid_type, SharedPtr<Exporter>>  non_containers;
+    UnorderedMap<uuid_type, SharedPtr<NamingScheme::ExporterBase>> non_containers;
     UnorderedMap<uuid_type, SharedPtr<Container>> containers;
 
-    CoordinateSystem coordinate_system;
+    DeferenceableCoordinateSystem coordinate_system;
   };
+
+  static_assert(Threads::C_MutexHolder<Container>, "A container is a C_MutexHolder.");
 
 }  // namespace DocumentTree
 

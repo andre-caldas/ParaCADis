@@ -47,7 +47,7 @@ namespace Threads
 
     [[nodiscard]]
     ReaderLock(const MutexHolder& mutex_holder)
-        : SharedLock(*mutex_holder.getMutexData())
+        : SharedLock(mutex_holder.getMutexData())
         , gate(mutex_holder.getReaderGate(this))
         , localData((&*gate)->*LocalPointer)
     {

@@ -57,20 +57,20 @@ namespace NamingScheme
     if (share) { return share; }
 
     auto  ptr          = resolve_ptr(tokens);
-    auto& self         = dynamic_cast<Exporter&>(*this);
-    auto  current_lock = self.sharedFromThis<Exporter>();
+    auto& self         = dynamic_cast<ExporterBase&>(*this);
+    auto  current_lock = self.sharedFromThis<ExporterBase>();
     if (ptr) { return std::shared_ptr<T>(current_lock.sliced(), ptr); }
     throw Exception::NoExport();
   }
 
   template<typename T>
-  T* IExport<T>::resolve_ptr(token_iterator& /* token_list */)
+  T* IExport<T>::resolve_ptr(token_iterator& /* token_list */, T*)
   {
     return nullptr;
   }
 
   template<typename T>
-  SharedPtr<T> IExport<T>::resolve_share(token_iterator& /* token_list */)
+  SharedPtr<T> IExport<T>::resolve_share(token_iterator& /* token_list */, T*)
   {
     return {};
   }
@@ -93,14 +93,14 @@ namespace NamingScheme
 
 
   template<typename T, class DataStruct, EachExportedData... dataInfo>
-  T* SafeIExport<T, DataStruct, dataInfo...>::resolve_ptr(token_iterator& tokens)
+  T* SafeIExport<T, DataStruct, dataInfo...>::resolve_ptr(token_iterator& tokens, T*)
   {
     if (!tokens) {
       assert(false && "Why is this being called? There are no more tokens!");
       return nullptr;
     }
 
-    auto* ptr = dynamic_cast<SafeExporter<DataStruct>*>(this);
+    auto* ptr = dynamic_cast<Exporter<DataStruct>*>(this);
     assert(ptr && "Exporters must derive from NamingScheme::Exporter.");
     if (!ptr) { return nullptr; }
 

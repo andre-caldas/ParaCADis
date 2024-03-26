@@ -46,7 +46,7 @@ struct TripletStruct {
  * coordinates directly accessed and simply use it.
  */
 class DeferenceablePoint
-    : public NamingScheme::SafeExporter<TripletStruct>
+    : public NamingScheme::Exporter<TripletStruct>
     , public NamingScheme::SafeIExport<Real, TripletStruct,
                                        {&TripletStruct::x, "x"},
                                        {&TripletStruct::y, "y"},
@@ -55,6 +55,7 @@ class DeferenceablePoint
 public:
   DeferenceablePoint(const Point& p);
   DeferenceablePoint(Real x, Real y, Real z);
+  operator Point() const noexcept;
 
 //  std::string toString() const override;
 };
@@ -71,7 +72,7 @@ public:
  * coordinates directly accessed and simply use it.
  */
 class DeferenceableVector
-    : public NamingScheme::SafeExporter<TripletStruct>
+    : public NamingScheme::Exporter<TripletStruct>
     , public NamingScheme::SafeIExport<Real, TripletStruct,
                                        {&TripletStruct::x, "x"},
                                        {&TripletStruct::y, "y"},
@@ -80,6 +81,7 @@ class DeferenceableVector
 public:
   DeferenceableVector(const Vector& v);
   DeferenceableVector(Real x, Real y, Real z);
+  operator Vector() const noexcept;
 
 //  std::string toString() const override;
 };

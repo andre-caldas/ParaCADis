@@ -47,13 +47,13 @@ struct Line2PointsData {
  * It can be bounded by the any of the two points.
  */
 class Line2Points
-    : NamingScheme::SafeExporter<Line2PointsData>
-    , NamingScheme::SafeIExport<DeferenceablePoint, Line2PointsData,
+    : public NamingScheme::Exporter<Line2PointsData>
+    , public NamingScheme::SafeIExport<DeferenceablePoint, Line2PointsData,
                                 {&Line2PointsData::start, "start"},
                                 {&Line2PointsData::start, "a"},
                                 {&Line2PointsData::end, "end"},
                                 {&Line2PointsData::end, "b"}>
-    , NamingScheme::SafeIExport<bool, Line2PointsData,
+    , public NamingScheme::SafeIExport<bool, Line2PointsData,
                                 {&Line2PointsData::is_bounded_start, "is_bounded_start"},
                                 {&Line2PointsData::is_bounded_end, "is_bounded_end"}>
 {
@@ -79,14 +79,14 @@ struct LinePointDirectionData {
  * It can be bounded in the starting point, or not.
  */
 class LinePointDirection
-    : NamingScheme::SafeExporter<LinePointDirectionData>
-    , NamingScheme::SafeIExport<DeferenceablePoint, LinePointDirectionData,
+    : public NamingScheme::Exporter<LinePointDirectionData>
+    , public NamingScheme::SafeIExport<DeferenceablePoint, LinePointDirectionData,
                                 {&LinePointDirectionData::start, "start"},
                                 {&LinePointDirectionData::start, "a"}>
-    , NamingScheme::SafeIExport<DeferenceableVector, LinePointDirectionData,
+    , public NamingScheme::SafeIExport<DeferenceableVector, LinePointDirectionData,
                                 {&LinePointDirectionData::direction, "direction"},
                                 {&LinePointDirectionData::direction, "v"}>
-    , NamingScheme::SafeIExport<bool, LinePointDirectionData,
+    , public NamingScheme::SafeIExport<bool, LinePointDirectionData,
                                 {&LinePointDirectionData::is_bounded_start, "is_bounded_start"},
                                 {&LinePointDirectionData::is_bounded_end, "is_bounded_end"}>
 {

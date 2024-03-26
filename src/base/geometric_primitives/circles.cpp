@@ -22,20 +22,20 @@
 
 #include "circles.h"
 
-CirclePointRadius::CirclePointRadius(Point center, Real radius)
-    : SafeExporter{std::move(center), std::move(radius)}
+CirclePointRadiusNormal::CirclePointRadiusNormal(Point center, Real radius, Vector normal)
+    : Exporter{std::move(center), std::move(normal), std::move(radius)}
 {
 }
 
 
 Circle3Points::Circle3Points(Point a, Point b, Point c)
-    : SafeExporter{std::move(a), std::move(b), std::move(c)}
+    : Exporter{std::move(a), std::move(b), std::move(c)}
 {
 }
 
 
 Circle2PointsDirection::Circle2PointsDirection(Point a, Point b, Vector d)
-    : SafeExporter{std::move(a), std::move(b), std::move(d)}
+    : Exporter{std::move(a), std::move(b), std::move(d)}
 {
 }
 
@@ -48,10 +48,10 @@ Circle2PointsDirection::Circle2PointsDirection(Point a, Point b, Vector d)
 #include <base/naming_scheme/NameSearchResult.h>
 #include <base/naming_scheme/NameSearchResult_impl.h>
 
-template class NamingScheme::IExport<CirclePointRadius>;
+template class NamingScheme::IExport<CirclePointRadiusNormal>;
 template class NamingScheme::IExport<Circle3Points>;
 template class NamingScheme::IExport<Circle2PointsDirection>;
 
-template class NamingScheme::NameSearchResult<CirclePointRadius>;
+template class NamingScheme::NameSearchResult<CirclePointRadiusNormal>;
 template class NamingScheme::NameSearchResult<Circle3Points>;
 template class NamingScheme::NameSearchResult<Circle2PointsDirection>;

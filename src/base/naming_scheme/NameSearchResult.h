@@ -31,7 +31,7 @@
 namespace NamingScheme
 {
 
-  class Exporter;
+  class ExporterBase;
 
   /**
    * All information for the resolved ReferenceToOjbect.
@@ -43,12 +43,12 @@ namespace NamingScheme
   class NameSearchResultBase
   {
   protected:
-    SharedPtr<Exporter> exporter;
+    SharedPtr<ExporterBase> exporter;
 
     void resolveExporter(token_iterator& tokens);
 
   public:
-    NameSearchResultBase(SharedPtr<Exporter> root) : exporter(root) {}
+    NameSearchResultBase(SharedPtr<ExporterBase> root) : exporter(std::move(root)) {}
 
     [[maybe_unused]] [[nodiscard]]
     Threads::SharedLock lockForReading() const;
@@ -87,4 +87,3 @@ namespace NamingScheme
 #include "NameSearchResult_impl.h"
 
 #endif
-

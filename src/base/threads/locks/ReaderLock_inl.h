@@ -28,7 +28,7 @@ namespace Threads
 
 template<typename MutexHolder>
 ReaderLock<MutexHolder>::ReaderLock(const MutexHolder& mutex_holder)
-    : mutexPair(*mutex_holder.getMutexData())
+    : mutexPair(mutex_holder.getMutexData())
     , sharedLock(std::make_unique<SharedLock>(mutexPair))
     , gate(mutex_holder.getReaderGate(sharedLock.get()))
 {}

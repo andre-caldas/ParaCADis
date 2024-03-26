@@ -34,7 +34,7 @@
 namespace NamingScheme
 {
 
-  class Exporter;
+  class ExporterBase;
 
   /**
    * @brief The list of tokens that composes a path.
@@ -66,28 +66,28 @@ namespace NamingScheme
 
 
   /**
-   * @brief A path to an object is more precisely,
-   * a reference to a member of some object.
+   * A path to an object is more precisely, a reference to a member of some object.
+   *
    * It is composed of:
    * 1. A url path to a document.
-   * 2. A @class Uuid that identifies a root shared @class Exporter.
-   * 3. A sequence of @class PathToken that identifies the path
+   * 2. A Uuid that identifies a root shared ExporterBase.
+   * 3. A sequence of PathToken that identifies the path
    *    to the referenced entity.
    *
-   * Instances of the @class PathToObject are not aware of the type
+   * Instances of the PathToObject are not aware of the type
    * of variable they point to.
    *
-   * @attention This is internally used by @class ReferenceTo<T>,
+   * @attention This is internally used by ReferenceTo<T>,
    * and also used by the python bindings so we do not need
-   * to create one binding for each possible @class ReferenceTo<T>.
-   * Usually you should use @class ReferenceTo<T>, instead.
+   * to create one binding for each possible ReferenceTo<T>.
+   * Usually you should use ReferenceTo<T>, instead.
    */
   class PathToObject : private ListOfPathTokens
   {
   protected:
-    WeakPtr<Exporter> root_weak_ptr;  ///< Try first.
-    Uuid              root_uuid;      ///< Try second.
-    std::string       root_url;       ///< Try this third. (not implemented)
+    WeakPtr<ExporterBase> root_weak_ptr;  ///< Try first.
+    Uuid                  root_uuid;      ///< Try second.
+    std::string           root_url;       ///< Try this third. (not implemented)
 
   public:
     PathToObject(PathToObject&&)                 = default;
@@ -100,7 +100,7 @@ namespace NamingScheme
      * @example `PathToObject(root, {"geometries", "second_line"});`
      */
     /// @{
-    PathToObject(const SharedPtr<Exporter>& root, ListOfPathTokens tokens = {});
+    PathToObject(const SharedPtr<ExporterBase>& root, ListOfPathTokens tokens = {});
     PathToObject(Uuid root_uuid, ListOfPathTokens tokens = {});
     PathToObject(std::string root_url, ListOfPathTokens tokens = {});
     /// @}

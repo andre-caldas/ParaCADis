@@ -59,6 +59,8 @@ namespace Threads
     /// Default #layer and not "lock free".
     MutexData() = default;
     MutexData(int layer) : layer(layer) {}
+    MutexData(const MutexData&) = delete;
+    MutexData& operator=(const MutexData&) = delete;
   };
 
   template<typename T>

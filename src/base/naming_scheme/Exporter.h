@@ -24,6 +24,7 @@
 #define NamingScheme_Exporter_H
 
 #include "NameAndUuid.h"
+#include "types.h"
 
 #include <base/expected_behaviour/SharedFromThis.h>
 #include <base/expected_behaviour/SharedPtr.h>
@@ -43,33 +44,44 @@ namespace NamingScheme
   class IExport;
 
   /**
-   * A Exporter is an object that can be queried to resolve the next step in a path.
+   * A ExporterBase is an object that can be queried to resolve the next step in a path.
    *
-   * @attention For each exported type, you need to subclass @class IExport<X>.
+   * @attention For each exported type, you need to subclass IExport<X>.
    * @attention Probably you do not want to derive from this class.
-   * You should probably derive from @class IExport<X> or @class Chainable.
+   * You should probably derive from IExport<X> or Chainable.
    */
-  class Exporter : public SharedFromThis<Exporter>
+  class ExporterBase : public SharedFromThis<ExporterBase>
   {
   public:
-    Exporter()          = default;
-    virtual ~Exporter() = default;
+    // In IExport<> generates ambiguity, so we put it here.
+    using token_iterator = NamingScheme::token_iterator;
+
+    ExporterBase(const ExporterBase&) = delete;
+
+    ExporterBase()          = default;
+    virtual ~ExporterBase() = default;
 
     /**
      * String for reports and diagnostics.
      *
      * TODO: make pure virtual.
      */
-    virtual std::string toString() const { return "Implement Exporter::toString()!"; }
+    virtual std::string toString() const { return "Implement ExporterBase::toString()!"; }
 
     Uuid        getUuid() const;
     std::string getName() const;
     void        setName(std::string name);
 
+    operator Uuid() const;
+    operator Uuid::uuid_type() const;
+
     /**
      * Must satisfy `Threads::C_MutexHolder`.
      */
-    constexpr Threads::MutexData* getMutexData() { return &mutex; }
+     /// @{
+    constexpr Threads::MutexData& getMutexData() const { return mutex; }
+    constexpr operator Threads::MutexData&() const { return mutex; }
+     /// @}
 
     /**
      * Globally registers a Uuid.
@@ -77,49 +89,52 @@ namespace NamingScheme
      * This is specially useful when serializing
      * and unserializing.
      *
-     * @param shared_ptr - a shared_ptr to the Exporter.
+     * @param shared_ptr - a shared_ptr to the ExporterBase.
      */
-    static void registerUuid(SharedPtr<Exporter> shared_ptr);
+    static void registerUuid(SharedPtr<ExporterBase> shared_ptr);
 
     /**
      * When serializing, uuids are saved as strings.
      * When unserializing, the string can be used
-     * to get a pointer to Exporter.
+     * to get a pointer to ExporterBase.
      *
      * @param uuid - string representation of the uuid.
      * @return A shared_ptr to the referenced object.
      */
-    static SharedPtr<Exporter> getByUuid(std::string uuid);
+    static SharedPtr<ExporterBase> getByUuid(std::string uuid);
 
     /**
      * @brief Same as above.
      * @param uuid - the uuid.
      * @return A shared_ptr to the referenced object.
      */
-    static SharedPtr<Exporter> getByUuid(Uuid::uuid_type uuid);
+    static SharedPtr<ExporterBase> getByUuid(Uuid::uuid_type uuid);
 
   private:
-    Threads::MutexData mutex;
-    NameAndUuid        id;
+    mutable Threads::MutexData mutex;
+    NameAndUuid                id;
   };
 
-  static_assert(Threads::C_MutexHolder<Exporter>);
+  static_assert(
+      Threads::C_MutexHolder<ExporterBase>,
+      "ExporterBase should implement C_MutexHolder.");
 
 
   template<typename DataStruct>
-  class SafeExporter : public Exporter
+  class Exporter : public ExporterBase
   {
     using data_t        = DataStruct;
     using safe_struct_t = Threads::SafeStructs::ThreadSafeStruct<data_t>;
 
   public:
+    Exporter(const Exporter&) = delete;
     template<typename... Args>
-    SafeExporter(Args&&... args) : safeData(*this, args...)
+    Exporter(Args&&... args) : safeData(*this, args...)
     {
     }
 
-    auto& getReaderGate() { return safeData.getReaderGate(); }
-    auto& getWriterGate() { return safeData.getWriterGate(); }
+    auto& getReaderGate() const noexcept { return safeData.getReaderGate(); }
+    auto& getWriterGate() noexcept { return safeData.getWriterGate(); }
 
   private:
     safe_struct_t safeData;

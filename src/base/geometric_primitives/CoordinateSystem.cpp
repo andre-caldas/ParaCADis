@@ -43,9 +43,9 @@ void CoordinateSystem::set(Point origin_, Vector x, Vector y, Vector z)
 {
   Check::assertTwoByTwoOrthogonality(x, y, z);
   origin = std::move(origin_);
-  bx = std::move(x);
-  by = std::move(y);
-  bz = std::move(z);
+  bx     = std::move(x);
+  by     = std::move(y);
+  bz     = std::move(z);
 }
 
 void CoordinateSystem::set(Point origin, Real orientation, Vector y, Vector z)
@@ -111,4 +111,25 @@ CoordinateSystem CoordinateSystem::compose(const CoordinateSystem& c) const
   Vector y = transform(c.by);
   Vector z = transform(c.bz);
   return CoordinateSystem{std::move(o), std::move(x), std::move(y), std::move(z)};
+}
+
+
+/*
+ * DeferenceableCoordinateSystem.
+ */
+DeferenceableCoordinateSystem::DeferenceableCoordinateSystem(Point origin) noexcept
+    : Exporter{std::move(origin)}
+{
+}
+
+DeferenceableCoordinateSystem::DeferenceableCoordinateSystem(
+    Point origin, Vector x, Vector y, Vector z) noexcept
+    : Exporter{std::move(origin), std::move(x), std::move(y), std::move(z)}
+{
+}
+
+CoordinateSystem DeferenceableCoordinateSystem::getCoordinateSystem() const noexcept
+{
+  auto& gate = getReaderGate();
+  return {gate->origin, gate->bx, gate->by, gate->bz};
 }

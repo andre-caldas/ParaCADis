@@ -20,11 +20,13 @@
  *                                                                          *
  ***************************************************************************/
 
+#include <base/threads/locks/LockPolicy.h>
+#include <base/expected_behaviour/SharedPtr.h>
+#include <base/expected_behaviour/SharedPtr_impl.h>
 #include <base/document_tree/Container.h>
 #include <base/geometric_primitives/circles.h>
 #include <base/geometric_primitives/deferenceables.h>
 #include <base/geometric_primitives/lines.h>
-#include <base/naming_scheme/Exporter.h>
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -35,35 +37,37 @@ SCENARIO("Populate a with simple objects", "[simple]")
 {
   GIVEN("a Container and some geometric objects")
   {
-    Container a;
-    auto      p       = Exporter::make_shared<DeferenceablePoint>(1, 2, 3);
-    auto      v       = Exporter::make_shared<DeferenceableVector>(4, 5, 6);
-    auto      line    = Exporter::make_shared<LinePointDirection>(p, v);
-    auto      circle  = Exporter::make_shared<CirclePointRadiusNormal>(p, v);
-    auto      outside = Exporter::make_shared<DeferenceablePoint>(-1, -1, -1);
+    Real radius{5};
+    auto a       = SharedPtr<Container>::make_shared();
+    auto p       = SharedPtr<DeferenceablePoint>::make_shared(1, 2, 3);
+    auto v       = SharedPtr<DeferenceableVector>::make_shared(4, 5, 6);
+    auto line    = SharedPtr<LinePointDirection>::make_shared(p, v);
+    auto circle  = SharedPtr<CirclePointRadiusNormal>::make_shared(p, radius, v);
+    auto outside = SharedPtr<DeferenceablePoint>::make_shared(-1, -1, -1);
 
     WHEN("we add them to the a")
     {
-      a.add(p);
-      a.add(v);
-      a.add(line);
-      a.add(circle);
+      Threads::ExclusiveLock lock{*a};
+      a->addElement(p);
+      a->addElement(v);
+      a->addElement(line);
+      a->addElement(circle);
 
       THEN("they do belong to the container")
       {
-        REQUIRE(a.contains(p));
-        REQUIRE(a.contains(v));
-        REQUIRE(a.contains(line));
-        REQUIRE(a.contains(circle));
-        REQUIRE_FALSE(a.contains(outside));
+        REQUIRE(a->contains(p->getUuid()));
+        REQUIRE(a->contains(v->getUuid()));
+        REQUIRE(a->contains(line->getUuid()));
+        REQUIRE(a->contains(circle->getUuid()));
+        REQUIRE_FALSE(a->contains(outside->getUuid()));
       }
       THEN("we can search by their uuid")
       {
-        REQUIRE(a.contains(p->getUuid()));
-        REQUIRE(a.contains(v->getUuid()));
-        REQUIRE(a.contains(line->getUuid()));
-        REQUIRE(a.contains(circle->getUuid()));
-        REQUIRE_FALSE(a.contains(outside->getUuid()));
+        REQUIRE(a->contains(*p));
+        REQUIRE(a->contains(*v));
+        REQUIRE(a->contains(*line));
+        REQUIRE(a->contains(*circle));
+        REQUIRE_FALSE(a->contains(*outside));
       }
       AND_WHEN("we set a name")
       {
@@ -73,14 +77,14 @@ SCENARIO("Populate a with simple objects", "[simple]")
 
         THEN("we can find them using their name")
         {
-          REQUIRE_FALSE(a.contains("abc"));
+          REQUIRE_FALSE(a->contains("abc"));
 
-          REQUIRE(a.contains(line->getName()));
-          REQUIRE(a.contains(circle->getName()));
-          REQUIRE(a.contains(circle->getName() + ""));
+          REQUIRE(a->contains(line->getName()));
+          REQUIRE(a->contains(circle->getName()));
+          REQUIRE(a->contains(circle->getName() + ""));
 
-          REQUIRE_FALSE(a.contains(circle->getName() + " "));
-          REQUIRE_FALSE(a.contains(outside->getName()));
+          REQUIRE_FALSE(a->contains(circle->getName() + " "));
+          REQUIRE_FALSE(a->contains(outside->getName()));
         }
       }
     }

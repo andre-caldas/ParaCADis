@@ -34,7 +34,7 @@ namespace NamingScheme
   void NameSearchResultBase::resolveExporter(token_iterator& tokens)
   {
     while (tokens) {
-      auto ptr = dynamic_cast<IExport<Exporter>*>(exporter.get());
+      auto ptr = dynamic_cast<IExport<ExporterBase>*>(exporter.get());
       if (!ptr) {
         return;
       }
@@ -52,12 +52,12 @@ namespace NamingScheme
 
   SharedLock NameSearchResultBase::lockForReading() const
   {
-    return SharedLock(exporter->getMutexData());
+    return SharedLock{*exporter};
   }
 
   ExclusiveLock<MutexData> NameSearchResultBase::lockForWriting() const
   {
-    return ExclusiveLock(exporter->getMutexData());
+    return ExclusiveLock<MutexData>{*exporter};
   }
 
 }  // namespace NamingScheme

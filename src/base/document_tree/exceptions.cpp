@@ -28,15 +28,15 @@
 
 #include <format>
 
-namespace DocumentTree
+using namespace Exception;
+using namespace DocumentTree;
+using namespace DocumentTree::Exception;
+using namespace NamingScheme;
+
+ElementAlreadyInContainer::ElementAlreadyInContainer(
+    SharedPtr<const ExporterBase> element, SharedPtr<const Container> container)
+    : RunTimeError(std::format(
+          "Container ({}) already has element ({}).", container->toString(),
+          element->toString()))
 {
-
-  ElementAlreadyInContainer::ElementAlreadyInContainer(
-      const NamingScheme::Exporter& element, const Container& container)
-      : RunTimeError(std::format(
-            "Container ({}) already has element ({}).", container.toString(),
-            element.toString()))
-  {
-  }
-
-}  // namespace DocumentTree
+}
