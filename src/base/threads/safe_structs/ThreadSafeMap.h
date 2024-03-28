@@ -95,6 +95,9 @@ namespace Threads::SafeStructs
   template<typename Key, typename Val>
   class ThreadSafeMap : public ThreadSafeMapCommon<std::map<Key, Val>, Key, Val>
   {
+    using parent_t = ThreadSafeMapCommon<std::map<Key, Val>, Key, Val>;
+  public:
+    using parent_t::ThreadSafeMapCommon;
   };
 
   /**
@@ -111,6 +114,9 @@ namespace Threads::SafeStructs
   class ThreadSafeUnorderedMap
       : public ThreadSafeMapCommon<std::unordered_map<Key, Val>, Key, Val>
   {
+    using parent_t = ThreadSafeMapCommon<std::unordered_map<Key, Val>, Key, Val>;
+  public:
+    using parent_t::ThreadSafeMapCommon;
   };
 
 }  // namespace Threads::SafeStructs

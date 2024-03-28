@@ -130,6 +130,6 @@ DeferenceableCoordinateSystem::DeferenceableCoordinateSystem(
 
 CoordinateSystem DeferenceableCoordinateSystem::getCoordinateSystem() const noexcept
 {
-  auto& gate = getReaderGate();
+  auto gate = getReaderGate();
   return {gate->origin, gate->bx, gate->by, gate->bz};
 }

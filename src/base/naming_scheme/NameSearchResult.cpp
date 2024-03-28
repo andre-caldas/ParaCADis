@@ -50,14 +50,4 @@ namespace NamingScheme
     }
   }
 
-  SharedLock NameSearchResultBase::lockForReading() const
-  {
-    return SharedLock{*exporter};
-  }
-
-  ExclusiveLock<MutexData> NameSearchResultBase::lockForWriting() const
-  {
-    return ExclusiveLock<MutexData>{*exporter};
-  }
-
 }  // namespace NamingScheme

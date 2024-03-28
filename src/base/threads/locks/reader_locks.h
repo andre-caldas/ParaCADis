@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
+ *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,73 +20,66 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef Threads_ReaderLock_H
-#define Threads_ReaderLock_H
+#ifndef Threads_ReaderLocks_H
+#define Threads_ReaderLocks_H
 
+#include "gates.h"
 #include "LockPolicy.h"
+#include "YesItIsAMutex.h"
 
-#include <base/type_traits/Utils.h>
+#include <base/expected_behaviour/SharedPtr.h>
 
-#include <memory>
+#include <shared_mutex>
 
 namespace Threads
 {
 
-  /**
-   * @brief Locks a classes of type "MutexHolder" for "reading".
-   * The MutexHolder must:
-   * 1. Define a MutexHolder::ReaderGate class that implements getStruct().
-   * 2. Define a method that takes a ReaderLock as argument,
-   *    and returns a ReaderGate instance.
-   */
-  template<typename MutexHolder, auto LocalPointer = nullptr>
-  class ReaderLock : public SharedLock
+  class SharedLock : public LockPolicy
   {
   public:
-    using local_data_t = const TypeTraits::MemberPointerTo_t<LocalPointer>;
-
+    /**
+     * The movable constructor is so that you can have the mutex locked
+     * and handled to a LockedIterator.
+     */
     [[nodiscard]]
-    ReaderLock(const MutexHolder& mutex_holder)
-        : SharedLock(mutex_holder.getMutexData())
-        , gate(mutex_holder.getReaderGate(this))
-        , localData((&*gate)->*LocalPointer)
+    SharedLock(SharedLock&& other_lock) = default;
+    [[nodiscard]]
+    SharedLock(MutexData& mutex);
+    template<C_MutexHolder Holder>
+    [[nodiscard]]
+    SharedLock(const Holder& holder) : SharedLock(holder.getMutexData())
     {
     }
 
-    const auto* operator->() const { return &(StripSmartPointer{localData}()); }
-
   private:
-    typename MutexHolder::ReaderGate gate;
-    local_data_t&                    localData;
+    std::shared_lock<YesItIsAMutex> lock;
   };
 
-  template<typename MutexHolder>
-  class ReaderLock<MutexHolder, nullptr>
+
+  /**
+   * The ReaderGate class.
+   */
+  /// @{
+  /// Allow template specialization.
+  template<auto PTR_TO_MEMBER>
+  class ReaderGate {};
+
+  template<C_MutexHolder Holder, typename T, T Holder::* localData>
+  class ReaderGate<localData> : public _GateBase<SharedLock>
   {
   public:
-    [[nodiscard]]
-    ReaderLock(const MutexHolder& mutex_holder);
+    ReaderGate(const Holder& holder);
 
-    /**
-     * @brief Releases the lock.
-     */
-    void release();
-
-    /**
-     * @brief Acquires a shared lock and resumes processing.
-     */
-    void resume();
-
-    auto operator->() const;
+    const T& operator*() const;
+    const T* operator->() const;
 
   private:
-    MutexData&                              mutexPair;
-    std::unique_ptr<SharedLock>             sharedLock;
-    const typename MutexHolder::ReaderGate& gate;
+    const T* data;
   };
+  /// @}
 
 }  // namespace Threads
 
-#include "ReaderLock_inl.h"
+#include "reader_locks_impl.h"
 
 #endif

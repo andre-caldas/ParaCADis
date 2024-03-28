@@ -30,6 +30,7 @@ namespace Threads
 
   template<C_MutexHolder MutexHolder, typename T>
   const T& DataProxy<MutexHolder, T>read() const {}
+
   class DataProxy
   {
   public:

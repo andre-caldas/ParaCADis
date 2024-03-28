@@ -57,6 +57,10 @@ public:
   SharedPtr(SharedPtr&&) = default;
   SharedPtr(const std::shared_ptr<T>& shared);
   SharedPtr(std::shared_ptr<T>&& shared);
+  template<typename X>
+  SharedPtr(const SharedPtr<X>& shared, T X::* localPointer);
+  template<typename X>
+  SharedPtr(SharedPtr<X>&& shared, T X::* localPointer);
 
   SharedPtr& operator=(const SharedPtr&) = default;
   SharedPtr& operator=(SharedPtr&&) = default;

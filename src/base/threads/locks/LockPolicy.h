@@ -46,11 +46,6 @@ namespace Threads
     { a } -> std::convertible_to<MutexData&>;
   };
 
-  template<C_MutexHolder Holder>
-  MutexData& getMutex(const Holder& holder) { return holder; }
-  template<C_MutexData MData>
-  MutexData& getMutex(MData& holder) { return holder; }
-
   /**
    * Concept of a `MutexHolder` that implements access gates.
    * The `MutexHolderWithGates` must:
@@ -66,9 +61,9 @@ namespace Threads
     typename T::record_t;
 
     typename T::ReaderGate;
-    { a.getReaderGate() } -> std::convertible_to<const typename T::ReaderGate&>;
+    { a.getReaderGate() } -> std::convertible_to<const typename T::ReaderGate>;
     typename T::WriterGate;
-    { a.getWriterGate() } -> std::convertible_to<const typename T::WriterGate&>;
+    { a.getWriterGate() } -> std::convertible_to<const typename T::WriterGate>;
   };
 
   /**
@@ -134,81 +129,6 @@ namespace Threads
      * @brief Removes information from thread_local variables.
      */
     void _detachFromThread();
-  };
-
-  class SharedLock : public LockPolicy
-  {
-  public:
-    /**
-     * The movable constructor is so that you can have the mutex locked
-     * and handled to a LockedIterator.
-     */
-    [[nodiscard]] SharedLock(SharedLock&& other_lock) = default;
-    [[nodiscard]] SharedLock(MutexData& mutex);
-    template<C_MutexHolder Holder>
-    [[nodiscard]] SharedLock(const Holder& holder) : SharedLock(holder.getMutexData())
-    {
-    }
-
-  private:
-    std::shared_lock<YesItIsAMutex> lock;
-  };
-
-  /**
-   * Locks many mutexes exclsively (for writing).
-   */
-  template<C_MutexData FirstMutex, C_MutexData... Mutex>
-  class ExclusiveLock : public LockPolicy
-  {
-  public:
-    template<C_MutexHolder FirstHolder, C_MutexHolder... Holder>
-    [[nodiscard]] ExclusiveLock(FirstHolder& first_holder, Holder&... holder);
-
-    void release();
-
-    [[maybe_unused]] auto detachFromThread();
-
-  private:
-    using locks_t = std::scoped_lock<
-        YesItIsAMutex, TypeTraits::ForEach_t<YesItIsAMutex, Mutex>...>;
-    /*
-     * After constructed, std::scoped_lock cannot be changed.
-     * So, we usa a unique_ptr.
-     * We could, of course, simply not use a scoped_lock,
-     * and lock on construction and unlock on destruction.
-     * But, unfortunately, std::lock needs two or more mutexes,
-     * and we do not want the code full of ifs.
-     *
-     * We use a shared_ptr because when a new thread is created,
-     * we want them both to hold the lock, while we store the new thread
-     * information: the std::thread instance.
-     */
-    std::shared_ptr<locks_t> locks;
-  };
-
-  template<C_MutexHolder FirstHolder, C_MutexHolder... Holder>
-  ExclusiveLock(FirstHolder&, Holder&...)
-      -> ExclusiveLock<MutexData, TypeTraits::ForEach_t<MutexData, Holder>...>;
-
-  /**
-   * Locks and gives access to locked classes of type "MutexHolder".
-   */
-  template<C_MutexHolderWithGates FirstHolder, C_MutexHolderWithGates... MutexHolder>
-  class ExclusiveLockGate
-      : public ExclusiveLock<FirstHolder, MutexHolder...>
-  {
-  public:
-    [[nodiscard]] ExclusiveLockGate(
-        FirstHolder& first_holder, MutexHolder&... mutex_holder);
-
-    template<C_MutexHolderWithGates SomeHolder>
-    auto& operator[](SomeHolder& whichHolder) const;
-
-    template<typename = std::enable_if_t<sizeof...(MutexHolder) == 0>>
-    auto operator->() const;
-
-  private:
-    FirstHolder& firstHolder;
   };
 
 }  // namespace Threads

@@ -20,8 +20,8 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef BASE_Threads_WriterLock_H
-#define BASE_Threads_WriterLock_H
+#ifndef BASE_Threads_NewThreadLock_H
+#define BASE_Threads_NewThreadLock_H
 
 #include <memory>
 
@@ -33,74 +33,44 @@ namespace Threads
 {
 
 /**
- * @brief Locks a classes of type "MutexHolder" for "wriring".
- * This is just a convenience class.
- * Exclusive locks must be acquired all at once.
- * The MutexHolder must satisfy the requirements imposed by @class ExclusiveLock.
- */
-template<typename MutexHolder, auto LocalPointer = nullptr>
-class WriterLock
-{
-public:
-    using local_data_t = TypeTraits::MemberPointerTo_t<LocalPointer>;
-
-    [[nodiscard]] WriterLock(MutexHolder& mutex_holder)
-        : exclusiveLock(mutex_holder)
-        , gate(mutex_holder.getWriterGate(&exclusiveLock))
-        , localData((&*gate)->*LocalPointer)
-    {}
-
-    auto* operator->() const
-    {
-        return &(StripSmartPointer {localData}());
-    }
-    auto& operator*() const
-    {
-        return StripSmartPointer {localData}();
-    }
-
-private:
-    ExclusiveLock<MutexHolder> exclusiveLock;
-    typename MutexHolder::WriterGate gate;
-    local_data_t& localData;
-};
-
-
-/**
- * @brief Locks a classes of type "MutexHolder" for "writing".
+ * Locks a classes of type "MutexHolder" for "writing".
+ *
  * This is for heavy processing and allows release and resume.
  * The constructor is passed a "token" and the token is always checked
  * to see if there is no "newer" thread processing the same data.
  * If there is a newer thread, the lock cannot be resumed.
- * The MutexHolder must satisfy the requirements imposed by @class ExclusiveLock.
+ * The MutexHolder must satisfy the requirements imposed by ExclusiveLock.
  *
  * @attention Exclusive locks must be acquired all at once.
  */
 template<typename MutexHolder>
-class WriterLock<MutexHolder, nullptr>
+class NewThreadLock<MutexHolder>
 {
 public:
-    [[nodiscard]] WriterLock(MutexHolder& mutex_holder, bool try_to_resume = false);
+    [[nodiscard]]
+    NewThreadLock(MutexHolder& mutex_holder, bool try_to_resume = false);
 
     /**
-     * @brief We allow move constructor only when already "locked".
+     * We allow move constructor only when already "locked".
+     *
      * That is, not after a "release()".
      * We use it to pass the lock to a lambda closure, to start a new thread.
      * Otherwise, it is better to pass a reference to the lock.
-     * @param other: @class WriterLock to move.
+     * @param other: NewThreadLock to move.
      * @attention This is to be used ONLY to pass the lock to a new thread.
      */
-    [[nodiscard]] WriterLock(WriterLock<MutexHolder>&& other);
+    [[nodiscard]]
+    NewThreadLock(NewThreadLock<MutexHolder>&& other);
 
 
     /**
-     * @brief Checks if this processing block is outdated.
+     * Checks if this processing block is outdated.
      * @return No newer processing started: false. Otherwise, true.
      */
     bool isThreadObsolete() const;
 
     /**
-     * @brief Releases the lock.
+     * Releases the lock.
      * This allows other processes to:
      * 1. Read the data.
      * 2. Start a new processing, making this instance "outdated".
@@ -108,20 +78,20 @@ public:
     void release();
 
     /**
-     * @brief Acquires an exclusive lock and resumes processing.
+     * Acquires an exclusive lock and resumes processing.
      * @return Resume success: isValid().
      */
     bool resume();
 
     /**
-     * @brief Resumes using a shared lock instead of an exclusive lock.
+     * Resumes using a shared lock instead of an exclusive lock.
      * @attention The gate is a WriterGate.
      * @return Resume success: isValid().
      */
     bool resumeReading();
 
     /**
-     * @brief Start a new thread and moves the mutex to this newly created thread.
+     * Start a new thread and moves the mutex to this newly created thread.
      * @param f: Callable.
      * @param args: Arguments to the callable.
      */
@@ -129,7 +99,7 @@ public:
     void startNewThread(Function&& f, Args&&... args) &&;
 
     /**
-     * @brief Passes the ownership to a new thread.
+     * Passes the ownership to a new thread.
      * Otherwise, resume() will fail.
      *
      * @see releaseFromThread().
@@ -148,7 +118,7 @@ public:
     void resumeInNewThread();
 
     /**
-     * @brief Just like "resumeInNewThread()", but it also releases the lock.
+     * Just like "resumeInNewThread()", but it also releases the lock.
      * This is just a shortcut so the code becomes cleaner.
      *
      * @see resumeInNewThread();
@@ -158,7 +128,7 @@ public:
     auto& operator->() const;
 
     /**
-     * @brief Indicates if we shall continue processing: !isThreadObsolete().
+     * Indicates if we shall continue processing: !isThreadObsolete().
      * @attention In general, true does not mean the resource is locked.
      * But it does mean so after the (non-move) construction.
      *
@@ -179,7 +149,8 @@ private:
     const typename MutexHolder::WriterGate& gate;
 
     /**
-     * @brief The idea is to allow for the write lock to be released and acquired again.
+     * The idea is to allow for the write lock to be released and acquired again.
+     *
      * We register the time when the processing "block" started so we can:
      * 1. Decide on which processed data is newer.
      * 2. Discard outdated results.
@@ -191,7 +162,8 @@ private:
     void markStart();
 
     /**
-     * @brief First step in passing the ownership from the current thread.
+     * First step in passing the ownership from the current thread.
+     *
      * This is a little low level. Consider using startNewThread() instead.
      *
      * @return A shared_ptr to the exclusive mutex,
@@ -203,11 +175,12 @@ private:
      *
      * @see resumeFromThread().
      */
-    [[maybe_unused]] auto moveFromThread();
+    [[maybe_unused]]
+    auto moveFromThread();
 };
 
 }  // namespace Base::Threads
 
-#include "WriterLock_inl.h"
+#include "NewThreadLock_inl.h"
 
-#endif  // BASE_Threads_WriterLock_H
+#endif  // BASE_Threads_NewThreadLock_H

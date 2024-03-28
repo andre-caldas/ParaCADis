@@ -20,61 +20,23 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef BASE_Threads_ThreadSafeStruct_H
-#define BASE_Threads_ThreadSafeStruct_H
+#include "reader_locks.h"
 
-#include <base/threads/locks/reader_locks.h>
-#include <base/threads/locks/writer_locks.h>
+using namespace Threads;
 
-#include <thread>
-
-namespace Threads::SafeStructs
+SharedLock::SharedLock(MutexData& mutex)
+    : LockPolicy(false, mutex)
 {
+  if (!getMutexes().empty()) {
+    assert(getMutexes().size() == 1);
+    assert(getMutexes().contains(&mutex));
+    lock = std::shared_lock(mutex.mutex);
+  }
+}
 
-  /**
-   * @brief Encapsulates a struct/class to use SharedLock and ExclusiveLock.
-   */
-  template<typename Struct>
-  class ThreadSafeStruct
-  {
-  private:
-    mutable Threads::MutexData defaultMutex;
-    Threads::MutexData&        mutex = defaultMutex;
-    Struct                     theStruct;
+/**
+ * Template instantiation.
+ */
+#include "gates_impl.h"
 
-    std::thread::id activeThread;
-    std::thread     dedicatedThread;
-
-  public:
-    using self_t    = ThreadSafeStruct;
-    using record_t = Struct;
-
-    template<typename... Args>
-    ThreadSafeStruct(Args&&... args);
-
-    template<C_MutexHolder MutexHolder, typename... Args>
-    ThreadSafeStruct(MutexHolder& holder, Args&&... args);
-
-    virtual ~ThreadSafeStruct();
-
-    using ReaderGate = ::ReaderGate<&self_t::theStruct>;
-    using WriterGate = ::WriterGate<&self_t::theStruct>;
-
-    ReaderGate getReaderGate() const noexcept { return {*this}; }
-    WriterGate getWriterGate() noexcept { return {*this}; }
-
-    void cancelThreads();
-
-    std::thread& getDedicatedThread();
-
-  public:
-    // TODO: eliminate this or the gate version.
-    constexpr MutexData& getMutexData() const { return mutex; }
-    constexpr operator MutexData&() const { return mutex; }
-  };
-
-}  // namespace Threads::SafeStructs
-
-#include "ThreadSafeStruct_inl.h"
-
-#endif
+template class Threads::_GateBase<SharedLock>;

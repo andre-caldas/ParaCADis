@@ -66,8 +66,13 @@ namespace DocumentTree
     template<typename Key, typename Val>
     using UnorderedMap = Threads::SafeStructs::ThreadSafeUnorderedMap<Key, Val>;
 
-    UnorderedMap<uuid_type, SharedPtr<NamingScheme::ExporterBase>> non_containers;
-    UnorderedMap<uuid_type, SharedPtr<Container>> containers;
+    // TODO: do we need to use the same mutex?
+    // It is safer, for sure.
+    // Maybe we could enforce SharedLock of Exporter::mutex
+    // before the ExclusiveLock or SharedLock for the "sub-container" mutex.
+    // That would be theoretically less "blocking".
+    UnorderedMap<uuid_type, SharedPtr<NamingScheme::ExporterBase>> non_containers{mutex};
+    UnorderedMap<uuid_type, SharedPtr<Container>> containers{mutex};
 
     DeferenceableCoordinateSystem coordinate_system;
   };

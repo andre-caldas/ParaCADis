@@ -104,7 +104,7 @@ namespace NamingScheme
     assert(ptr && "Exporters must derive from NamingScheme::Exporter.");
     if (!ptr) { return nullptr; }
 
-    auto&       gate = ptr->getWriterGate();
+    auto        gate = ptr->getWriterGate();
     const auto& name = tokens.front().getName();
     if (!map.contains(name)) { return nullptr; }
 

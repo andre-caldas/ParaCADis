@@ -58,6 +58,7 @@ ThreadSafeStruct<Struct>::~ThreadSafeStruct()
     }
 }
 
+#if 0 ///// TODO: move that code to Gate.
 template<typename Struct>
 auto ThreadSafeStruct<Struct>::lockForReading() const
 {
@@ -75,12 +76,6 @@ auto ThreadSafeStruct<Struct>::continueReading()
     return lock;
 }
 
-template<typename Struct>
-template<auto LocalPointer>
-auto ThreadSafeStruct<Struct>::lockPointerForReading() const
-{
-    return r_lock_local_pointer_t<LocalPointer> {*this};
-}
 
 template<typename Struct>
 auto ThreadSafeStruct<Struct>::startWriting()
@@ -95,64 +90,6 @@ auto ThreadSafeStruct<Struct>::continueWriting()
 }
 
 template<typename Struct>
-template<auto LocalPointer>
-auto ThreadSafeStruct<Struct>::lockPointerForWriting()
-{
-    return w_lock_local_pointer_t<LocalPointer> {*this};
-}
-
-template<typename Struct>
-ThreadSafeStruct<Struct>::ReaderGate::ReaderGate(const self_t* self)
-    : self(self)
-{}
-
-template<typename Struct>
-const Struct& ThreadSafeStruct<Struct>::ReaderGate::operator*() const
-{
-    return self->theStruct;
-}
-
-template<typename Struct>
-const Struct* ThreadSafeStruct<Struct>::ReaderGate::operator->() const
-{
-    return &self->theStruct;
-}
-
-template<typename Struct>
-const typename ThreadSafeStruct<Struct>::ReaderGate&
-ThreadSafeStruct<Struct>::getReaderGate() const noexcept
-{
-    assert(LockPolicy::isLocked(mutex) && "The mutex needs to be already locked.");
-    return reader_gate;
-}
-
-template<typename Struct>
-ThreadSafeStruct<Struct>::WriterGate::WriterGate(self_t* self)
-    : self(self)
-{}
-
-
-template<typename Struct>
-Struct& ThreadSafeStruct<Struct>::WriterGate::operator*() const
-{
-    return self->theStruct;
-}
-
-template<typename Struct>
-Struct* ThreadSafeStruct<Struct>::WriterGate::operator->() const
-{
-    return &self->theStruct;
-}
-
-template<typename Struct>
-const typename ThreadSafeStruct<Struct>::WriterGate&
-ThreadSafeStruct<Struct>::getWriterGate() noexcept
-{
-    assert(LockPolicy::isLockedExclusively(mutex) && "The mutex needs to be already exclusively locked.");
-    return writer_gate;
-}
-
-template<typename Struct>
 void ThreadSafeStruct<Struct>::cancelThreads()
 {
     activeThread = std::thread::id {};
@@ -163,5 +100,6 @@ std::thread& ThreadSafeStruct<Struct>::getDedicatedThread()
 {
     return dedicatedThread;
 }
+#endif
 
 }  // namespace Threads::SafeStructs

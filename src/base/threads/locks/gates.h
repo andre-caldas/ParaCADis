@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
+ *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,61 +20,42 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef BASE_Threads_ThreadSafeStruct_H
-#define BASE_Threads_ThreadSafeStruct_H
+#ifndef Threads_Gates_H
+#define Threads_Gates_H
 
-#include <base/threads/locks/reader_locks.h>
-#include <base/threads/locks/writer_locks.h>
+#include <concepts>
+#include <memory>
 
-#include <thread>
-
-namespace Threads::SafeStructs
+namespace Threads
 {
 
+  class MutexData;
+
   /**
-   * @brief Encapsulates a struct/class to use SharedLock and ExclusiveLock.
+   * Base class for all gates.
    */
-  template<typename Struct>
-  class ThreadSafeStruct
+  template<typename LockType>
+  class _GateBase
   {
+  public:
+    _GateBase(MutexData& mutex);
+    _GateBase(_GateBase&&) = default;
+
+    /**
+     * @brief Releases the lock.
+     */
+    void release();
+
+    /**
+     * @brief Re acquires the shared lock and resumes processing.
+     */
+    void resume();
+
   private:
-    mutable Threads::MutexData defaultMutex;
-    Threads::MutexData&        mutex = defaultMutex;
-    Struct                     theStruct;
-
-    std::thread::id activeThread;
-    std::thread     dedicatedThread;
-
-  public:
-    using self_t    = ThreadSafeStruct;
-    using record_t = Struct;
-
-    template<typename... Args>
-    ThreadSafeStruct(Args&&... args);
-
-    template<C_MutexHolder MutexHolder, typename... Args>
-    ThreadSafeStruct(MutexHolder& holder, Args&&... args);
-
-    virtual ~ThreadSafeStruct();
-
-    using ReaderGate = ::ReaderGate<&self_t::theStruct>;
-    using WriterGate = ::WriterGate<&self_t::theStruct>;
-
-    ReaderGate getReaderGate() const noexcept { return {*this}; }
-    WriterGate getWriterGate() noexcept { return {*this}; }
-
-    void cancelThreads();
-
-    std::thread& getDedicatedThread();
-
-  public:
-    // TODO: eliminate this or the gate version.
-    constexpr MutexData& getMutexData() const { return mutex; }
-    constexpr operator MutexData&() const { return mutex; }
+    MutexData& mutex;
+    std::unique_ptr<LockType> lock;
   };
 
-}  // namespace Threads::SafeStructs
-
-#include "ThreadSafeStruct_inl.h"
+}  // namespace Threads
 
 #endif

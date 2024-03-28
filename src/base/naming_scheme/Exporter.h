@@ -110,9 +110,11 @@ namespace NamingScheme
      */
     static SharedPtr<ExporterBase> getByUuid(Uuid::uuid_type uuid);
 
-  private:
+  protected:
     mutable Threads::MutexData mutex;
-    NameAndUuid                id;
+
+  private:
+    NameAndUuid id;
   };
 
   static_assert(
@@ -133,8 +135,8 @@ namespace NamingScheme
     {
     }
 
-    auto& getReaderGate() const noexcept { return safeData.getReaderGate(); }
-    auto& getWriterGate() noexcept { return safeData.getWriterGate(); }
+    auto getReaderGate() const noexcept { return safeData.getReaderGate(); }
+    auto getWriterGate() noexcept { return safeData.getWriterGate(); }
 
   private:
     safe_struct_t safeData;

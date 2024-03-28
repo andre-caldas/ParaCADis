@@ -20,42 +20,29 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "exceptions.h"
-#include "ReaderLock.h"
+#include "gates.h"
 
-namespace Threads
+#include "LockPolicy.h"
+
+using namespace Threads;
+
+template<typename LockType>
+_GateBase<LockType>::_GateBase(MutexData& mutex)
+    : mutex(mutex)
+    , lock(std::make_unique<LockType>(mutex))
 {
-
-template<typename MutexHolder>
-ReaderLock<MutexHolder>::ReaderLock(const MutexHolder& mutex_holder)
-    : mutexPair(mutex_holder.getMutexData())
-    , sharedLock(std::make_unique<SharedLock>(mutexPair))
-    , gate(mutex_holder.getReaderGate(sharedLock.get()))
-{}
-
-
-template<typename MutexHolder>
-void ReaderLock<MutexHolder, nullptr>::release()
-{
-    assert(sharedLock);
-    sharedLock.reset();
 }
 
-template<typename MutexHolder>
-void ReaderLock<MutexHolder>::resume()
+template<typename LockType>
+void _GateBase<LockType>::release()
 {
-    assert(!sharedLock);
-    sharedLock = std::make_unique<SharedLock>(mutexPair);
+    assert(lock);
+    lock.reset();
 }
 
-template<typename MutexHolder>
-auto ReaderLock<MutexHolder>::operator->() const
+template<typename LockType>
+void _GateBase<LockType>::resume()
 {
-    assert(sharedLock);
-    if(!sharedLock) {
-        throw Exception::NeedLock{};
-    }
-    return &*gate;
+    assert(!lock);
+    lock = std::make_unique<LockType>(mutex);
 }
-
-} //namespace Base::Threads

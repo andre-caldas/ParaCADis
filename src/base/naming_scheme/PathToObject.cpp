@@ -60,12 +60,12 @@ ListOfPathTokens& ListOfPathTokens::operator<<(ListOfPathTokens extra_tokens)
 
 void ListOfPathTokens::serialize(Xml::Writer& writer) const noexcept
 {
-  writer.reportException(Exception::NotImplemented{});
+  writer.reportException(::Exception::NotImplemented{});
 }
 
 ListOfPathTokens ListOfPathTokens::unserialize(Xml::Reader&)
 {
-  throw Exception::NotImplemented();
+  throw ::Exception::NotImplemented();
 }
 
 /*
@@ -90,7 +90,7 @@ PathToObject::PathToObject(std::string root_url, ListOfPathTokens tokens)
     : ListOfPathTokens(std::move(tokens))
     , root_url(root_url)
 {
-  throw Exception::NotImplemented();
+  throw ::Exception::NotImplemented();
 }
 
 PathToObject PathToObject::operator+(PathToken extra_token) const

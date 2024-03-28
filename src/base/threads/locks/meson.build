@@ -3,19 +3,27 @@ locks_dep = dependency('threads')
 locks_src = [
   'exceptions.cpp',
   'LockPolicy.cpp',
+  'reader_locks.cpp',
+  'writer_locks.cpp',
   'YesItIsAMutex.cpp',
 ]
 
 locks_includes = [
   'exceptions.h',
+  'gates.h',
+  'gates_impl.h',
   'LockedIterator.h',
   'LockPolicy.h',
   'LockPolicy_inl.h',
+  'meson.build',
   'MutexData.h',
-  'ReaderLock.h',
-  'ReaderLock_inl.h',
+  'PolicyProxy.h',
+  'PolicyProxy_inl.h',
+  'reader_locks.h',
   'WriterLock.h',
   'WriterLock_inl.h',
+  'writer_locks.h',
+  'writer_locks_impl.h',
   'YesItIsAMutex.h',
 ]
 

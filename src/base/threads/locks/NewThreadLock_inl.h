@@ -20,7 +20,7 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "WriterLock.h"
+#include "NewThreadLock.h"
 #include "exceptions.h"
 
 #include <memory>
@@ -30,7 +30,7 @@ namespace Threads
 {
 
   template<typename MutexHolder>
-  WriterLock<MutexHolder>::WriterLock(MutexHolder& mutex_holder, bool try_to_resume)
+  NewThreadLock<MutexHolder>::NewThreadLock(MutexHolder& mutex_holder, bool try_to_resume)
       : exclusiveLock(std::make_unique<ExclusiveLock<MutexHolder>>(mutex_holder))
       , mutexHolder(mutex_holder)
       , gate(mutex_holder.getWriterGate(exclusiveLock.get()))
@@ -45,7 +45,7 @@ namespace Threads
   }
 
   template<typename MutexHolder>
-  WriterLock<MutexHolder>::WriterLock(WriterLock<MutexHolder>&& other)
+  NewThreadLock<MutexHolder>::NewThreadLock(NewThreadLock<MutexHolder>&& other)
       : exclusiveLock(std::move(other.exclusiveLock))
       , sharedLock(std::move(other.sharedLock))
       , mutexHolder(other.mutexHolder)
@@ -59,13 +59,13 @@ namespace Threads
 
 
   template<typename MutexHolder>
-  bool WriterLock<MutexHolder>::isThreadObsolete() const
+  bool NewThreadLock<MutexHolder>::isThreadObsolete() const
   {
     return mutexHolder.activeThread != std::this_thread::get_id();
   }
 
   template<typename MutexHolder>
-  void WriterLock<MutexHolder, nullptr>::release()
+  void NewThreadLock<MutexHolder, nullptr>::release()
   {
     if (!sharedLock && !exclusiveLock) { throw Exception::CannotReleaseUnlocked{}; }
     assert(!sharedLock || !exclusiveLock);
@@ -75,7 +75,7 @@ namespace Threads
   }
 
   template<typename MutexHolder>
-  bool WriterLock<MutexHolder>::resume()
+  bool NewThreadLock<MutexHolder>::resume()
   {
     assert(!sharedLock && !exclusiveLock);
     exclusiveLock = std::make_unique<ExclusiveLock<MutexHolder>>(mutexHolder);
@@ -87,7 +87,7 @@ namespace Threads
   }
 
   template<typename MutexHolder>
-  bool WriterLock<MutexHolder>::resumeReading()
+  bool NewThreadLock<MutexHolder>::resumeReading()
   {
     assert(!sharedLock && !exclusiveLock);
     sharedLock = std::make_unique<SharedLock>(mutexHolder.getMutexData());
@@ -99,7 +99,7 @@ namespace Threads
   }
 
   template<typename MutexHolder>
-  auto& WriterLock<MutexHolder>::operator->() const
+  auto& NewThreadLock<MutexHolder>::operator->() const
   {
     assert(!exclusiveLock || !sharedLock);
     assert(exclusiveLock || sharedLock);
@@ -109,14 +109,14 @@ namespace Threads
   }
 
   template<typename MutexHolder>
-  WriterLock<MutexHolder>::operator bool() const
+  NewThreadLock<MutexHolder>::operator bool() const
   {
     return !isThreadObsolete();
   }
 
   template<typename MutexHolder>
   template<class Function, class... Args>
-  void WriterLock<MutexHolder>::startNewThread(Function&& f, Args&&... args) &&
+  void NewThreadLock<MutexHolder>::startNewThread(Function&& f, Args&&... args) &&
   {
     if (mutexHolder.dedicatedThread.joinable()) {
       assert(false);
@@ -131,7 +131,7 @@ namespace Threads
 
 
   template<typename MutexHolder>
-  void WriterLock<MutexHolder>::markStart()
+  void NewThreadLock<MutexHolder>::markStart()
   {
     ExclusiveLock l{mutexHolder};
     mutexHolder.activeThread = std::this_thread::get_id();
@@ -139,7 +139,7 @@ namespace Threads
   }
 
   template<typename MutexHolder>
-  auto WriterLock<MutexHolder>::moveFromThread()
+  auto NewThreadLock<MutexHolder>::moveFromThread()
   {
     if (!exclusiveLock) {
       assert(false);
@@ -154,7 +154,7 @@ namespace Threads
   }
 
   template<typename MutexHolder>
-  void WriterLock<MutexHolder>::resumeInNewThread()
+  void NewThreadLock<MutexHolder>::resumeInNewThread()
   {
     if (!exclusiveLock) {
       assert(false);
@@ -172,7 +172,7 @@ namespace Threads
   }
 
   template<typename MutexHolder>
-  void WriterLock<MutexHolder>::releaseInNewThread()
+  void NewThreadLock<MutexHolder>::releaseInNewThread()
   {
     resumeInNewThread();
     release();

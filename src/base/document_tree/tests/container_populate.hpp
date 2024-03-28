@@ -45,7 +45,7 @@ SCENARIO("Populate a with simple objects", "[simple]")
     auto circle  = SharedPtr<CirclePointRadiusNormal>::make_shared(*p, radius, *v);
     auto outside = SharedPtr<DeferenceablePoint>::make_shared(-1, -1, -1);
 
-    WHEN("we add them to the a")
+    WHEN("we add the geometric objects to the container")
     {
       Threads::ExclusiveLock lock{*a};
       a->addElement(p);

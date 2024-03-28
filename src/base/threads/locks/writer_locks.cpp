@@ -20,61 +20,16 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef BASE_Threads_ThreadSafeStruct_H
-#define BASE_Threads_ThreadSafeStruct_H
+#include "writer_locks.h"
 
-#include <base/threads/locks/reader_locks.h>
-#include <base/threads/locks/writer_locks.h>
+using namespace Threads;
 
-#include <thread>
+/**
+ * Template instantiation.
+ * You don't need to include the "_impl.h" files
+ * if you are locking a gate for writing.
+ */
+#include "gates_impl.h"
+#include "writer_locks_impl.h"
 
-namespace Threads::SafeStructs
-{
-
-  /**
-   * @brief Encapsulates a struct/class to use SharedLock and ExclusiveLock.
-   */
-  template<typename Struct>
-  class ThreadSafeStruct
-  {
-  private:
-    mutable Threads::MutexData defaultMutex;
-    Threads::MutexData&        mutex = defaultMutex;
-    Struct                     theStruct;
-
-    std::thread::id activeThread;
-    std::thread     dedicatedThread;
-
-  public:
-    using self_t    = ThreadSafeStruct;
-    using record_t = Struct;
-
-    template<typename... Args>
-    ThreadSafeStruct(Args&&... args);
-
-    template<C_MutexHolder MutexHolder, typename... Args>
-    ThreadSafeStruct(MutexHolder& holder, Args&&... args);
-
-    virtual ~ThreadSafeStruct();
-
-    using ReaderGate = ::ReaderGate<&self_t::theStruct>;
-    using WriterGate = ::WriterGate<&self_t::theStruct>;
-
-    ReaderGate getReaderGate() const noexcept { return {*this}; }
-    WriterGate getWriterGate() noexcept { return {*this}; }
-
-    void cancelThreads();
-
-    std::thread& getDedicatedThread();
-
-  public:
-    // TODO: eliminate this or the gate version.
-    constexpr MutexData& getMutexData() const { return mutex; }
-    constexpr operator MutexData&() const { return mutex; }
-  };
-
-}  // namespace Threads::SafeStructs
-
-#include "ThreadSafeStruct_inl.h"
-
-#endif
+template class Threads::_GateBase<ExclusiveLock<MutexData>>;

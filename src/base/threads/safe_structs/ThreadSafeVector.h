@@ -48,7 +48,6 @@ class ThreadSafeVector
 public:
     using parent_t = ThreadSafeContainer<std::vector<Val>>;
     using parent_t::ThreadSafeContainer;
-    friend class ExclusiveLock;
 };
 
 } //namespace Threads::SafeStructs

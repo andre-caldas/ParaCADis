@@ -46,6 +46,20 @@ SharedPtr<T>::SharedPtr(std::shared_ptr<T>&& shared)
 }
 
 template<typename T>
+template<typename X>
+SharedPtr<T>::SharedPtr(const SharedPtr<X>& shared, T X::* localPointer)
+    : std::shared_ptr<T>(shared, &(shared->*localPointer))
+{
+}
+
+template<typename T>
+template<typename X>
+SharedPtr<T>::SharedPtr(SharedPtr<X>&& shared, T X::* localPointer)
+    : std::shared_ptr<T>(std::move(shared), &(shared->*localPointer))
+{
+}
+
+template<typename T>
 T* SharedPtr<T>::operator->() const
 {
   if (!*this) { throw std::bad_optional_access{}; }

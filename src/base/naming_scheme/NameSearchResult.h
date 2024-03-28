@@ -26,7 +26,8 @@
 #include "types.h"
 
 #include <base/expected_behaviour/SharedPtr.h>
-#include <base/threads/locks/LockPolicy.h>
+#include <base/threads/locks/reader_locks.h>
+#include <base/threads/locks/writer_locks.h>
 
 namespace NamingScheme
 {
@@ -49,12 +50,6 @@ namespace NamingScheme
 
   public:
     NameSearchResultBase(SharedPtr<ExporterBase> root) : exporter(std::move(root)) {}
-
-    [[maybe_unused]] [[nodiscard]]
-    Threads::SharedLock lockForReading() const;
-
-    [[maybe_unused]] [[nodiscard]]
-    Threads::ExclusiveLock<Threads::MutexData> lockForWriting() const;
   };
 
 

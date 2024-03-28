@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
+ *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,54 +20,29 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "Exporter.h"
-#include "NameAndUuid.h"
+#ifndef Threads_ReaderLocks_impl_H
+#define Threads_ReaderLocks_impl_H
 
-#include <base/threads/safe_structs/ThreadSafeMap.h>
-#include <base/threads/locks/LockPolicy.h>
+#include "reader_locks.h"
 
-namespace NamingScheme
+using namespace Threads;
+
+template<C_MutexHolder Holder, typename T, T Holder::* localData>
+ReaderGate<localData>::ReaderGate(const Holder& holder)
+    : _GateBase(holder)
+    , data(&(holder.*localData))
+{}
+
+template<C_MutexHolder Holder, typename T, T Holder::* localData>
+const T& ReaderGate<localData>::operator*() const
 {
+  return *data;
+}
 
-  namespace
-  {
-    Threads::SafeStructs::ThreadSafeMap<Uuid::uuid_type, WeakPtr<ExporterBase>> map;
-  }
+template<C_MutexHolder Holder, typename T, T Holder::* localData>
+const T* ReaderGate<localData>::operator->() const
+{
+  return data;
+}
 
-  Uuid ExporterBase::getUuid() const
-  {
-    return id.getUuid();
-  }
-
-  ExporterBase::operator Uuid() const
-  {
-    return id.getUuid();
-  }
-
-  ExporterBase::operator Uuid::uuid_type() const
-  {
-    return id.getUuid();
-  }
-
-
-  std::string ExporterBase::getName() const
-  {
-    return id.getName();
-  }
-
-  void ExporterBase::setName(std::string name)
-  {
-    id.setName(std::move(name));
-  }
-
-
-  void ExporterBase::registerUuid(SharedPtr<ExporterBase> shared_ptr)
-  {
-    auto uuid = shared_ptr->getUuid();
-    assert(uuid.isValid());
-    auto gate = map.getWriterGate();
-    gate->emplace(uuid, std::move(shared_ptr));
-  }
-
-}  // namespace NamingScheme
-
+#endif

@@ -42,8 +42,8 @@ namespace DocumentTree
       return;
     }
 
-    auto& gate = non_containers.getWriterGate();
-    if (!gate->contains(element->getUuid())) {
+    auto gate = non_containers.getWriterGate();
+    if (gate->contains(element->getUuid())) {
       throw Exception::ElementAlreadyInContainer(element, sharedFromThis<Container>());
     }
     gate->emplace(element->getUuid(), std::move(element));
@@ -51,7 +51,7 @@ namespace DocumentTree
 
   void Container::addContainer(SharedPtr<Container> container)
   {
-    auto& gate = containers.getWriterGate();
+    auto gate = containers.getWriterGate();
     if (!gate->contains(container->getUuid())) {
       throw Exception::ElementAlreadyInContainer(container, sharedFromThis<Container>());
     }
@@ -61,12 +61,12 @@ namespace DocumentTree
   bool Container::contains(NamingScheme::Uuid::uuid_type uuid) const
   {
     {
-      auto& gate = containers.getReaderGate();
+      auto gate = containers.getReaderGate();
       if(gate->contains(uuid)) { return true; }
     }
 
     {
-      auto& gate = non_containers.getReaderGate();
+      auto gate = non_containers.getReaderGate();
       if(gate->contains(uuid)) { return true; }
     }
 
@@ -80,7 +80,7 @@ namespace DocumentTree
 
   bool Container::contains(const Container& container) const
   {
-    auto& gate = containers.getReaderGate();
+    auto gate = containers.getReaderGate();
     return gate->contains(container.getUuid());
   }
 
