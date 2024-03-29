@@ -87,6 +87,7 @@ public:
 
   operator SharedPtr<const T>() const { return {sliced()}; }
   template<typename S>
+    requires std::convertible_to<T&, S&>
   operator SharedPtr<S>() const { return {sliced()}; }
 
   template<typename S>

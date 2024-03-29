@@ -36,9 +36,9 @@ SCENARIO("Nested containers", "[simple]")
     auto d = SharedPtr<Container>::make_shared();
     WHEN("we nest the containers")
     {
-      a->addContainer(b); // As a container
-      b->addElement(c);   // As an element
-      c->addContainer(d);
+      a->addElement(b); // As a container
+      b->addElement(c.cast<NamingScheme::ExporterBase>());   // As an element
+      c->addElement(d);
       THEN("they actually belong to their 'parent' container")
       {
         REQUIRE(a->contains(b));
@@ -71,6 +71,49 @@ SCENARIO("Nested containers", "[simple]")
         REQUIRE_FALSE(a->contains(static_cast<ExporterBase&>(*a)));
         REQUIRE_FALSE(a->contains(static_cast<ExporterBase&>(*c)));
         REQUIRE_FALSE(a->contains(static_cast<ExporterBase&>(*d)));
+      }
+      AND_WHEN("we nest the same container in two places")
+      {
+        a->addElement(c);
+        a->addElement(d);
+        THEN("even when they are disguised as 'ExporterBase'")
+        {
+          REQUIRE(a->contains(b));
+          REQUIRE(a->contains(c));
+          REQUIRE(a->contains(d));
+
+          REQUIRE_FALSE(a->contains(a));
+
+          REQUIRE_FALSE(b->contains(a));
+          REQUIRE_FALSE(b->contains(d));
+
+          REQUIRE_FALSE(d->contains(a));
+          REQUIRE_FALSE(d->contains(b));
+          REQUIRE_FALSE(d->contains(c));
+          REQUIRE_FALSE(d->contains(d));
+        }
+        AND_WHEN("even when we introduce loops")
+        {
+          d->addElement(a);
+          d->addElement(b);
+          d->addElement(c);
+          d->addElement(d);
+          THEN("loops are introduced normally")
+          {
+            REQUIRE(a->contains(b));
+            REQUIRE(b->contains(c));
+            REQUIRE(c->contains(d));
+
+            REQUIRE(d->contains(a));
+            REQUIRE(d->contains(b));
+            REQUIRE(d->contains(c));
+            REQUIRE(d->contains(d));
+
+            REQUIRE_FALSE(b->contains(a));
+            REQUIRE_FALSE(b->contains(b));
+            REQUIRE_FALSE(b->contains(d));
+          }
+        }
       }
     }
   }
