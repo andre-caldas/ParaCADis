@@ -48,7 +48,7 @@ namespace DocumentTree
   public:
     std::string toString() const override;
 
-    template<std::convertible_to<Container&> C>
+    template<std::convertible_to<const Container&> C>
     void addElement(SharedPtr<C> c) { addContainer(std::move(c)); }
     void addElement(SharedPtr<ExporterBase> element);
     void addContainer(SharedPtr<Container> container);
