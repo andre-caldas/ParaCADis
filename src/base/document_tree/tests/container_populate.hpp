@@ -20,7 +20,6 @@
  *                                                                          *
  ***************************************************************************/
 
-#include <base/threads/locks/LockPolicy.h>
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/expected_behaviour/SharedPtr_impl.h>
 #include <base/document_tree/Container.h>
@@ -47,7 +46,6 @@ SCENARIO("Populate a with simple objects", "[simple]")
 
     WHEN("we add the geometric objects to the container")
     {
-      Threads::ExclusiveLock lock{*a};
       a->addElement(p);
       a->addElement(v);
       a->addElement(line);
@@ -63,10 +61,15 @@ SCENARIO("Populate a with simple objects", "[simple]")
       }
       THEN("we can search by their uuid")
       {
+        REQUIRE(a->contains(p));
         REQUIRE(a->contains(*p));
+        REQUIRE(a->contains(v));
         REQUIRE(a->contains(*v));
+        REQUIRE(a->contains(line));
         REQUIRE(a->contains(*line));
+        REQUIRE(a->contains(circle));
         REQUIRE(a->contains(*circle));
+        REQUIRE_FALSE(a->contains(outside));
         REQUIRE_FALSE(a->contains(*outside));
       }
       AND_WHEN("we set a name")

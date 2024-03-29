@@ -52,7 +52,7 @@ namespace DocumentTree
   void Container::addContainer(SharedPtr<Container> container)
   {
     auto gate = containers.getWriterGate();
-    if (!gate->contains(container->getUuid())) {
+    if (gate->contains(container->getUuid())) {
       throw Exception::ElementAlreadyInContainer(container, sharedFromThis<Container>());
     }
     gate->emplace(container->getUuid(), std::move(container));

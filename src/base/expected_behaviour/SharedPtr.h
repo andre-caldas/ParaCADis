@@ -67,6 +67,7 @@ public:
 
   T* operator->() const;
   T& operator*() const;
+  operator T&() const { return **this; }
 
   template<typename... Args>
   static SharedPtr<T> make_shared(Args&&... args)

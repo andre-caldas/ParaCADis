@@ -26,10 +26,52 @@
 
 using namespace DocumentTree;
 
-SCENARIO("NESTED", "[simple]")
+SCENARIO("Nested containers", "[simple]")
 {
-  GIVEN("an assert(false)...")
+  GIVEN("some containers")
   {
-    REQUIRE(false);
+    auto a = SharedPtr<Container>::make_shared();
+    auto b = SharedPtr<Container>::make_shared();
+    auto c = SharedPtr<Container>::make_shared();
+    auto d = SharedPtr<Container>::make_shared();
+    WHEN("we nest the containers")
+    {
+      a->addContainer(b); // As a container
+      b->addElement(c);   // As an element
+      c->addContainer(d);
+      THEN("they actually belong to their 'parent' container")
+      {
+        REQUIRE(a->contains(b));
+        REQUIRE(b->contains(c));
+        REQUIRE(c->contains(d));
+
+        REQUIRE_FALSE(a->contains(a));
+        REQUIRE_FALSE(a->contains(c));
+        REQUIRE_FALSE(a->contains(d));
+
+        REQUIRE_FALSE(b->contains(a));
+        REQUIRE_FALSE(b->contains(b));
+        REQUIRE_FALSE(b->contains(d));
+
+        REQUIRE_FALSE(c->contains(a));
+        REQUIRE_FALSE(c->contains(b));
+        REQUIRE_FALSE(c->contains(c));
+
+        REQUIRE_FALSE(d->contains(a));
+        REQUIRE_FALSE(d->contains(b));
+        REQUIRE_FALSE(d->contains(c));
+        REQUIRE_FALSE(d->contains(d));
+      }
+      THEN("even when they are disguised as 'ExporterBase'")
+      {
+        REQUIRE(a->contains(static_cast<ExporterBase&>(*b)));
+        REQUIRE(b->contains(static_cast<ExporterBase&>(*c)));
+        REQUIRE(c->contains(static_cast<ExporterBase&>(*d)));
+
+        REQUIRE_FALSE(a->contains(static_cast<ExporterBase&>(*a)));
+        REQUIRE_FALSE(a->contains(static_cast<ExporterBase&>(*c)));
+        REQUIRE_FALSE(a->contains(static_cast<ExporterBase&>(*d)));
+      }
+    }
   }
 }
