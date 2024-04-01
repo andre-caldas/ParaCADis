@@ -1,117 +1,47 @@
-// SPDX-License-Identifier: LGPL-2.1-or-later
+// SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
  *                                                                          *
- *   This file is part of FreeCAD.                                          *
+ *   This file is part of ParaCADis.                                        *
  *                                                                          *
- *   FreeCAD is free software: you can redistribute it and/or modify it     *
- *   under the terms of the GNU Lesser General Public License as            *
- *   published by the Free Software Foundation, either version 2.1 of the   *
- *   License, or (at your option) any later version.                        *
+ *   ParaCADis is free software: you can redistribute it and/or modify it   *
+ *   under the terms of the GNU General Public License as published         *
+ *   by the Free Software Foundation, either version 2.1 of the License,    *
+ *   or (at your option) any later version.                                 *
  *                                                                          *
- *   FreeCAD is distributed in the hope that it will be useful, but         *
+ *   ParaCADis is distributed in the hope that it will be useful, but       *
  *   WITHOUT ANY WARRANTY; without even the implied warranty of             *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU       *
- *   Lesser General Public License for more details.                        *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                   *
+ *   See the GNU General Public License for more details.                   *
  *                                                                          *
- *   You should have received a copy of the GNU Lesser General Public       *
- *   License along with FreeCAD. If not, see                                *
- *   <https://www.gnu.org/licenses/>.                                       *
+ *   You should have received a copy of the GNU General Public License      *
+ *   along with ParaCADis. If not, see <https://www.gnu.org/licenses/>.     *
  *                                                                          *
  ***************************************************************************/
 
-#include <utility>
-
-#include <Base/Exception.h>
-#include <Base/Reader.h>
-#include <App/Application.h>
-
-#include "Exception.h"
+#ifndef NamingScheme_ReferenceToObject_impl_H
+#define NamingScheme_ReferenceToObject_impl_H
 
 #include "ReferenceToObject.h"
 
-namespace Base::Accessor {
+using namespace NamingScheme;
 
-class ReferencedObject;
-
-template<typename X>
-typename ReferenceTo<X>::locked_resource ReferenceTo<X>::
-    resolve() const
+template<typename T, std::derived_from<CachePolicyBase> CachePolicy>
+SharedPtr<T> ReferenceTo<X, CachePolicy>::resolve() const
 {
-    lock_type lock = getLock();
-    if(lock.remaining_tokens_start == lock.remaining_tokens_end)
-    {
-        X* ptr = dynamic_cast<X*>(lock.last_object.get());
-        if(!ptr)
-        {
-            FC_THROWM(Exception::CannotResolve, "Last object is not a reference the requested type.");
-        }
-        return locked_resource{std::move(lock.last_object), ptr};
-    }
-
-    IExport<X>* ref_obj = dynamic_cast<IExport<X>*>(lock.last_object.get());
-    if(!ref_obj)
-    {
-        FC_THROWM(Exception::CannotResolve, "Last object does not reference the requested type.");
-    }
-
-    locked_resource shared_resource = ref_obj->resolve(lock.last_object, lock.remaining_tokens_start, lock.remaining_tokens_end);
-    if(!shared_resource)
-    {
-        FC_THROWM(Exception::CannotResolve, "Object does not recognize key: '" << pathString() << "'.");
-    }
-
-    if(lock.remaining_tokens_start != lock.remaining_tokens_end)
-    {
-        FC_THROWM(Exception::CannotResolve, "Did not use all keys when resolving object. Remaining keys: '" << pathString(lock.remaining_tokens_start, lock.remaining_tokens_end) << "'.");
-    }
-
-    return shared_resource;
+  auto result = searchResult.tryCache();
+  if(result) {
+    return result;
+  }
+  return searchResult.resolve(path.getRoot(), path.getTokens());
 }
 
-template<typename T>
-template<typename X, typename... PathToken>
-ReferenceTo<X> ReferenceTo<T>::goFurther(PathToken&& ...furtherPath) const
+template<typename T, std::derived_from<CachePolicyBase> CachePolicy>
+PathToObject& ReferenceTo<X, CachePolicy>::getPath()
 {
-    return ReferenceTo<X>{PathToObject::goFurther(furtherPath...)};
+  searchResult.invalidate();
+  return path;
 }
 
-template<typename X>
-bool ReferenceTo<X>::refreshLock()
-{
-    old_reference = lockedResult.get();
-    lockedResult = resolve();
-    return isLocked();
-}
-
-/**
- * @brief Releases the internal @class locked_resource.
- */
-template<typename X>
-void ReferenceTo<X>::releaseLock()
-{
-    lockedResult.reset();
-}
-
-template<typename X>
-bool ReferenceTo<X>::isLocked() const
-{
-    if(lockedResult)
-    {
-        return true;
-    }
-    return false;
-}
-
-template<typename X>
-X* ReferenceTo<X>::get() const
-{
-    if(!isLocked())
-    {
-        FC_THROWM(RuntimeError, "Trying to get a pointer to an object that is not locked.");
-    }
-    return lockedResult.get();
-}
-
-} // namespace Base::Accessor
+#endif

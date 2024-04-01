@@ -109,6 +109,17 @@ PathToObject PathToObject::operator+(ListOfPathTokens extra_tokens) const
 }
 
 
+SharedPtr<ExporterBase> PathToObject::getRoot()
+{
+  auto result = root_weak_ptr.lock();
+  if(result) {
+    return result;
+  }
+
+  assert(false);
+}
+
+
 void PathToObject::serialize(Xml::Writer& writer) const noexcept
 {
   auto tag_writer = writer.newTag(PathToObject_Tag{});

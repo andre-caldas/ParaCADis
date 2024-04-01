@@ -20,21 +20,76 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "types.h"
+#include "path_cache_policies.h"
 
-/**
- * Template instantiation.
- * There is no need to include NameSearchResult_impl.h for those.
- */
-#include <base/naming_scheme/IExport.h>
-#include <base/naming_scheme/IExport_impl.h>
-#include <base/naming_scheme/NameSearchResult.h>
-#include <base/naming_scheme/NameSearchResult_impl.h>
+#include "Exporter.h"
+
+#include <base/expected_behaviour/SharedPtr.h>
+
+#include <ranges>
 
 using namespace NamingScheme;
 
-template class IExport<Real>;
-template class IExport<Point>;
+void TimedWeakChain::prepare(token_iterator& tokens)
+{
+  top_exporter.reset();
+  exporters.clear();
+  exporters.reserve(tokens.size());
+  start = std::chrono::steady_clock::now();
+}
 
-template class NameSearchResult<Real>;
-template class NameSearchResult<Point>;
+void TimedWeakChain::invalidate()
+{
+  top_exporter.reset();
+  exporters.clear();
+}
+
+token_iterator TimedWeakChain::topTokens() const
+{
+  assert(!exporters.empty());
+  return exporters.back().tokens;
+}
+
+const SharedPtr<ExporterBase>& TimedWeakChain::topExporter() const
+{
+  return top_exporter;
+}
+
+void TimedWeakChain::pushExporter(SharedPtr<ExporterBase>&& exporter, token_iterator tokens)
+{
+  exporters.emplace_back(exporter, tokens);
+  top_exporter = std::move(exporter);
+}
+
+bool TimedWeakChain::pruneCache()
+{
+  // First, we declare the cache as hasPartiallyExpired().
+  // After that we start popping from `exporters`. Therefore, the `-1`.
+  auto prune_count = (std::chrono::steady_clock::now() - start) / layer_duration - 1;
+  if(prune_count < 0) {
+    prune_count = 0;
+  }
+
+  exporters.erase(exporters.end()-prune_count, exporters.end());
+  while(!exporters.empty()) {
+    auto& info = exporters.back();
+    if(auto ptr = info.weak_ptr.lock()) {
+      top_exporter = ptr;
+      return true;
+    }
+  }
+  return {};
+}
+
+SharedPtr<ExporterBase> TimedWeakChain::pop()
+{
+  assert(!exporters.empty());
+  auto result = exporters.back().weak_ptr.lock();
+  exporters.pop_back();
+  return result;
+}
+
+bool TimedWeakChain::hasPartiallyExpired() const
+{
+  return (std::chrono::steady_clock::now() - start) > layer_duration;
+}

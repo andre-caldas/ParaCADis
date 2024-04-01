@@ -91,7 +91,7 @@ public:
   operator SharedPtr<S>() const { return {sliced()}; }
 
   template<typename S>
-  SharedPtr<S> cast() { return std::dynamic_pointer_cast<S>(sliced()); }
+  SharedPtr<S> cast() const { return std::dynamic_pointer_cast<S>(sliced()); }
 };
 
 
@@ -100,6 +100,11 @@ class WeakPtr : private std::weak_ptr<T>
 {
 public:
   using std::weak_ptr<T>::weak_ptr;
+  WeakPtr(const WeakPtr&) = default;
+  WeakPtr(WeakPtr&&) = default;
+  WeakPtr& operator=(const WeakPtr&) = default;
+  WeakPtr& operator=(WeakPtr&&) = default;
+
   WeakPtr(const SharedPtr<T>& shared) : WeakPtr(shared.getWeakPtr()) {}
   SharedPtr<T> lock() const noexcept { return std::weak_ptr<T>::lock(); }
 };

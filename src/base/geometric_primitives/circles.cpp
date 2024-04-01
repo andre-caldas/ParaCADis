@@ -48,10 +48,12 @@ Circle2PointsDirection::Circle2PointsDirection(Point a, Point b, Vector d)
 #include <base/naming_scheme/NameSearchResult.h>
 #include <base/naming_scheme/NameSearchResult_impl.h>
 
-template class NamingScheme::IExport<CirclePointRadiusNormal>;
-template class NamingScheme::IExport<Circle3Points>;
-template class NamingScheme::IExport<Circle2PointsDirection>;
+using namespace NamingScheme;
 
-template class NamingScheme::NameSearchResult<CirclePointRadiusNormal>;
-template class NamingScheme::NameSearchResult<Circle3Points>;
-template class NamingScheme::NameSearchResult<Circle2PointsDirection>;
+template class IExport<CirclePointRadiusNormal>;
+template class IExport<Circle3Points>;
+template class IExport<Circle2PointsDirection>;
+
+template class NameSearchResult<CirclePointRadiusNormal>;
+template class NameSearchResult<Circle3Points>;
+template class NameSearchResult<Circle2PointsDirection>;

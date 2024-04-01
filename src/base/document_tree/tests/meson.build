@@ -1,6 +1,5 @@
 document_tree_tests_src = [
-  'Container.cpp',
-  'DocumentTree.cpp',
+  'tests.cpp'
 ]
 
 test_exec = executable('document_tree_test', [test_main_src, document_tree_tests_src],

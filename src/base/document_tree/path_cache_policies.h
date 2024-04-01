@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
+ *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,65 +20,29 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef NamingScheme_ReferenceToObject_H
-#define NamingScheme_ReferenceToObject_H
+#ifndef DocumentTree_PathCachePolicies_H
+#define DocumentTree_PathCachePolicies_H
 
-#include "NameSearchResult.h"
-#include "PathToObject.h"
-#include "path_cache_policies.h"
-#include "types.h"
+#include <base/expected_behaviour/SharedPtr.h>
+#include <base/naming_scheme/path_cache_policies.h>
 
-#include <concepts>
-#include <memory>
-#include <string>
-#include <type_traits>
 #include <vector>
 
-namespace NamingScheme
+namespace DocumentTree
 {
 
-  /**
-   * A  PathToObject is not aware of the type of variable it points to.
-   *
-   * Through the means of the templated  IExport<variable_type>,
-   * objects can "export" the correct type to be referenced to by
-   * ReferenceTo<variable_type>.
-   *
-   * @example
-   * ReferenceTo<double, TimedWeakChain> ref(root, "start point", "x");
-   *
-   * @see  IExport<>.
-   */
-  template<typename T, std::derived_from<PathCachePolicyBase> CachePolicy>
-  class ReferenceTo
+  class TimedWeakChainWithTransforms : public TimedWeakChain
   {
   public:
-    ReferenceTo(ReferenceTo&&)                 = default;
-    ReferenceTo(const ReferenceTo&)            = default;
-    ReferenceTo& operator=(const ReferenceTo&) = default;
-    ReferenceTo& operator=(ReferenceTo&&)      = default;
-
-    template<typename... Args>
-    ReferenceTo(Args&&... args) : path(std::forward<Args>(args)...) {}
-
-    /**
-     * Fully resolves the chain up to the last token.
-     */
-    SharedPtr<T> resolve() const;
-
-    /**
-     * Gets a reference to the PathToObject.
-     * @attention This call invalidates the cache.
-     */
-    PathToObject& getPath();
+    void prepare(token_iterator& tokens) override;
+    const SharedPtr<ExporterBase>& topExporter() const override;
+    void pushExporter(SharedPtr<ExporterBase>&& exporter) override;
 
   private:
-    PathToObject        path;
-    CachePolicy         cache;
-    NameSearchResult<T> searchResult{cache};
+    std::vector<WeakPtr<ExporterBase>> exporters;
+    std::vector<NamingScheme::CoordinateSystem> transforms;
   };
 
 }  // namespace NamingScheme
 
 #endif
-

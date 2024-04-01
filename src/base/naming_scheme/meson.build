@@ -1,8 +1,8 @@
 naming_scheme_src = [
   'exceptions.cpp',
+  'path_cache_policies.cpp',
   'Exporter.cpp',
   'NameAndUuid.cpp',
-  'NameSearchResult.cpp',
   'PathToken.cpp',
   'PathToObject.cpp',
   'Uuid.cpp',
@@ -10,6 +10,7 @@ naming_scheme_src = [
 
 naming_scheme_includes = [
   'exceptions.h',
+  'path_cache_policies.h',
   'Exporter.h',
   'IExport.h',
   'IExport_impl.h',

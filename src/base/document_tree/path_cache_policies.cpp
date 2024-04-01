@@ -20,16 +20,25 @@
  *                                                                          *
  ***************************************************************************/
 
-#include <base/document_tree/Container.h>
+#include "path_cache_policies.h"
 
-#include <catch2/catch_test_macros.hpp>
+#include "Exporter.h"
 
-using namespace DocumentTree;
+#include <base/expected_behaviour/SharedPtr.h>
 
-SCENARIO("TRANSFORM", "[simple]")
+using namespace NamingScheme;
+
+void TimedWeakChainWithTransforms::prepare(token_iterator& tokens)
 {
-  GIVEN("an assert(false)...")
-  {
-    REQUIRE(false);
-  }
+  exporters.reserve(tokens.size());
+  transforms.reserve(tokens.size());
+}
+
+const SharedPtr<ExporterBase>& TimedWeakChainWithTransforms::topExporter() const
+{
+
+}
+
+void TimedWeakChainWithTransforms::pushExporter(SharedPtr<ExporterBase>&& exporter)
+{
 }

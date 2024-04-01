@@ -33,65 +33,101 @@
 using namespace NamingScheme;
 
 template<typename T>
-bool NameSearchResult<T>::resolve(token_iterator& tokens)
+SharedPtr<T> NameSearchResult<T>::tryCache()
 {
-  // Resolve a chain of exporters.
-  resolveExporter(tokens);
+  if(!cache.hasPartiallyExpired()) {
+    auto data = data_weak.lock();
+    if(data) {
+      return data;
+    }
+  }
 
-  // Do we want an exporter?
+  if(!cache.pruneCache()) {
+    return {};
+  }
+  resolveExporter();
+  return resolveLastStep();
+}
+
+template<typename T>
+SharedPtr<T> NameSearchResult<T>
+    ::resolve(SharedPtr<ExporterBase> root, token_iterator tokens)
+{
+  cache.pushExporter(std::move(root), tokens);
+  resolveExporter();
+  return resolveLastStep();
+}
+
+template<typename T>
+void NameSearchResult<T>::resolveExporter()
+{
+  auto tokens = cache.topTokens();
+  while (tokens) {
+    auto exporter = cache.topExporter().cast<IExport<ExporterBase>>();
+    if(!exporter) {
+      return;
+    }
+
+    [[maybe_unused]]
+    auto n_tokens = tokens.size();
+    auto next_exporter = exporter->resolve(tokens);
+    if (!next_exporter) {
+      return;
+    }
+    assert(n_tokens != tokens.size() && "Resolution is not consuming tokens.");
+    assert(next_exporter != cache.topExporter());
+    cache.pushExporter(std::move(next_exporter), tokens);
+  }
+}
+
+template<typename T>
+SharedPtr<T> NameSearchResult<T>::resolveLastStep()
+{
+  auto tokens   = cache.topTokens();
+
+  // Are we looking for an exporter?
   if constexpr (std::is_same_v<std::remove_cv_t<T>, ExporterBase>) {
     if (tokens) {
       status = too_many_tokens;
-      return false;
+      return {};
     }
     status = success;
-    return true;
+    auto last = cache.pop();
+    data_weak = last;
+    return last;
   }
 
   // If there are no more tokens.
   if (!tokens) {
-    // Is the last exporter also an instance of T?
-    auto ptr = dynamic_cast<T*>(exporter.get());
+    auto last = cache.pop();
+    auto ptr = last.cast<T>();
     if (ptr) {
       status = success;
-      return true;
+      data_weak = ptr;
+      return ptr;
     }
     status = too_few_tokens;
-    return false;
+    return {};
   }
 
-  auto ptr = dynamic_cast<IExport<T>*>(exporter.get());
-  if (!ptr) {
+  auto exporter = cache.topExporter().cast<IExport<T>>();
+  if (!exporter) {
     status = does_not_export;
-    return false;
+    return {};
   }
 
-  data = ptr->resolve(tokens);
+  auto data = exporter->resolve(tokens);
   if (!data) {
     status = not_found;
-    return false;
+    return {};
   }
 
   if (tokens) {
     status = too_many_tokens;
-    return false;
+    return {};
   }
   status = success;
-  return true;
-}
-
-
-template<typename T>
-SharedPtr<const T> NameSearchResult<T>::getDataForReading() const
-{
-  assert(Threads::LockPolicy::isLocked(exporter->getMutexData()));
-  return data;
-}
-
-template<typename T>
-SharedPtr<T> NameSearchResult<T>::getDataForWriting() const
-{
-  assert(Threads::LockPolicy::isLockedExclusively(exporter->getMutexData()));
+  data_weak = data;
   return data;
 }
 

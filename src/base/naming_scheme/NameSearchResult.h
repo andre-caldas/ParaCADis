@@ -23,46 +23,52 @@
 #ifndef NamingScheme_NameSearchResult_H
 #define NamingScheme_NameSearchResult_H
 
+#include "path_cache_policies.h"
 #include "types.h"
 
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/threads/locks/reader_locks.h>
 #include <base/threads/locks/writer_locks.h>
 
+#include <concepts>
+
 namespace NamingScheme
 {
 
   class ExporterBase;
+  class PathCachePolicyBase;
 
   /**
    * All information for the resolved ReferenceToOjbect.
-   *
-   * To support multithread, NamingScheme::Exporter provides a shared_mutex
-   * for accessing its data. So, we keep a reference for this mutex.
-   * The developer must lock the mutex before using the data.
    */
-  class NameSearchResultBase
-  {
-  protected:
-    SharedPtr<ExporterBase> exporter;
-
-    void resolveExporter(token_iterator& tokens);
-
-  public:
-    NameSearchResultBase(SharedPtr<ExporterBase> root) : exporter(std::move(root)) {}
-  };
-
-
   template<typename T>
-  class NameSearchResult : public NameSearchResultBase
+  class NameSearchResult
   {
-  private:
-    SharedPtr<T> data;
-
   public:
-    using NameSearchResultBase::NameSearchResultBase;
+    NameSearchResult(PathCachePolicyBase& cache) : cache(cache) {}
 
-    bool resolve(token_iterator& tokens);
+    /**
+     * Resolves without trying the cache.
+     * @attention This does not automatically call tryCache()
+     * because we don't want anyone calling resolve without first
+     * trying the cache. If the cache succeds, you do not need to
+     * acquire a @a root.
+     */
+    SharedPtr<T> resolve(SharedPtr<ExporterBase> root, token_iterator tokens);
+
+    /**
+     * Tries the cache.
+     */
+    SharedPtr<T> tryCache();
+
+    /**
+     * Invalidates the cache.
+     */
+    void invalidateCache() { data_weak = {}; cache.invalidate(); }
+
+  protected:
+    void         resolveExporter(void);
+    SharedPtr<T> resolveLastStep(void);
 
     enum {
       not_resolved_yet = '0',  ///< Method resolve() not called, yet.
@@ -73,8 +79,9 @@ namespace NamingScheme
       does_not_export  = '*'   ///< Last Exporter does not export requested type.
     } status = not_resolved_yet;
 
-    SharedPtr<const T> getDataForReading() const;
-    SharedPtr<T>       getDataForWriting() const;
+  private:
+    PathCachePolicyBase& cache;
+    WeakPtr<T>           data_weak;
   };
 
 }  // namespace NamingScheme

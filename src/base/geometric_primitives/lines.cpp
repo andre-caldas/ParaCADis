@@ -42,8 +42,10 @@ LinePointDirection::LinePointDirection(Point start, Vector direction)
 #include <base/naming_scheme/NameSearchResult.h>
 #include <base/naming_scheme/NameSearchResult_impl.h>
 
-template class NamingScheme::IExport<Line2Points>;
-template class NamingScheme::IExport<LinePointDirection>;
+using namespace NamingScheme;
 
-template class NamingScheme::NameSearchResult<Line2Points>;
-template class NamingScheme::NameSearchResult<LinePointDirection>;
+template class IExport<Line2Points>;
+template class IExport<LinePointDirection>;
+
+template class NameSearchResult<Line2Points>;
+template class NameSearchResult<LinePointDirection>;

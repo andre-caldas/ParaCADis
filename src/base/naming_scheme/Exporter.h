@@ -37,9 +37,6 @@
 namespace NamingScheme
 {
 
-  template<typename X>
-  class NameSearchResult;
-
   template<typename T>
   class IExport;
 

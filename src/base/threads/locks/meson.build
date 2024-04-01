@@ -20,8 +20,6 @@ locks_includes = [
   'PolicyProxy.h',
   'PolicyProxy_inl.h',
   'reader_locks.h',
-  'WriterLock.h',
-  'WriterLock_inl.h',
   'writer_locks.h',
   'writer_locks_impl.h',
   'YesItIsAMutex.h',

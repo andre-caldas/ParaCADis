@@ -28,7 +28,7 @@
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/xml/streams.h>
 
-#include <deque>
+#include <vector>
 #include <initializer_list>
 
 namespace NamingScheme
@@ -44,7 +44,7 @@ namespace NamingScheme
   class ListOfPathTokens
   {
   protected:
-    std::deque<PathToken> tokens;
+    std::vector<PathToken> tokens;
 
   public:
     ListOfPathTokens(ListOfPathTokens&&)                 = default;
@@ -56,6 +56,7 @@ namespace NamingScheme
     virtual ~ListOfPathTokens() = default;
 
     std::string pathString() const;
+    const auto& getTokens() { return tokens; }
 
     ListOfPathTokens& operator<<(PathToken extra_token);
     ListOfPathTokens& operator<<(ListOfPathTokens extra_tokens);
@@ -109,6 +110,8 @@ namespace NamingScheme
 
     PathToObject operator+(PathToken extra_token) const;
     PathToObject operator+(ListOfPathTokens extra_tokens) const;
+
+    SharedPtr<ExporterBase> getRoot();
 
     void                serialize(Xml::Writer& writer) const noexcept;
     static PathToObject unserialize(Xml::Reader& reader);

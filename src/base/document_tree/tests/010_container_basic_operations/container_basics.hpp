@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
+ *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,34 +20,11 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "NameSearchResult.h"
-#include "Exporter.h"
-#include "IExport.h"
-
-#include <base/threads/locks/LockPolicy.h>
-
-using namespace Threads;
-
-namespace NamingScheme
-{
-
-  void NameSearchResultBase::resolveExporter(token_iterator& tokens)
-  {
-    while (tokens) {
-      auto ptr = dynamic_cast<IExport<ExporterBase>*>(exporter.get());
-      if (!ptr) {
-        return;
-      }
-      [[maybe_unused]]
-      auto n_tokens = tokens.size();
-      auto next_exporter = ptr->resolve(tokens);
-      if (!next_exporter) {
-        return;
-      }
-      assert(n_tokens != tokens.size() && "Resolution is not consuming tokens.");
-      assert(next_exporter != exporter);
-      exporter = std::move(next_exporter);
-    }
-  }
-
-}  // namespace NamingScheme
+#include "0010_container_construction.hpp"
+#include "0020_container_populate.hpp"
+#include "0030_container_nested.hpp"
+#include "0040_container_transform.hpp"
+#include "0050_container_remove_elements.hpp"
+#include "0060_container_move_elements.hpp"
+#include "0070_container_share_elements.hpp"
+#include "0080_container_serialization.hpp"

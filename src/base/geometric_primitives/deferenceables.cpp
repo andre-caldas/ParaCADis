@@ -65,8 +65,10 @@ DeferenceableVector::operator Vector() const noexcept
 #include <base/naming_scheme/NameSearchResult.h>
 #include <base/naming_scheme/NameSearchResult_impl.h>
 
-template class NamingScheme::IExport<DeferenceablePoint>;
-template class NamingScheme::IExport<DeferenceableVector>;
+using namespace NamingScheme;
 
-template class NamingScheme::NameSearchResult<DeferenceablePoint>;
-template class NamingScheme::NameSearchResult<DeferenceableVector>;
+template class IExport<DeferenceablePoint>;
+template class IExport<DeferenceableVector>;
+
+template class NameSearchResult<DeferenceablePoint>;
+template class NameSearchResult<DeferenceableVector>;

@@ -20,11 +20,16 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "container_construction.hpp"
-#include "container_populate.hpp"
-#include "container_nested.hpp"
-#include "container_transform.hpp"
-#include "container_remove_elements.hpp"
-#include "container_move_elements.hpp"
-#include "container_share_elements.hpp"
-#include "container_serialization.hpp"
+#include <base/document_tree/Container.h>
+
+#include <catch2/catch_test_macros.hpp>
+
+using namespace DocumentTree;
+
+SCENARIO("SHALLOW COPY", "[simple]")
+{
+  GIVEN("an assert(false)...")
+  {
+    REQUIRE(false);
+  }
+}

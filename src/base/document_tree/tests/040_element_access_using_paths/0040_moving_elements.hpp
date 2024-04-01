@@ -20,3 +20,16 @@
  *                                                                          *
  ***************************************************************************/
 
+#include <base/document_tree/Container.h>
+
+#include <catch2/catch_test_macros.hpp>
+
+using namespace DocumentTree;
+
+SCENARIO("Moving an element using a path", "[simple]")
+{
+  GIVEN("...")
+  {
+    assert(false);
+  }
+}
