@@ -34,12 +34,14 @@ namespace Threads::SafeStructs
   class ThreadSafeContainer
   {
   protected:
-    mutable Threads::MutexData defaultMutex{100};
+    mutable Threads::MutexData defaultMutex;
     Threads::MutexData&        mutex = defaultMutex;
     ContainerType              container;
 
   public:
     using self_t = ThreadSafeContainer;
+    using mutex_data_t = MutexData;
+
     typedef ContainerType                         unsafe_container_t;
     typedef typename unsafe_container_t::iterator container_iterator;
     typedef typename unsafe_container_t::const_iterator container_const_iterator;
@@ -84,9 +86,8 @@ namespace Threads::SafeStructs
     void setParentMutex(SomeHolder& tsc);
 
   public:
-    // TODO: eliminate this or the gate version.
-    constexpr MutexData& getMutexData() const { return mutex; }
     constexpr operator MutexData&() const { return mutex; }
+    constexpr MutexData& getMutexData() const { return mutex; }
   };
 
 }  // namespace Threads::SafeStructs

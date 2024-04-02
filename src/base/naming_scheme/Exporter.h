@@ -50,6 +50,8 @@ namespace NamingScheme
   class ExporterBase : public SharedFromThis<ExporterBase>
   {
   public:
+    using mutex_data_t = Threads::MutexData;
+
     // In IExport<> generates ambiguity, so we put it here.
     using token_iterator = NamingScheme::token_iterator;
 
@@ -76,8 +78,8 @@ namespace NamingScheme
      * Must satisfy `Threads::C_MutexHolder`.
      */
      /// @{
-    constexpr Threads::MutexData& getMutexData() const { return mutex; }
-    constexpr operator Threads::MutexData&() const { return mutex; }
+    constexpr mutex_data_t& getMutexData() const { return mutex; }
+    constexpr operator mutex_data_t&() const { return mutex; }
      /// @}
 
     /**

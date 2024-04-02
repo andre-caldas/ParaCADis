@@ -105,6 +105,9 @@ namespace Threads
     template<C_MutexData... MutN>
     LockPolicy(bool is_exclusive, MutN&... mutex);
 
+    template<typename... MutN>
+    LockPolicy(bool is_exclusive, MutN&... mutex);
+
     LockPolicy() = delete;
     virtual ~LockPolicy();
 
@@ -114,13 +117,22 @@ namespace Threads
     int minLayerNumber() const;
     int maxLayerNumber() const;
 
-    const std::unordered_set<const MutexData*>& getMutexes() const;
+    const std::unordered_set<MutexData*>& getMutexes() const;
 
   private:
     bool is_detached         = true;
     bool has_ignored_mutexes = false;
 
-    std::unordered_set<const MutexData*> mutexes;
+    std::unordered_set<MutexData*> mutexes;
+
+    template<C_GatherMutexData G, typename... MutN>
+    inline void unfold_mutexes(G& g, MutN&... mutex);
+
+    template<C_MutexData M, typename... MutN>
+    inline void unfold_mutexes(M& m, MutN&... mutex);
+
+    template<C_MutexData ... MutN>
+    void unfold_mutexes(MutN&... mutex);
 
     void _processLock(bool is_exclusive);
     void _processExclusiveLock();

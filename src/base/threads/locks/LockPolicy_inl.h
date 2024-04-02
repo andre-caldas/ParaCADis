@@ -38,9 +38,32 @@ namespace Threads
   template<C_MutexData... MutN>
   LockPolicy::LockPolicy(bool is_exclusive, MutN&... mutex) : mutexes{&mutex...}
   {
-    // Shared locks are acquired one by one.
-    assert(is_exclusive || mutexes.size() <= 1);
     _processLock(is_exclusive);
+  }
+
+  template<typename... MutN>
+  LockPolicy::LockPolicy(bool is_exclusive, MutN&... mutex)
+  {
+    unfold_mutexes(mutex...);
+    _processLock(is_exclusive);
+  }
+
+  template<C_GatherMutexData G, typename... MutN>
+  void LockPolicy::unfold_mutexes(G& g, MutN&... mutex)
+  {
+    unfold_mutexes(g.first, g.others, mutex...);
+  }
+
+  template<C_MutexData M, typename... MutN>
+  void LockPolicy::unfold_mutexes(M& m, MutN&... mutex)
+  {
+    unfold_mutexes(mutex..., m);
+  }
+
+  template<C_MutexData ... MutN>
+  void LockPolicy::unfold_mutexes(MutN&... mutex)
+  {
+    mutexes = {&mutex...};
   }
 
 }  // namespace Threads

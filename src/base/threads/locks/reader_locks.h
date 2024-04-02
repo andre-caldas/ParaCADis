@@ -30,6 +30,7 @@
 #include <base/expected_behaviour/SharedPtr.h>
 
 #include <shared_mutex>
+#include <vector>
 
 namespace Threads
 {
@@ -43,8 +44,9 @@ namespace Threads
      */
     [[nodiscard]]
     SharedLock(SharedLock&& other_lock) = default;
+    template<C_MutexGatherOrData Mutex>
     [[nodiscard]]
-    SharedLock(MutexData& mutex);
+    SharedLock(Mutex& mutex);
     template<C_MutexHolder Holder>
     [[nodiscard]]
     SharedLock(const Holder& holder) : SharedLock(holder.getMutexData())
@@ -52,7 +54,7 @@ namespace Threads
     }
 
   private:
-    std::shared_lock<YesItIsAMutex> lock;
+    std::vector<std::shared_lock<YesItIsAMutex>> locks;
   };
 
 

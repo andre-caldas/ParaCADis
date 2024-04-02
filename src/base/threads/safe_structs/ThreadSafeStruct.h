@@ -48,6 +48,7 @@ namespace Threads::SafeStructs
   public:
     using self_t    = ThreadSafeStruct;
     using record_t = Struct;
+    using mutex_data_t = MutexData;
 
     template<typename... Args>
     ThreadSafeStruct(Args&&... args);
@@ -68,7 +69,6 @@ namespace Threads::SafeStructs
     std::thread& getDedicatedThread();
 
   public:
-    // TODO: eliminate this or the gate version.
     constexpr MutexData& getMutexData() const { return mutex; }
     constexpr operator MutexData&() const { return mutex; }
   };

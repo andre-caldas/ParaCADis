@@ -24,16 +24,6 @@
 
 using namespace Threads;
 
-SharedLock::SharedLock(MutexData& mutex)
-    : LockPolicy(false, mutex)
-{
-  if (!getMutexes().empty()) {
-    assert(getMutexes().size() == 1);
-    assert(getMutexes().contains(&mutex));
-    lock = std::shared_lock(mutex.mutex);
-  }
-}
-
 /**
  * Template instantiation.
  */

@@ -25,7 +25,11 @@
 
 #include "YesItIsAMutex.h"
 
+#include <base/type_traits/Utils.h>
+
 #include <limits>
+#include <memory>
+#include <mutex>
 #include <type_traits>
 
 namespace Threads
@@ -64,9 +68,70 @@ namespace Threads
   };
 
   template<typename T>
-  concept C_MutexData = std::is_same<T, MutexData>::value;
+  concept C_MutexData = std::same_as<T, MutexData>;
+
+
+  struct GatherMutexDataBase {};
+
+  template<typename... M>
+  struct GatherMutexData : GatherMutexDataBase {
+    static_assert(sizeof...(M) == 0, "GatherMutexData must be specialized.");
+    static constexpr std::size_t size() { return 0; }
+  };
+
+  template<typename First, typename... M>
+  struct GatherMutexData<First, M...> : GatherMutexDataBase
+  {
+    First& first;
+    GatherMutexData<M&...> others;
+
+    constexpr GatherMutexData(First& f, M&... m) : first(f), others{m...} {}
+    static constexpr std::size_t size()
+    {
+      if constexpr(!C_MutexData<First>){
+        return First::size() + decltype(others)::size();
+      } else {
+        return 1 + decltype(others)::size();
+      }
+    }
+  };
+
+  template<typename T>
+  concept C_GatherMutexData = std::derived_from<T, GatherMutexDataBase>;
+
+  template<typename T>
+  concept C_MutexGatherOrData = C_MutexData<T> || C_GatherMutexData<T>;
+
+  template<typename First, typename... M>
+  constexpr auto
+  lockThemAll(First& f, M&... m)
+  {
+    if constexpr ((C_MutexData<First>) && (... && C_MutexData<M>)) {
+      return std::make_unique<
+          std::scoped_lock<YesItIsAMutex, TypeTraits::ForEach_t<YesItIsAMutex, M>...>
+      >(f.mutex, m.mutex...);
+    }
+    else
+    {
+      // Is the first a MutexData?
+      if constexpr (C_MutexData<First>) {
+        return lockThemAll(m..., f);
+      }
+      else
+      {
+        // Remove f.first if it is an empty list?
+        if constexpr (std::same_as<decltype(f.first), GatherMutexData<>>) {
+          return lockThemAll(f.others, m...);
+        }
+        else
+        {
+          // Split First into pices.
+          return lockThemAll(f.first, f.others, m...);
+        }
+      }
+    }
+  }
 
 }  // namespace Threads
 
 #endif
-

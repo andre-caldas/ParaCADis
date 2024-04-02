@@ -115,7 +115,7 @@ namespace Threads
         [](const MutexData* m) { return m->layer; });
   }
 
-  const std::unordered_set<const MutexData*>& LockPolicy::getMutexes() const
+  const std::unordered_set<MutexData*>& LockPolicy::getMutexes() const
   {
     return mutexes;
   }
@@ -185,16 +185,16 @@ namespace Threads
       assert(threadNonExclusiveMutexes.empty());
 
       // Lock everything that was requested.
-      threadMutexLayers.push(mutexes);
+      threadMutexLayers.push({mutexes.cbegin(), mutexes.cend()}); // TODO: ranges.
       assert(threadMutexLayers.size() == 1);
       isLayerExclusive.push(is_exclusive);
       layerNumber.push(maxLayerNumber());
       assert(isLayerExclusive.size() == threadMutexLayers.size());
       assert(isLayerExclusive.size() == layerNumber.size());
       if (is_exclusive) {
-        threadExclusiveMutexes = mutexes;
+        threadExclusiveMutexes = {mutexes.cbegin(), mutexes.cend()};
       } else {
-        threadNonExclusiveMutexes = mutexes;
+        threadNonExclusiveMutexes = {mutexes.cbegin(), mutexes.cend()};
       }
       return;
     }
@@ -247,7 +247,7 @@ namespace Threads
 
     /// @todo search those inserts and substitute for insert_range().
     threadExclusiveMutexes.insert(mutexes.cbegin(), mutexes.cend());
-    threadMutexLayers.push(mutexes);
+    threadMutexLayers.push({mutexes.cbegin(), mutexes.cend()});
     isLayerExclusive.push(true);
     layerNumber.push(maxLayerNumber());
     assert(isLayerExclusive.size() == threadMutexLayers.size());

@@ -27,6 +27,16 @@
 
 using namespace Threads;
 
+template<C_MutexGatherOrData Mutex>
+SharedLock::SharedLock(Mutex& mutex)
+    : LockPolicy(false, mutex)
+{
+  locks.reserve(getMutexes().size());
+  for(auto m: getMutexes()) {
+    locks.emplace_back(std::shared_lock(m->mutex));
+  }
+}
+
 template<C_MutexHolder Holder, typename T, T Holder::* localData>
 ReaderGate<localData>::ReaderGate(const Holder& holder)
     : _GateBase(holder)

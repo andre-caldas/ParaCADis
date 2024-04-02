@@ -55,6 +55,7 @@ SCENARIO("Container affine transformations", "[simple]")
       Vector x      = {-1, 7, 9};
       Vector y      = {7, 1, 9};
       int    z      = -1;
+//      a->setTransform(origin, x, y, z);
       CoordinateSystem T{origin, x, y, z};
 
       THEN("they get properly transformed")
@@ -76,7 +77,6 @@ SCENARIO("Container affine transformations", "[simple]")
           assert(false);
         }
       }
-    }
     }
   }
 }

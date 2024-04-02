@@ -35,7 +35,7 @@ namespace Threads
   /**
    * Locks many mutexes exclsively (for writing).
    */
-  template<C_MutexData FirstMutex, C_MutexData... Mutex>
+  template<C_MutexGatherOrData FirstMutex, C_MutexGatherOrData... Mutex>
   class ExclusiveLock : public LockPolicy
   {
   public:
@@ -49,8 +49,10 @@ namespace Threads
     auto detachFromThread();
 
   private:
-    using locks_t = std::scoped_lock<
-        YesItIsAMutex, TypeTraits::ForEach_t<YesItIsAMutex, Mutex>...>;
+    using locks_t = decltype(
+        lockThemAll<FirstMutex, Mutex...>(
+            *(FirstMutex*)nullptr, *(Mutex*)nullptr...))::element_type;
+
     /*
      * After constructed, std::scoped_lock cannot be changed.
      * So, we usa a smart pointer.
@@ -68,7 +70,8 @@ namespace Threads
 
   template<C_MutexHolder FirstHolder, C_MutexHolder... Holder>
   ExclusiveLock(FirstHolder&, Holder&...)
-      -> ExclusiveLock<MutexData, TypeTraits::ForEach_t<MutexData, Holder>...>;
+      -> ExclusiveLock<typename FirstHolder::mutex_data_t,
+                       typename Holder::mutex_data_t...>;
 
   /**
    * Writer gate.

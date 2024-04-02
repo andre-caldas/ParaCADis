@@ -32,13 +32,15 @@ using namespace Threads;
 template<C_MutexData MData>
 MutexData& getMutex(MData& mutex) { return mutex; }
 template<C_MutexHolder Holder>
-MutexData& getMutex(const Holder& holder) { return holder; }
+Holder::mutex_data_t& getMutex(const Holder& holder) { return holder; }
 
-template<C_MutexData FirstMutex, C_MutexData... Mutex>
+template<C_MutexGatherOrData FirstMutex, C_MutexGatherOrData... Mutex>
 template<C_MutexHolder FirstHolder, C_MutexHolder... Holder>
 ExclusiveLock<FirstMutex, Mutex...>::ExclusiveLock(FirstHolder& first_holder, Holder&... holder)
-    : LockPolicy(true, static_cast<MutexData&>(first_holder), static_cast<MutexData&>(holder)...)
+    : LockPolicy(true, getMutex(first_holder), getMutex(holder)...)
 {
+  using GatherThemAll = GatherMutexData<FirstMutex, Holder...>;
+
   /*
    * Here we know that if this is not the first lock,
    * all previous locks in the same layer were exclusive
@@ -49,24 +51,19 @@ ExclusiveLock<FirstMutex, Mutex...>::ExclusiveLock(FirstHolder& first_holder, Ho
    * ExclusiveLock l1(m1, m2);
    * ExclusiveLock l2(m1); // Does nothing.
    */
-  assert(getMutexes().empty() || getMutexes().size() == 1 + sizeof...(Holder));
-  if (getMutexes().size() == 1 + sizeof...(Holder)) {
-    /*
-     * It would be more natural if we could pass "mutexes" to the constructor.
-     * But there is only the option to list all mutexes at compile time.
-     * Fortunately, mutexes = {container.getMutexPtr()...}.
-     */
-    locks = std::make_shared<locks_t>(getMutex(first_holder).mutex, getMutex(holder).mutex...);
+  assert(getMutexes().empty() || getMutexes().size() == GatherThemAll::size());
+  if (!getMutexes().empty()) {
+    locks = lockThemAll(getMutex(first_holder), getMutex(holder)...);
   }
 }
 
-template<C_MutexData FirstMutex, C_MutexData... Mutex>
+template<C_MutexGatherOrData FirstMutex, C_MutexGatherOrData... Mutex>
 void ExclusiveLock<FirstMutex, Mutex...>::release()
 {
   locks.reset();
 }
 
-template<C_MutexData FirstMutex, C_MutexData... Mutex>
+template<C_MutexGatherOrData FirstMutex, C_MutexGatherOrData... Mutex>
 auto ExclusiveLock<FirstMutex, Mutex...>::detachFromThread()
 {
   LockPolicy::detachFromThread();

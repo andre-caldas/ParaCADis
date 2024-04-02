@@ -28,6 +28,7 @@
 #include <base/naming_scheme/Chainables.h>
 #include <base/naming_scheme/Exporter.h>
 #include <base/naming_scheme/IExport.h>
+#include <base/threads/locks/MutexData.h>
 #include <base/threads/safe_structs/ThreadSafeMap.h>
 
 #include <concepts>
@@ -75,10 +76,19 @@ namespace DocumentTree
     // Maybe we could enforce SharedLock of Exporter::mutex
     // before the ExclusiveLock or SharedLock for the "sub-container" mutex.
     // That would be theoretically less "blocking".
-    UnorderedMap<uuid_type, SharedPtr<NamingScheme::ExporterBase>> non_containers{mutex};
-    UnorderedMap<uuid_type, SharedPtr<Container>> containers{mutex};
+    UnorderedMap<uuid_type, SharedPtr<NamingScheme::ExporterBase>> non_containers;
+    UnorderedMap<uuid_type, SharedPtr<Container>> containers;
 
     DeferenceableCoordinateSystem coordinate_system;
+    mutable GatherMutexData<Threads::MutexData, Threads::MutexData, Threads::MutexData>
+        mutex{non_containers.getMutexData(),
+              containers.getMutexData(),
+              coordinate_system.getMutexData()};
+
+  public:
+    using mutex_data_t = decltype(mutex);
+    constexpr mutex_data_t& getMutexData() const { return mutex; }
+    constexpr operator mutex_data_t&() const { return mutex; }
   };
 
   static_assert(Threads::C_MutexHolder<Container>, "A container is a C_MutexHolder.");
