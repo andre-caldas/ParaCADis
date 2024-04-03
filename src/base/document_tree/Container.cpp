@@ -26,153 +26,201 @@
 
 #include <base/threads/safe_structs/ThreadSafeMap.h>
 
-namespace DocumentTree
-{
+using namespace DocumentTree;
 
-  std::string Container::toString() const
-  {
-    return std::format("Container ({})", getName());
+std::unique_ptr<Container> Container::deepCopy() const
+{
+  throw ::Exception::NotImplemented();
+}
+
+std::string Container::toString() const
+{
+  return std::format("Container ({})", getName());
+}
+
+
+/*
+ * Add elements.
+ */
+void Container::addElement(SharedPtr<ExporterBase> element)
+{
+  auto ptr = element.cast<Container>();
+  if (ptr) {
+    addContainer(ptr);
+    return;
   }
 
-  void Container::addElement(SharedPtr<ExporterBase> element)
-  {
-    auto ptr = element.cast<Container>();
-    if (ptr) {
-      addContainer(ptr);
+  auto gate = non_containers.getWriterGate();
+  if (gate->contains(element->getUuid())) {
+    throw Exception::ElementAlreadyInContainer(element, sharedFromThis<Container>());
+  }
+  gate->emplace(element->getUuid(), std::move(element));
+}
+
+void Container::addContainer(SharedPtr<Container> container)
+{
+  auto gate = containers.getWriterGate();
+  if (gate->contains(container->getUuid())) {
+    throw Exception::ElementAlreadyInContainer(container, sharedFromThis<Container>());
+  }
+  gate->emplace(container->getUuid(), std::move(container));
+}
+
+
+/*
+ * Remove elements.
+ */
+void Container::removeElement(SharedPtr<ExporterBase> element)
+{
+  auto ptr = element.cast<Container>();
+  if (ptr) {
+    removeContainer(ptr);
+    return;
+  }
+
+  removeElement(element->getUuid());
+}
+
+void Container::removeElement(NamingScheme::Uuid::uuid_type uuid)
+{
+  { // Gate scope
+    auto gate_n = non_containers.getWriterGate();
+    auto nh_n = gate_n->extract(uuid);
+    if (nh_n) {
       return;
     }
-
-    auto gate = non_containers.getWriterGate();
-    if (gate->contains(element->getUuid())) {
-      throw Exception::ElementAlreadyInContainer(element, sharedFromThis<Container>());
-    }
-    gate->emplace(element->getUuid(), std::move(element));
   }
+  removeContainer(uuid);
+}
 
-  void Container::addContainer(SharedPtr<Container> container)
-  {
-    auto gate = containers.getWriterGate();
-    if (gate->contains(container->getUuid())) {
-      throw Exception::ElementAlreadyInContainer(container, sharedFromThis<Container>());
-    }
-    gate->emplace(container->getUuid(), std::move(container));
+void Container::removeContainer(SharedPtr<Container> container)
+{
+  removeContainer(container->getUuid());
+}
+
+void Container::removeContainer(NamingScheme::Uuid::uuid_type uuid)
+{
+  auto gate = containers.getWriterGate();
+  auto nh = gate->extract(uuid);
+  if (!nh) {
+    throw Exception::ElementNotInContainer(uuid, sharedFromThis<Container>());
   }
+}
 
-  bool Container::contains(NamingScheme::Uuid::uuid_type uuid) const
-  {
-    {
-      auto gate = containers.getReaderGate();
-      if(gate->contains(uuid)) { return true; }
-    }
 
-    {
-      auto gate = non_containers.getReaderGate();
-      if(gate->contains(uuid)) { return true; }
-    }
-
-    return false;
-  }
-
-  bool Container::contains(const ExporterBase& element) const
-  {
-    return contains(element.getUuid());
-  }
-
-  bool Container::contains(const Container& container) const
+bool Container::contains(NamingScheme::Uuid::uuid_type uuid) const
+{
   {
     auto gate = containers.getReaderGate();
-    return gate->contains(container.getUuid());
+    if(gate->contains(uuid)) { return true; }
   }
 
-  bool Container::contains(std::string_view name) const
   {
-    Threads::SharedLock c{containers};
-    Threads::SharedLock n{non_containers};
-    for (const auto& [uuid, exporter] : containers) {
-      if (exporter->getName() == name) { return true; }
-    }
-    for (const auto& [uuid, exporter] : non_containers) {
-      if (exporter->getName() == name) { return true; }
-    }
-    return false;
+    auto gate = non_containers.getReaderGate();
+    if(gate->contains(uuid)) { return true; }
   }
 
+  return false;
+}
 
-  SharedPtr<ExporterBase>
-  Container::resolve_share(token_iterator& tokens, ExporterBase*)
+bool Container::contains(const ExporterBase& element) const
+{
+  return contains(element.getUuid());
+}
+
+bool Container::contains(const Container& container) const
+{
+  auto gate = containers.getReaderGate();
+  return gate->contains(container.getUuid());
+}
+
+bool Container::contains(std::string_view name) const
+{
+  Threads::SharedLock c{containers};
+  Threads::SharedLock n{non_containers};
+  for (const auto& [uuid, exporter] : containers) {
+    if (exporter->getName() == name) { return true; }
+  }
+  for (const auto& [uuid, exporter] : non_containers) {
+    if (exporter->getName() == name) { return true; }
+  }
+  return false;
+}
+
+
+SharedPtr<ExporterBase>
+Container::resolve_share(token_iterator& tokens, ExporterBase*)
+{
+  if(!tokens)
   {
-    if(!tokens)
-    {
-      return {};
-    }
-
-    auto result = Chainables::resolve_share(tokens);
-    if(result)
-    {
-      return result;
-    }
-
-    auto& token = tokens.front();
-    if (token.isUuid())
-    {
-      auto it = non_containers.find(token);
-      if(it != non_containers.end())
-      {
-        return it->second;
-      }
-      return {};
-    }
-
-    for(auto& [uuid, ptr] : non_containers)
-    {
-      if(ptr->getName() == token.getName())
-      {
-        return ptr;
-      }
-    }
-
     return {};
   }
 
-  SharedPtr<Container>
-  Container::resolve_share(token_iterator& tokens, Container*)
+  auto result = Chainables::resolve_share(tokens);
+  if(result)
   {
-    auto& token = tokens.front();
-    if (token.isUuid())
-    {
-      auto it = containers.find(token);
-      if(it != containers.end())
-      {
-        return it->second;
-      }
-      return {};
-    }
+    return result;
+  }
 
-    for(auto& [uuid, ptr] : containers)
+  auto& token = tokens.front();
+  if (token.isUuid())
+  {
+    auto it = non_containers.find(token);
+    if(it != non_containers.end())
     {
-      if(ptr->getName() == token.getName())
-      {
-        return ptr;
-      }
+      return it->second;
     }
-
     return {};
   }
 
-  DeferenceableCoordinateSystem*
-  Container::resolve_ptr(token_iterator& tokens, DeferenceableCoordinateSystem*)
+  for(auto& [uuid, ptr] : non_containers)
   {
-    if(!tokens)
+    if(ptr->getName() == token.getName())
     {
-      return nullptr;
+      return ptr;
     }
+  }
 
-    if(tokens.front() == "axis")
+  return {};
+}
+
+SharedPtr<Container>
+Container::resolve_share(token_iterator& tokens, Container*)
+{
+  auto& token = tokens.front();
+  if (token.isUuid())
+  {
+    auto it = containers.find(token);
+    if(it != containers.end())
     {
-      tokens.advance(1);
-      return &coordinate_system;
+      return it->second;
     }
+    return {};
+  }
+
+  for(auto& [uuid, ptr] : containers)
+  {
+    if(ptr->getName() == token.getName())
+    {
+      return ptr;
+    }
+  }
+
+  return {};
+}
+
+DeferenceableCoordinateSystem*
+Container::resolve_ptr(token_iterator& tokens, DeferenceableCoordinateSystem*)
+{
+  if(!tokens)
+  {
     return nullptr;
   }
 
-}  // namespace DocumentTree
+  if(tokens.front() == "axis")
+  {
+    tokens.advance(1);
+    return &coordinate_system;
+  }
+  return nullptr;
+}

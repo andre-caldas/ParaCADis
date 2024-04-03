@@ -133,3 +133,10 @@ CoordinateSystem DeferenceableCoordinateSystem::getCoordinateSystem() const noex
   auto gate = getReaderGate();
   return {gate->origin, gate->bx, gate->by, gate->bz};
 }
+
+std::unique_ptr<DeferenceableCoordinateSystem> DeferenceableCoordinateSystem::deepCopy() const
+{
+  auto gate = getReaderGate();
+  return std::make_unique<DeferenceableCoordinateSystem>(
+      gate->origin, gate->bx, gate->by, gate->bz);
+}

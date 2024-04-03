@@ -57,6 +57,10 @@ public:
   DeferenceablePoint(Real x, Real y, Real z);
   operator Point() const noexcept;
 
+  std::unique_ptr<DeferenceablePoint> deepCopy() const;
+  std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
+  { return deepCopy(); }
+
 //  std::string toString() const override;
 };
 
@@ -82,6 +86,10 @@ public:
   DeferenceableVector(const Vector& v);
   DeferenceableVector(Real x, Real y, Real z);
   operator Vector() const noexcept;
+
+  std::unique_ptr<DeferenceableVector> deepCopy() const;
+  std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
+  { return deepCopy(); }
 
 //  std::string toString() const override;
 };

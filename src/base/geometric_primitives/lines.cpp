@@ -22,15 +22,31 @@
 
 #include "lines.h"
 
-Line2Points::Line2Points(Point start, Point end)
-    : Exporter{std::move(start), std::move(end)}
+Line2Points::Line2Points(Point start, Point end,
+                         bool is_bounded_start, bool is_bounded_end)
+    : Exporter{std::move(start), std::move(end), is_bounded_start, is_bounded_end}
 {
 }
 
-
-LinePointDirection::LinePointDirection(Point start, Vector direction)
-    : Exporter{std::move(start), std::move(direction)}
+std::unique_ptr<Line2Points> Line2Points::deepCopy() const
 {
+  auto gate = getReaderGate();
+  return std::make_unique<Line2Points>(gate->start, gate->end,
+                                       gate->is_bounded_start, gate->is_bounded_end);
+}
+
+
+LinePointDirection::LinePointDirection(Point start, Vector direction,
+                                       bool is_bounded_start, bool is_bounded_end)
+    : Exporter{std::move(start), std::move(direction), is_bounded_start, is_bounded_end}
+{
+}
+
+std::unique_ptr<LinePointDirection> LinePointDirection::deepCopy() const
+{
+  auto gate = getReaderGate();
+  return std::make_unique<LinePointDirection>(gate->start, gate->direction,
+                                              gate->is_bounded_start, gate->is_bounded_end);
 }
 
 /**

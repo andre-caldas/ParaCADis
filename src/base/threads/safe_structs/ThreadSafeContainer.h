@@ -34,7 +34,7 @@ namespace Threads::SafeStructs
   class ThreadSafeContainer
   {
   protected:
-    mutable Threads::MutexData defaultMutex;
+    mutable Threads::MutexData defaultMutex{100};
     Threads::MutexData&        mutex = defaultMutex;
     ContainerType              container;
 

@@ -40,3 +40,18 @@ ElementAlreadyInContainer::ElementAlreadyInContainer(
           element->toString()))
 {
 }
+
+ElementNotInContainer::ElementNotInContainer(
+    SharedPtr<const ExporterBase> element, SharedPtr<const Container> container)
+    : RunTimeError(std::format(
+          "Container ({}) does not have element ({}).", container->toString(),
+          element->toString()))
+{
+}
+
+ElementNotInContainer::ElementNotInContainer(
+    NamingScheme::Uuid::uuid_type /* element_uuid */, SharedPtr<const Container> container)
+    : RunTimeError(std::format(
+          "Container ({}) does not have element (--uuid--).", container->toString()))
+{
+}

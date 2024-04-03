@@ -26,7 +26,7 @@
 
 using namespace DocumentTree;
 
-SCENARIO("MOVE", "[simple]")
+SCENARIO("MOVE xxx", "[simple]")
 {
   GIVEN("an assert(false)...")
   {

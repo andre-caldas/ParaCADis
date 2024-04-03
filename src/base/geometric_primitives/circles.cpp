@@ -27,10 +27,22 @@ CirclePointRadiusNormal::CirclePointRadiusNormal(Point center, Real radius, Vect
 {
 }
 
+std::unique_ptr<CirclePointRadiusNormal> CirclePointRadiusNormal::deepCopy() const
+{
+  auto gate = getReaderGate();
+  return std::make_unique<CirclePointRadiusNormal>(gate->center, gate->radius, gate->normal);
+}
+
 
 Circle3Points::Circle3Points(Point a, Point b, Point c)
     : Exporter{std::move(a), std::move(b), std::move(c)}
 {
+}
+
+std::unique_ptr<Circle3Points> Circle3Points::deepCopy() const
+{
+  auto gate = getReaderGate();
+  return std::make_unique<Circle3Points>(gate->a, gate->b, gate->c);
 }
 
 
@@ -38,6 +50,13 @@ Circle2PointsDirection::Circle2PointsDirection(Point a, Point b, Vector d)
     : Exporter{std::move(a), std::move(b), std::move(d)}
 {
 }
+
+std::unique_ptr<Circle2PointsDirection> Circle2PointsDirection::deepCopy() const
+{
+  auto gate = getReaderGate();
+  return std::make_unique<Circle2PointsDirection>(gate->a, gate->b, gate->d);
+}
+
 
 /**
  * Template instantiation.

@@ -56,6 +56,10 @@ class CirclePointRadiusNormal
 {
 public:
   CirclePointRadiusNormal(Point center, Real radius, Vector normal = {1,0,0});
+
+  std::unique_ptr<CirclePointRadiusNormal> deepCopy() const;
+  std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
+  { return deepCopy(); }
 };
 
 
@@ -85,6 +89,10 @@ class Circle3Points
 {
 public:
   Circle3Points(Point a, Point b, Point c);
+
+  std::unique_ptr<Circle3Points> deepCopy() const;
+  std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
+  { return deepCopy(); }
 };
 
 
@@ -118,6 +126,10 @@ class Circle2PointsDirection
 {
 public:
   Circle2PointsDirection(Point a, Point b, Vector chord_to_center);
+
+  std::unique_ptr<Circle2PointsDirection> deepCopy() const;
+  std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
+  { return deepCopy(); }
 };
 
 #endif

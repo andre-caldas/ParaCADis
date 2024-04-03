@@ -38,6 +38,11 @@ DeferenceablePoint::operator Point() const noexcept
   return Point{gate->x, gate->y, gate->z};
 }
 
+std::unique_ptr<DeferenceablePoint> DeferenceablePoint::deepCopy() const
+{
+  return std::make_unique<DeferenceablePoint>(operator Point());
+}
+
 
 DeferenceableVector::DeferenceableVector(const Vector& v)
     : Exporter{v.x(), v.y(), v.z()}
@@ -53,6 +58,11 @@ DeferenceableVector::operator Vector() const noexcept
 {
   auto gate = getReaderGate();
   return Vector{gate->x, gate->y, gate->z};
+}
+
+std::unique_ptr<DeferenceableVector> DeferenceableVector::deepCopy() const
+{
+  return std::make_unique<DeferenceableVector>(operator Vector());
 }
 
 

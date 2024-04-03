@@ -61,6 +61,15 @@ namespace NamingScheme
     virtual ~ExporterBase() = default;
 
     /**
+     * Descendants of ExporterBase must implement a deepCopyExporter() method.
+     *
+     * @attention The policy is:
+     * 1. Implement a deepCopyExporter().
+     * 2. Implement a deepCopy() specific for the derived type.
+     */
+    virtual std::unique_ptr<ExporterBase> deepCopyExporter() const = 0;
+
+    /**
      * String for reports and diagnostics.
      *
      * TODO: make pure virtual.

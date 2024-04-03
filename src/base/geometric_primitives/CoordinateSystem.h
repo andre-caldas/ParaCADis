@@ -47,10 +47,10 @@
 class CoordinateSystem
 {
 private:
-  Point origin = {0,0,0,1};
-  Vector bx = {1,0,0,1};
-  Vector by = {0,1,0,1};
-  Vector bz = {0,0,1,1};
+  Point  origin = {0,0,0,1};
+  Vector bx     = {1,0,0,1};
+  Vector by     = {0,1,0,1};
+  Vector bz     = {0,0,1,1};
 
 public:
   CoordinateSystem() = default;
@@ -169,6 +169,10 @@ public:
   DeferenceableCoordinateSystem(Point origin) noexcept;
   DeferenceableCoordinateSystem(Point origin, Vector x, Vector y, Vector z) noexcept;
   CoordinateSystem getCoordinateSystem() const noexcept;
+
+  std::unique_ptr<DeferenceableCoordinateSystem> deepCopy() const;
+  std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
+  { return deepCopy(); }
 };
 
 #endif

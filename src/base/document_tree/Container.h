@@ -47,12 +47,23 @@ namespace DocumentTree
     using IExport = NamingScheme::IExport<T>;
 
   public:
+    std::unique_ptr<Container> deepCopy() const;
+    std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
+    { return deepCopy(); }
+
     std::string toString() const override;
 
     template<std::convertible_to<const Container&> C>
     void addElement(SharedPtr<C> c) { addContainer(std::move(c)); }
     void addElement(SharedPtr<ExporterBase> element);
     void addContainer(SharedPtr<Container> container);
+
+    template<std::convertible_to<const Container&> C>
+    void removeElement(SharedPtr<C> c) { removeContainer(std::move(c)); }
+    void removeElement(SharedPtr<ExporterBase> element);
+    void removeElement(NamingScheme::Uuid::uuid_type uuid);
+    void removeContainer(SharedPtr<Container> container);
+    void removeContainer(NamingScheme::Uuid::uuid_type uuid);
 
     bool contains(NamingScheme::Uuid::uuid_type uuid) const;
     bool contains(const ExporterBase& element) const;

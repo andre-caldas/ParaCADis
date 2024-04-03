@@ -25,6 +25,7 @@
 
 #include <base/exceptions.h>
 #include <base/expected_behaviour/SharedPtr.h>
+#include <base/naming_scheme/Uuid.h>
 
 namespace NamingScheme
 {
@@ -43,6 +44,15 @@ namespace DocumentTree::Exception
   public:
     ElementAlreadyInContainer(
         SharedPtr<const NamingScheme::ExporterBase> element, SharedPtr<const Container> container);
+  };
+
+  class ElementNotInContainer : public ::Exception::RunTimeError
+  {
+  public:
+    ElementNotInContainer(
+        SharedPtr<const NamingScheme::ExporterBase> element, SharedPtr<const Container> container);
+    ElementNotInContainer(
+        NamingScheme::Uuid::uuid_type element_uuid, SharedPtr<const Container> container);
   };
 
 }  // namespace DocumentTree

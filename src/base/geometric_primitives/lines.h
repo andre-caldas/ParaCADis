@@ -60,7 +60,13 @@ class Line2Points
     , public NamingScheme::Chainables<DeferenceablePoint>
 {
 public:
-  Line2Points(Point start, Point end);
+  Line2Points(Point start, Point end,
+              bool is_bounded_start = true, bool is_bounded_end = true);
+
+  std::unique_ptr<Line2Points> deepCopy() const;
+  std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
+  { return deepCopy(); }
+
 //  std::string toString() const override;
 };
 
@@ -94,7 +100,13 @@ class LinePointDirection
     , public NamingScheme::Chainables<DeferenceablePoint, DeferenceableVector>
 {
 public:
-  LinePointDirection(Point start, Vector direction);
+  LinePointDirection(Point start, Vector direction,
+                     bool is_bounded_start = true, bool is_bounded_end = true);
+
+  std::unique_ptr<LinePointDirection> deepCopy() const;
+  std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
+  { return deepCopy(); }
+
 //  std::string toString() const override;
 };
 
