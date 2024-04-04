@@ -47,11 +47,16 @@ namespace DocumentTree
     using IExport = NamingScheme::IExport<T>;
 
   public:
+    using uuid_type = NamingScheme::Uuid::uuid_type;
+
     std::unique_ptr<Container> deepCopy() const;
     std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
     { return deepCopy(); }
 
     std::string toString() const override;
+
+    SharedPtr<ExporterBase> getElement(uuid_type uuid) const;
+    SharedPtr<Container> getContainer(uuid_type uuid) const;
 
     template<std::convertible_to<const Container&> C>
     void addElement(SharedPtr<C> c) { addContainer(std::move(c)); }
@@ -61,11 +66,22 @@ namespace DocumentTree
     template<std::convertible_to<const Container&> C>
     void removeElement(SharedPtr<C> c) { removeContainer(std::move(c)); }
     void removeElement(SharedPtr<ExporterBase> element);
-    void removeElement(NamingScheme::Uuid::uuid_type uuid);
+    SharedPtr<ExporterBase> removeElement(uuid_type uuid);
     void removeContainer(SharedPtr<Container> container);
-    void removeContainer(NamingScheme::Uuid::uuid_type uuid);
+    SharedPtr<Container> removeContainer(uuid_type uuid);
 
-    bool contains(NamingScheme::Uuid::uuid_type uuid) const;
+    /**
+     * Moves element from one container to the other, **atomically**.
+     *
+     * @attention If the move operation fails, everything should just
+     * remain just as if the moveElement() method was not called.
+     */
+    /// @{
+    void moveElementTo(uuid_type uuid, Container& to);
+    void moveContainerTo(uuid_type uuid, Container& to);
+    /// @}
+
+    bool contains(uuid_type uuid) const;
     bool contains(const ExporterBase& element) const;
     bool contains(const Container& container) const;
     bool contains(std::string_view name) const;
@@ -78,7 +94,6 @@ namespace DocumentTree
     resolve_ptr(token_iterator& tokens, DeferenceableCoordinateSystem* = nullptr) override;
 
   private:
-    using uuid_type = NamingScheme::Uuid::uuid_type;
     template<typename Key, typename Val>
     using UnorderedMap = Threads::SafeStructs::ThreadSafeUnorderedMap<Key, Val>;
 
@@ -91,7 +106,7 @@ namespace DocumentTree
     UnorderedMap<uuid_type, SharedPtr<Container>> containers;
 
     DeferenceableCoordinateSystem coordinate_system;
-    mutable GatherMutexData<Threads::MutexData, Threads::MutexData, Threads::MutexData>
+    mutable Threads::GatherMutexData<Threads::MutexData, Threads::MutexData, Threads::MutexData>
         mutex{non_containers.getMutexData(),
               containers.getMutexData(),
               coordinate_system.getMutexData()};

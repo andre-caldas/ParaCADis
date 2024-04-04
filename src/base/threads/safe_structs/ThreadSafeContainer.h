@@ -76,8 +76,8 @@ namespace Threads::SafeStructs
     void   clear();
 
 
-    using ReaderGate = ::ReaderGate<&self_t::container>;
-    using WriterGate = ::WriterGate<&self_t::container>;
+    using ReaderGate = Threads::LocalReaderGate<&self_t::container>;
+    using WriterGate = Threads::LocalWriterGate<&self_t::container>;
 
     ReaderGate getReaderGate() const noexcept { return ReaderGate{*this}; }
     WriterGate getWriterGate() noexcept { return WriterGate{*this}; }

@@ -38,35 +38,6 @@ namespace Threads
 {
 
   /**
-   * Concept of a `MutexHolder`.
-   * The `MutexHolder` be convertible to its mutex.
-   */
-  template<typename T>
-  concept C_MutexHolder = requires(T a) {
-    { a } -> std::convertible_to<MutexData&>;
-  };
-
-  /**
-   * Concept of a `MutexHolder` that implements access gates.
-   * The `MutexHolderWithGates` must:
-   * 1. Be a `MutexHolder`.
-   * 2. Define a MutexHolder::WriterGate class
-   *    that implements the container methods that demand ExclusiveLock.
-   * 3. Define a method that takes an ExclusiveLock as argument,
-   *    and returns a WriterGate instance.
-   */
-  template<typename T>
-  concept C_MutexHolderWithGates = C_MutexHolder<T> && requires(T a) {
-    // Type of the struct that holds the data for each record.
-    typename T::record_t;
-
-    typename T::ReaderGate;
-    { a.getReaderGate() } -> std::convertible_to<const typename T::ReaderGate>;
-    typename T::WriterGate;
-    { a.getWriterGate() } -> std::convertible_to<const typename T::WriterGate>;
-  };
-
-  /**
    * Implements the policy for mutex locking.
    *
    * Implements the following policy: (see README.md)

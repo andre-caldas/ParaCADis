@@ -43,16 +43,18 @@ namespace DocumentTree::Exception
   {
   public:
     ElementAlreadyInContainer(
-        SharedPtr<const NamingScheme::ExporterBase> element, SharedPtr<const Container> container);
+        NamingScheme::Uuid element_uuid, const Container& container);
+    ElementAlreadyInContainer(
+        const NamingScheme::ExporterBase& element, const Container& container);
   };
 
   class ElementNotInContainer : public ::Exception::RunTimeError
   {
   public:
     ElementNotInContainer(
-        SharedPtr<const NamingScheme::ExporterBase> element, SharedPtr<const Container> container);
+        NamingScheme::Uuid element_uuid, const Container& container);
     ElementNotInContainer(
-        NamingScheme::Uuid::uuid_type element_uuid, SharedPtr<const Container> container);
+        const NamingScheme::ExporterBase& element, const Container& container);
   };
 
 }  // namespace DocumentTree

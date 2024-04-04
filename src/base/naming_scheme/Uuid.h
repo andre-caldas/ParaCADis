@@ -50,6 +50,7 @@ namespace NamingScheme
 
     Uuid();
     Uuid(int i);
+    Uuid(uuid_type uuid) : uuid(uuid) {}
     Uuid(std::string_view uuid_str);
     virtual ~Uuid() = default;
 

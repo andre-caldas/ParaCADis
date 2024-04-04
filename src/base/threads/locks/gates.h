@@ -23,6 +23,8 @@
 #ifndef Threads_Gates_H
 #define Threads_Gates_H
 
+#include "MutexData.h"
+
 #include <concepts>
 #include <memory>
 
@@ -30,6 +32,11 @@ namespace Threads
 {
 
   class MutexData;
+
+  template<C_MutexData MData>
+  MutexData& getMutex(MData& mutex) { return mutex; }
+  template<C_MutexHolder Holder>
+  Holder::mutex_data_t& getMutex(const Holder& holder) { return holder; }
 
   /**
    * Base class for all gates.

@@ -35,13 +35,12 @@ namespace Threads
   /**
    * Locks many mutexes exclsively (for writing).
    */
-  template<C_MutexGatherOrData FirstMutex, C_MutexGatherOrData... Mutex>
+  template<C_MutexGatherOrData... Mutex>
   class ExclusiveLock : public LockPolicy
   {
   public:
-    template<C_MutexHolder FirstHolder, C_MutexHolder... Holder>
     [[nodiscard]]
-    ExclusiveLock(FirstHolder& first_holder, Holder&... holder);
+    ExclusiveLock(Mutex&... mutex);
 
     void release();
 
@@ -50,8 +49,7 @@ namespace Threads
 
   private:
     using locks_t = decltype(
-        lockThemAll<FirstMutex, Mutex...>(
-            *(FirstMutex*)nullptr, *(Mutex*)nullptr...))::element_type;
+        lockThemAll<Mutex...>(*(Mutex*)nullptr...))::element_type;
 
     /*
      * After constructed, std::scoped_lock cannot be changed.
@@ -68,13 +66,41 @@ namespace Threads
     std::shared_ptr<locks_t> locks;
   };
 
-  template<C_MutexHolder FirstHolder, C_MutexHolder... Holder>
-  ExclusiveLock(FirstHolder&, Holder&...)
-      -> ExclusiveLock<typename FirstHolder::mutex_data_t,
-                       typename Holder::mutex_data_t...>;
+
+  template<C_MutexHolderWithGates ... Holders>
+  class WriterGate
+      : ExclusiveLock<typename Holders::mutex_data_t...>
+  {
+  public:
+    WriterGate(Holders&... holders);
+
+    template<C_MutexHolderWithGates Holder>
+    auto& operator[](Holder& holder) const;
+
+  private:
+#ifndef NDEBUG
+    const std::unordered_set<const void*> all_holders;
+#endif
+  };
+
+
+  template<C_MutexHolderWithGates Holder>
+  class WriterGate<Holder>
+      : ExclusiveLock<typename Holder::mutex_data_t>
+  {
+  public:
+    WriterGate(Holder& holder);
+
+    auto& operator*() { return data; }
+    auto* operator->() { return &data; }
+
+  private:
+    Holder::WriterGate::protected_data_t& data;
+  };
+
 
   /**
-   * Writer gate.
+   * A local writer gate.
    *
    * @attention If you need more than one mutex, you have to allocate
    * all of them at once using ExclusiveLock. Only then,
@@ -83,20 +109,28 @@ namespace Threads
   /// @{
   /// Allow template specialization.
   template<auto PTR_TO_MEMBER>
-  class WriterGate {};
+  class LocalWriterGate {};
 
   template<C_MutexHolder Holder, typename T, T Holder::* localData>
-  class WriterGate<localData> : public _GateBase<ExclusiveLock<MutexData>>
+  class LocalWriterGate<localData> : public _GateBase<ExclusiveLock<MutexData>>
   {
   public:
-    WriterGate(Holder& holder);
+    LocalWriterGate(Holder& holder);
 
-    T& operator*() { return *data; }
-    T* operator->() { return data; }
+    using protected_data_t = T;
+
+    T& operator*() { return data; }
+    T* operator->() { return &data; }
 
   private:
-    T* data;
+    T& data;
+
+    static T& getProtectedData(Holder& holder) { return holder.*localData; }
+
+    template<C_MutexHolderWithGates... Holders>
+    friend class WriterGate;
   };
+  /// @}
 
 }  // namespace Threads
 

@@ -68,7 +68,7 @@ namespace Threads
   };
 
   template<typename T>
-  concept C_MutexData = std::same_as<T, MutexData>;
+  concept C_MutexData = std::same_as<const T, const MutexData>;
 
 
   struct GatherMutexDataBase {};
@@ -83,7 +83,7 @@ namespace Threads
   struct GatherMutexData<First, M...> : GatherMutexDataBase
   {
     First& first;
-    GatherMutexData<M&...> others;
+    GatherMutexData<M...> others;
 
     constexpr GatherMutexData(First& f, M&... m) : first(f), others{m...} {}
     static constexpr std::size_t size()
@@ -131,6 +131,42 @@ namespace Threads
       }
     }
   }
+
+  constexpr auto
+  lockThemAll()
+  {
+    return std::make_unique<std::scoped_lock<>>();
+  }
+
+
+  /**
+   * Concept of a `MutexHolder`.
+   * The `MutexHolder` be convertible to its mutex.
+   */
+  template<typename T>
+  concept C_MutexHolder = requires(T a) {
+    { a } -> std::convertible_to<MutexData&>;
+  };
+
+  /**
+   * Concept of a `MutexHolder` that implements access gates.
+   * The `MutexHolderWithGates` must:
+   * 1. Be a `MutexHolder`.
+   * 2. Define a MutexHolder::WriterGate class
+   *    that implements the container methods that demand ExclusiveLock.
+   * 3. Define a method that takes an ExclusiveLock as argument,
+   *    and returns a WriterGate instance.
+   */
+  template<typename T>
+  concept C_MutexHolderWithGates = C_MutexHolder<T> && requires(T a) {
+    // Type of the struct that holds the data for each record.
+//    typename T::record_t;
+
+    typename T::ReaderGate;
+//    a.getReaderGate();
+//    typename T::WriterGate;
+//    a.getWriterGate();
+  };
 
 }  // namespace Threads
 

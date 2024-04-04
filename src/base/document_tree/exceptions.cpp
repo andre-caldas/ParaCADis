@@ -34,24 +34,33 @@ using namespace DocumentTree::Exception;
 using namespace NamingScheme;
 
 ElementAlreadyInContainer::ElementAlreadyInContainer(
-    SharedPtr<const ExporterBase> element, SharedPtr<const Container> container)
+    const ExporterBase& element, const Container& container)
     : RunTimeError(std::format(
-          "Container ({}) already has element ({}).", container->toString(),
-          element->toString()))
+          "Container ({}) already has element ({}).", container.toString(),
+          element.toString()))
+{
+}
+
+ElementAlreadyInContainer::ElementAlreadyInContainer(
+    NamingScheme::Uuid element_uuid, const Container& container)
+    : RunTimeError(std::format(
+          "Container ({}) does not have element ({}).", container.toString(),
+          element_uuid.toString()))
 {
 }
 
 ElementNotInContainer::ElementNotInContainer(
-    SharedPtr<const ExporterBase> element, SharedPtr<const Container> container)
+    const ExporterBase& element, const Container& container)
     : RunTimeError(std::format(
-          "Container ({}) does not have element ({}).", container->toString(),
-          element->toString()))
+          "Container ({}) does not have element ({}).", container.toString(),
+          element.toString()))
 {
 }
 
 ElementNotInContainer::ElementNotInContainer(
-    NamingScheme::Uuid::uuid_type /* element_uuid */, SharedPtr<const Container> container)
+    NamingScheme::Uuid element_uuid, const Container& container)
     : RunTimeError(std::format(
-          "Container ({}) does not have element (--uuid--).", container->toString()))
+          "Container ({}) does not have element ({}).", container.toString(),
+          element_uuid.toString()))
 {
 }

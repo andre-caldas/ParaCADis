@@ -58,8 +58,8 @@ namespace Threads::SafeStructs
 
     virtual ~ThreadSafeStruct();
 
-    using ReaderGate = ::ReaderGate<&self_t::theStruct>;
-    using WriterGate = ::WriterGate<&self_t::theStruct>;
+    using ReaderGate = Threads::LocalReaderGate<&self_t::theStruct>;
+    using WriterGate = Threads::LocalWriterGate<&self_t::theStruct>;
 
     ReaderGate getReaderGate() const noexcept { return {*this}; }
     WriterGate getWriterGate() noexcept { return {*this}; }

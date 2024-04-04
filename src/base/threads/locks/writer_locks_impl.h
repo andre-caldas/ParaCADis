@@ -27,19 +27,13 @@
 
 #include <memory>
 
-using namespace Threads;
+namespace Threads {
 
-template<C_MutexData MData>
-MutexData& getMutex(MData& mutex) { return mutex; }
-template<C_MutexHolder Holder>
-Holder::mutex_data_t& getMutex(const Holder& holder) { return holder; }
-
-template<C_MutexGatherOrData FirstMutex, C_MutexGatherOrData... Mutex>
-template<C_MutexHolder FirstHolder, C_MutexHolder... Holder>
-ExclusiveLock<FirstMutex, Mutex...>::ExclusiveLock(FirstHolder& first_holder, Holder&... holder)
-    : LockPolicy(true, getMutex(first_holder), getMutex(holder)...)
+template<C_MutexGatherOrData... Mutex>
+ExclusiveLock<Mutex...>::ExclusiveLock(Mutex&... mutexes)
+    : LockPolicy(true, mutexes...)
 {
-  using GatherThemAll = GatherMutexData<FirstMutex, Holder...>;
+  using GatherThemAll = GatherMutexData<Mutex...>;
 
   /*
    * Here we know that if this is not the first lock,
@@ -53,28 +47,56 @@ ExclusiveLock<FirstMutex, Mutex...>::ExclusiveLock(FirstHolder& first_holder, Ho
    */
   assert(getMutexes().empty() || getMutexes().size() == GatherThemAll::size());
   if (!getMutexes().empty()) {
-    locks = lockThemAll(getMutex(first_holder), getMutex(holder)...);
+    locks = lockThemAll(mutexes...);
   }
 }
 
-template<C_MutexGatherOrData FirstMutex, C_MutexGatherOrData... Mutex>
-void ExclusiveLock<FirstMutex, Mutex...>::release()
+template<C_MutexGatherOrData... Mutex>
+void ExclusiveLock<Mutex...>::release()
 {
   locks.reset();
 }
 
-template<C_MutexGatherOrData FirstMutex, C_MutexGatherOrData... Mutex>
-auto ExclusiveLock<FirstMutex, Mutex...>::detachFromThread()
+template<C_MutexGatherOrData... Mutex>
+auto ExclusiveLock<Mutex...>::detachFromThread()
 {
   LockPolicy::detachFromThread();
   return locks;
 }
 
 
+template<C_MutexHolderWithGates Holder>
+WriterGate<Holder>::WriterGate(Holder& holder)
+    : ExclusiveLock<typename Holder::mutex_data_t>(getMutex(holder))
+    , data(Holder::WriterGate::getProtectedData(holder))
+{
+}
+
+
+template<C_MutexHolderWithGates ... Holders>
+WriterGate<Holders...>::WriterGate(Holders&... holders)
+    : ExclusiveLock<typename Holders::mutex_data_t...>(getMutex(holders)...)
+#ifndef NDEBUG
+    , all_holders{&holders...}
+#endif
+{
+}
+
+template<C_MutexHolderWithGates ... Holders>
+template<C_MutexHolderWithGates Holder>
+auto& WriterGate<Holders...>::operator[](Holder& holder) const
+{
+  assert(all_holders.contains(&holder));
+  return Holder::WriterGate::getProtectedData(holder);
+}
+
+
 template<C_MutexHolder Holder, typename T, T Holder::* localData>
-WriterGate<localData>::WriterGate(Holder& holder)
+LocalWriterGate<localData>::LocalWriterGate(Holder& holder)
     : _GateBase(holder)
-    , data(&(holder.*localData))
+    , data(holder.*localData)
 {}
+
+}
 
 #endif

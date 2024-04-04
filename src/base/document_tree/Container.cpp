@@ -40,6 +40,29 @@ std::string Container::toString() const
 
 
 /*
+ * Get element.
+ */
+SharedPtr<ExporterBase> Container::getElement(uuid_type uuid) const
+{
+  { // gate scope.
+    Threads::ReaderGate gate{non_containers};
+    if (gate->contains(uuid)) {
+      return gate->at(uuid);
+    }
+  }
+  return getContainer(uuid);
+}
+
+SharedPtr<Container> Container::getContainer(uuid_type uuid) const
+{
+  Threads::ReaderGate gate{containers};
+  if (gate->contains(uuid)) {
+    return gate->at(uuid);
+  }
+  throw Exception::ElementNotInContainer(uuid, *this);
+}
+
+/*
  * Add elements.
  */
 void Container::addElement(SharedPtr<ExporterBase> element)
@@ -50,18 +73,18 @@ void Container::addElement(SharedPtr<ExporterBase> element)
     return;
   }
 
-  auto gate = non_containers.getWriterGate();
+  Threads::WriterGate gate{non_containers};
   if (gate->contains(element->getUuid())) {
-    throw Exception::ElementAlreadyInContainer(element, sharedFromThis<Container>());
+    throw Exception::ElementAlreadyInContainer(element, *this);
   }
   gate->emplace(element->getUuid(), std::move(element));
 }
 
 void Container::addContainer(SharedPtr<Container> container)
 {
-  auto gate = containers.getWriterGate();
+  Threads::WriterGate gate{containers};
   if (gate->contains(container->getUuid())) {
-    throw Exception::ElementAlreadyInContainer(container, sharedFromThis<Container>());
+    throw Exception::ElementAlreadyInContainer(container, *this);
   }
   gate->emplace(container->getUuid(), std::move(container));
 }
@@ -81,16 +104,16 @@ void Container::removeElement(SharedPtr<ExporterBase> element)
   removeElement(element->getUuid());
 }
 
-void Container::removeElement(NamingScheme::Uuid::uuid_type uuid)
+SharedPtr<ExporterBase> Container::removeElement(uuid_type uuid)
 {
   { // Gate scope
-    auto gate_n = non_containers.getWriterGate();
-    auto nh_n = gate_n->extract(uuid);
-    if (nh_n) {
-      return;
+  Threads::WriterGate gate{non_containers};
+    auto nh = gate->extract(uuid);
+    if (nh) {
+      return nh.mapped();
     }
   }
-  removeContainer(uuid);
+  return removeContainer(uuid);
 }
 
 void Container::removeContainer(SharedPtr<Container> container)
@@ -98,27 +121,56 @@ void Container::removeContainer(SharedPtr<Container> container)
   removeContainer(container->getUuid());
 }
 
-void Container::removeContainer(NamingScheme::Uuid::uuid_type uuid)
+SharedPtr<Container> Container::removeContainer(uuid_type uuid)
 {
-  auto gate = containers.getWriterGate();
+  Threads::WriterGate gate{containers};
   auto nh = gate->extract(uuid);
-  if (!nh) {
-    throw Exception::ElementNotInContainer(uuid, sharedFromThis<Container>());
+  if (nh) {
+    return nh.mapped();
   }
+  throw Exception::ElementNotInContainer(uuid, *this);
 }
 
 
-bool Container::contains(NamingScheme::Uuid::uuid_type uuid) const
+/*
+ * Move element from one container to the other *atomically*.
+ */
+void Container::moveElementTo(uuid_type uuid, Container& to)
 {
-  {
-    auto gate = containers.getReaderGate();
-    if(gate->contains(uuid)) { return true; }
+  { // lock context
+    Threads::WriterGate gate{non_containers, to.non_containers};
+    if(gate[to.non_containers].contains(uuid)) {
+      throw Exception::ElementAlreadyInContainer(uuid, to);
+    }
+
+    if(gate[non_containers].contains(uuid)) {
+      auto e = gate[non_containers].extract(uuid);
+      gate[to.non_containers].insert(std::move(e));
+    }
+  }
+  moveContainerTo(uuid, to);
+}
+
+void Container::moveContainerTo(uuid_type uuid, Container& to)
+{
+  Threads::WriterGate lock{containers, to.containers};
+  if(lock[to.containers].contains(uuid)) {
+    throw Exception::ElementAlreadyInContainer(uuid, to);
   }
 
-  {
-    auto gate = non_containers.getReaderGate();
-    if(gate->contains(uuid)) { return true; }
+  if(lock[containers].contains(uuid)) {
+    auto e = lock[containers].extract(uuid);
+    lock[to.containers].insert(std::move(e));
   }
+  throw Exception::ElementNotInContainer(uuid, to);
+}
+
+
+bool Container::contains(uuid_type uuid) const
+{
+  Threads::ReaderGate gate{containers, non_containers};
+  if(gate[containers]    .contains(uuid)) { return true; }
+  if(gate[non_containers].contains(uuid)) { return true; }
 
   return false;
 }
@@ -130,14 +182,12 @@ bool Container::contains(const ExporterBase& element) const
 
 bool Container::contains(const Container& container) const
 {
-  auto gate = containers.getReaderGate();
+  Threads::ReaderGate gate{containers};
   return gate->contains(container.getUuid());
 }
 
 bool Container::contains(std::string_view name) const
 {
-  Threads::SharedLock c{containers};
-  Threads::SharedLock n{non_containers};
   for (const auto& [uuid, exporter] : containers) {
     if (exporter->getName() == name) { return true; }
   }

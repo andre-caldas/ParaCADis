@@ -29,6 +29,7 @@
 
 #include <base/expected_behaviour/SharedPtr.h>
 
+#include <array>
 #include <shared_mutex>
 #include <vector>
 
@@ -47,11 +48,6 @@ namespace Threads
     template<C_MutexGatherOrData Mutex>
     [[nodiscard]]
     SharedLock(Mutex& mutex);
-    template<C_MutexHolder Holder>
-    [[nodiscard]]
-    SharedLock(const Holder& holder) : SharedLock(holder.getMutexData())
-    {
-    }
 
   private:
     std::vector<std::shared_lock<YesItIsAMutex>> locks;
@@ -62,21 +58,63 @@ namespace Threads
    * The ReaderGate class.
    */
   /// @{
-  /// Allow template specialization.
-  template<auto PTR_TO_MEMBER>
-  class ReaderGate {};
+  template<C_MutexHolderWithGates... Holders>
+  class ReaderGate
+  {
+  public:
+    ReaderGate(const Holders&... holders);
 
-  template<C_MutexHolder Holder, typename T, T Holder::* localData>
-  class ReaderGate<localData> : public _GateBase<SharedLock>
+    template<C_MutexHolderWithGates Holder>
+    auto& operator[](const Holder& holder) const;
+
+  private:
+    std::array<SharedLock, sizeof...(Holders)> locks;
+#ifndef NDEBUG
+    const std::unordered_set<const void*> all_holders;
+#endif
+  };
+
+  template<C_MutexHolderWithGates Holder>
+  class ReaderGate<Holder> : public SharedLock
   {
   public:
     ReaderGate(const Holder& holder);
+
+    auto& operator*() { return data; }
+    auto* operator->() { return &data; }
+
+  private:
+    Holder::ReaderGate::protected_data_t& data;
+  };
+  /// @}
+
+
+  /**
+   * The LocalReaderGate class.
+   */
+  /// @{
+  /// Allow template specialization.
+  template<auto PTR_TO_MEMBER>
+  class LocalReaderGate {};
+
+  template<C_MutexHolder Holder, typename T, T Holder::* localData>
+  class LocalReaderGate<localData> : public _GateBase<SharedLock>
+  {
+  public:
+    LocalReaderGate(const Holder& holder);
+
+    using protected_data_t = const T;
 
     const T& operator*() const;
     const T* operator->() const;
 
   private:
-    const T* data;
+    const T& data;
+
+    static const T& getProtectedData(const Holder& holder) { return holder.*localData; }
+
+    template<C_MutexHolderWithGates... Holders>
+    friend class ReaderGate;
   };
   /// @}
 

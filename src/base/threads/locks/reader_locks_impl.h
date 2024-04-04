@@ -25,7 +25,7 @@
 
 #include "reader_locks.h"
 
-using namespace Threads;
+namespace Threads {
 
 template<C_MutexGatherOrData Mutex>
 SharedLock::SharedLock(Mutex& mutex)
@@ -37,22 +37,50 @@ SharedLock::SharedLock(Mutex& mutex)
   }
 }
 
+
+template<C_MutexHolderWithGates Holder>
+ReaderGate<Holder>::ReaderGate(const Holder& holder)
+    : SharedLock(getMutex(holder))
+    , data(Holder::ReaderGate::getProtectedData(holder))
+{
+}
+
+
+template<C_MutexHolderWithGates ... Holders>
+ReaderGate<Holders...>::ReaderGate(const Holders&... holders)
+    : locks{getMutex(holders)...}
+#ifndef NDEBUG
+    , all_holders{&holders...}
+#endif
+{
+}
+
+template<C_MutexHolderWithGates ... Holders>
+template<C_MutexHolderWithGates Holder>
+auto& ReaderGate<Holders...>::operator[](const Holder& holder) const
+{
+  assert(all_holders.contains(&holder));
+  return Holder::ReaderGate::getProtectedData(holder);
+}
+
+
 template<C_MutexHolder Holder, typename T, T Holder::* localData>
-ReaderGate<localData>::ReaderGate(const Holder& holder)
+LocalReaderGate<localData>::LocalReaderGate(const Holder& holder)
     : _GateBase(holder)
-    , data(&(holder.*localData))
+    , data(holder.*localData)
 {}
 
 template<C_MutexHolder Holder, typename T, T Holder::* localData>
-const T& ReaderGate<localData>::operator*() const
-{
-  return *data;
-}
-
-template<C_MutexHolder Holder, typename T, T Holder::* localData>
-const T* ReaderGate<localData>::operator->() const
+const T& LocalReaderGate<localData>::operator*() const
 {
   return data;
 }
 
+template<C_MutexHolder Holder, typename T, T Holder::* localData>
+const T* LocalReaderGate<localData>::operator->() const
+{
+  return &data;
+}
+
+}
 #endif
