@@ -146,6 +146,7 @@ void Container::moveElementTo(uuid_type uuid, Container& to)
     if(gate[non_containers].contains(uuid)) {
       auto e = gate[non_containers].extract(uuid);
       gate[to.non_containers].insert(std::move(e));
+      return;
     }
   }
   moveContainerTo(uuid, to);
@@ -161,6 +162,7 @@ void Container::moveContainerTo(uuid_type uuid, Container& to)
   if(lock[containers].contains(uuid)) {
     auto e = lock[containers].extract(uuid);
     lock[to.containers].insert(std::move(e));
+    return;
   }
   throw Exception::ElementNotInContainer(uuid, to);
 }

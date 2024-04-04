@@ -67,10 +67,10 @@ SCENARIO("Moving elements between containers", "[simple]")
 
     WHEN("we move from 'a' to 'b'")
     {
-      b->addElement(a->removeElement(puuid));
-      a->addElement(b->removeElement(vuuid));
-      b->addElement(a->removeElement(lineuuid));
-      a->addElement(b->removeElement(ciruuid));
+      a->moveElementTo(puuid, b);
+      b->moveElementTo(vuuid, a);
+      a->moveElementTo(lineuuid, b);
+      b->moveElementTo(ciruuid, a);
 
       THEN("objects were actually moved")
       {
