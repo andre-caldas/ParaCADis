@@ -57,10 +57,8 @@ namespace Threads
     LockedIterator() = default;
 
     // Attention: do not lock mutex again!
-    LockedIterator(const LockedIterator& other)
-        : originalIterator(other.originalIterator)
-    {
-    }
+    LockedIterator(const LockedIterator& other) = delete;
+    LockedIterator(LockedIterator&&) = default;
 
     /**
      * Operations that return an iterator (to be made LockedIterator),

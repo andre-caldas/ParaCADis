@@ -69,15 +69,15 @@ namespace Threads
     /**
      * Implements the lock policy.
      * @param is_exclusive - Is it an exclusive lock?
-     * @param mutex - Each pair is composed of the mutex to be locked (first)
-     * and a mutex that if already locked imposes a new layer for
-     * threadMutexesLayers.
+     * @param mutex - A MutexData instance.
      */
     template<C_MutexData... MutN>
     LockPolicy(bool is_exclusive, MutN&... mutex);
 
     template<typename... MutN>
     LockPolicy(bool is_exclusive, MutN&... mutex);
+
+    LockPolicy(LockPolicy&&) = default;
 
     LockPolicy() = delete;
     virtual ~LockPolicy();
