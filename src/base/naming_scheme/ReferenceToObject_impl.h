@@ -25,7 +25,7 @@
 
 #include "ReferenceToObject.h"
 
-using namespace NamingScheme;
+namespace NamingScheme {
 
 template<typename T, std::derived_from<CachePolicyBase> CachePolicy>
 SharedPtr<T> ReferenceTo<X, CachePolicy>::resolve() const
@@ -42,6 +42,8 @@ PathToObject& ReferenceTo<X, CachePolicy>::getPath()
 {
   searchResult.invalidate();
   return path;
+}
+
 }
 
 #endif

@@ -81,4 +81,3 @@ namespace NamingScheme
 }  // namespace NamingScheme
 
 #endif
-
