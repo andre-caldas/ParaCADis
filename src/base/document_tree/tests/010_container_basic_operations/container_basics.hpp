@@ -20,6 +20,13 @@
  *                                                                          *
  ***************************************************************************/
 
+#include <base/expected_behaviour/SharedPtr.h>
+#include <base/expected_behaviour/SharedPtr_impl.h>
+#include <base/document_tree/Container.h>
+#include <base/geometric_primitives/circles.h>
+#include <base/geometric_primitives/deferenceables.h>
+#include <base/geometric_primitives/lines.h>
+
 #include "0010_container_construction.hpp"
 #include "0020_container_populate.hpp"
 #include "0030_container_nested.hpp"

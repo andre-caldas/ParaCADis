@@ -20,6 +20,9 @@
  *                                                                          *
  ***************************************************************************/
 
+#include <base/document_tree/Container.h>
+#include <base/naming_scheme/ReferenceToObject.h>
+
 #include "0010_simple_access.hpp"
 #include "0020_chained_access.hpp"
 #include "0030_cycle.hpp"

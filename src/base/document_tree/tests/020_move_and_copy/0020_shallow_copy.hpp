@@ -30,6 +30,6 @@ SCENARIO("SHALLOW COPY", "[simple]")
 {
   GIVEN("an assert(false)...")
   {
-    REQUIRE(false);
+    CHECK_NOFAIL((false && "Implement me!"));
   }
 }

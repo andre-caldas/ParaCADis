@@ -20,13 +20,6 @@
  *                                                                          *
  ***************************************************************************/
 
-#include <base/expected_behaviour/SharedPtr.h>
-#include <base/expected_behaviour/SharedPtr_impl.h>
-#include <base/document_tree/Container.h>
-#include <base/geometric_primitives/circles.h>
-#include <base/geometric_primitives/deferenceables.h>
-#include <base/geometric_primitives/lines.h>
-
 #include <catch2/catch_test_macros.hpp>
 
 using namespace DocumentTree;
