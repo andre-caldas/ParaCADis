@@ -43,7 +43,7 @@ namespace NamingScheme
    */
   class ListOfPathTokens
   {
-  protected:
+  private:
     std::vector<PathToken> tokens;
 
   public:
@@ -56,7 +56,7 @@ namespace NamingScheme
     virtual ~ListOfPathTokens() = default;
 
     std::string pathString() const;
-    const auto& getTokens() { return tokens; }
+    const auto& getTokens() const { return tokens; }
 
     ListOfPathTokens& operator<<(PathToken extra_token);
     ListOfPathTokens& operator<<(ListOfPathTokens extra_tokens);
@@ -83,7 +83,7 @@ namespace NamingScheme
    * to create one binding for each possible ReferenceTo<T>.
    * Usually you should use ReferenceTo<T>, instead.
    */
-  class PathToObject : private ListOfPathTokens
+  class PathToObject
   {
   protected:
     WeakPtr<ExporterBase> root_weak_ptr;  ///< Try first.
@@ -111,10 +111,14 @@ namespace NamingScheme
     PathToObject operator+(PathToken extra_token) const;
     PathToObject operator+(ListOfPathTokens extra_tokens) const;
 
-    SharedPtr<ExporterBase> getRoot();
+    SharedPtr<ExporterBase> getRoot() const;
+    auto& getTokens() const { return list_of_tokens.getTokens(); }
 
     void                serialize(Xml::Writer& writer) const noexcept;
     static PathToObject unserialize(Xml::Reader& reader);
+
+  private:
+    ListOfPathTokens list_of_tokens;
   };
 
   struct PathToObject_Tag : Xml::XmlTag {

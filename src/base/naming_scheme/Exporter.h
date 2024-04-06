@@ -26,7 +26,6 @@
 #include "NameAndUuid.h"
 #include "types.h"
 
-#include <base/expected_behaviour/SharedFromThis.h>
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/threads/locks/LockPolicy.h>
 #include <base/threads/locks/MutexData.h>
@@ -47,7 +46,7 @@ namespace NamingScheme
    * @attention Probably you do not want to derive from this class.
    * You should probably derive from IExport<X> or Chainable.
    */
-  class ExporterBase : public SharedFromThis<ExporterBase>
+  class ExporterBase
   {
   public:
     using mutex_data_t = Threads::MutexData;

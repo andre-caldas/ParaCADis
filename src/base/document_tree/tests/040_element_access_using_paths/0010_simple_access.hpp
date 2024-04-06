@@ -68,10 +68,10 @@ SCENARIO("Accessing a container element using a path", "[simple]")
 
       AND_WHEN("we set up a reference")
       {
-        ReferenceTo<DeferenceablePoint>  p_ref{a, pname};
-        ReferenceTo<DeferenceableVector> v_ref{a, vname};
-        ReferenceTo<LinePointDirection>  l_ref{a, lname};
-        ReferenceTo<DeferenceablePoint>  c_ref{a, cname};
+        NamingScheme::ReferenceTo<DeferenceablePoint>  p_ref{a, pname};
+        NamingScheme::ReferenceTo<DeferenceableVector> v_ref{a, vname};
+        NamingScheme::ReferenceTo<LinePointDirection>  l_ref{a, lname};
+        NamingScheme::ReferenceTo<CirclePointRadiusNormal>  c_ref{a, cname};
 
         THEN("we get a working reference")
         {

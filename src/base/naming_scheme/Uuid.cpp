@@ -31,6 +31,8 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
+#include <regex>
+
 namespace std
 {
   size_t hash<boost::uuids::uuid>::operator()(const boost::uuids::uuid& uuid) const noexcept
@@ -71,13 +73,21 @@ bool Uuid::isValid() const
 
 bool Uuid::isValid(std::string_view uuid_str)
 {
-  try {
-    string_generator(uuid_str.cbegin(), uuid_str.cend());
-  } catch (const std::runtime_error&) {
-    return false;
-  }
-  return true;
+  // Unfortunately, boost does not implement a method
+  // to check for valid uuid strings.
+  static const std::regex pattern(
+      "[{]?"
+      "[0-9a-fA-F]{8}-?"
+      "[0-9a-fA-F]{4}-?"
+      "[0-9a-fA-F]{4}-?"
+      "[0-9a-fA-F]{4}-?"
+      "[0-9a-fA-F]{12}-?"
+      "[}]?",
+      std::regex::optimize
+  );
+  return std::regex_match(uuid_str.cbegin(), uuid_str.cend(), pattern);
 }
+
 
 void Uuid::serialize(Xml::Writer& writer) const noexcept
 {

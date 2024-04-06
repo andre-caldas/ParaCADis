@@ -28,18 +28,26 @@
 using namespace NamingScheme;
 
 template<typename... EachChainable>
-SharedPtr<ExporterBase> Chainables<EachChainable...>::resolve_share(token_iterator &tokens, ExporterBase *)
+SharedPtr<ExporterBase>
+Chainables<EachChainable...>::resolve(const SharedPtr<ExporterBase>& current,
+                                      token_iterator &tokens, ExporterBase *)
 {
-  return chain_resolve<EachChainable...>(tokens);
+  auto chain_result = chain_resolve<EachChainable...>(current, tokens);
+  if(chain_result) {
+    return chain_result;
+  }
+  return IExport<ExporterBase>::resolve(current, tokens);
 }
 
 
 template<typename... EachChainable>
 template<C_IsChainable First, C_IsChainable... Others>
-SharedPtr<ExporterBase> Chainables<EachChainable...>::chain_resolve(token_iterator& tokens)
+SharedPtr<ExporterBase>
+Chainables<EachChainable...>::chain_resolve(const SharedPtr<ExporterBase>& current,
+                                            token_iterator& tokens)
 {
   auto exporter = dynamic_cast<IExport<First>&>(*this);
-  auto result = exporter.resolve(tokens);
+  auto result = exporter.resolve(current, tokens);
   if(result)
   {
     return result;
@@ -47,7 +55,7 @@ SharedPtr<ExporterBase> Chainables<EachChainable...>::chain_resolve(token_iterat
 
   if constexpr (sizeof...(Others) > 0)
   {
-    return chain_resolve<Others...>(tokens);
+    return chain_resolve<Others...>(current, tokens);
   }
   return {};
 }

@@ -27,8 +27,8 @@
 
 namespace NamingScheme {
 
-template<typename T, std::derived_from<CachePolicyBase> CachePolicy>
-SharedPtr<T> ReferenceTo<X, CachePolicy>::resolve() const
+template<typename T, std::derived_from<PathCachePolicyBase> CachePolicy>
+SharedPtr<T> ReferenceTo<T, CachePolicy>::resolve() const
 {
   auto result = searchResult.tryCache();
   if(result) {
@@ -37,8 +37,8 @@ SharedPtr<T> ReferenceTo<X, CachePolicy>::resolve() const
   return searchResult.resolve(path.getRoot(), path.getTokens());
 }
 
-template<typename T, std::derived_from<CachePolicyBase> CachePolicy>
-PathToObject& ReferenceTo<X, CachePolicy>::getPath()
+template<typename T, std::derived_from<PathCachePolicyBase> CachePolicy>
+PathToObject& ReferenceTo<T, CachePolicy>::getPath()
 {
   searchResult.invalidate();
   return path;

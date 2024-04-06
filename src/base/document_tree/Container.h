@@ -81,10 +81,10 @@ namespace DocumentTree
     void moveContainerTo(uuid_type uuid, Container& to);
     /// @}
 
-    bool contains(uuid_type uuid) const;
     bool contains(const ExporterBase& element) const;
     bool contains(const Container& container) const;
     bool contains(std::string_view name) const;
+    bool contains(uuid_type uuid) const;
 
     SharedPtr<ExporterBase>
     resolve_share(token_iterator& tokens, ExporterBase* = nullptr) override;

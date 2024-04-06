@@ -30,10 +30,15 @@
 
 using namespace NamingScheme;
 
-PathToken::PathToken(std::string name_or_uuid) : uuid(name_or_uuid)
+PathToken::PathToken(std::string name_or_uuid)
 {
   assert(!name_or_uuid.empty());
-  if (!uuid.isValid()) { name = std::move(name_or_uuid); }
+  if(Uuid::isValid(name_or_uuid)) {
+    uuid = Uuid{std::move(name_or_uuid)};
+  } else {
+    uuid = Uuid{0};
+    name = std::move(name_or_uuid);
+  }
 }
 
 std::string PathToken::toString() const

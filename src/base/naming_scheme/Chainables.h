@@ -50,11 +50,14 @@ namespace NamingScheme
   public:
     virtual ~Chainables() = default;
 
-    SharedPtr<ExporterBase> resolve_share(token_iterator& tokens, ExporterBase* = nullptr) override;
+    SharedPtr<ExporterBase> resolve(const SharedPtr<ExporterBase>& current,
+                                    token_iterator& tokens,
+                                    ExporterBase* = nullptr) override;
 
   private:
     template<C_IsChainable First, C_IsChainable... Others>
-    SharedPtr<ExporterBase> chain_resolve(token_iterator& tokens);
+    SharedPtr<ExporterBase> chain_resolve(const SharedPtr<ExporterBase>& current,
+                                          token_iterator& tokens);
   };
 
 }  // namespace NamingScheme

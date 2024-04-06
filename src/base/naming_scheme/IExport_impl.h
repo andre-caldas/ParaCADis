@@ -45,7 +45,8 @@ namespace NamingScheme
 {
 
   template<typename T>
-  SharedPtr<T> IExport<T>::resolve(token_iterator& tokens)
+  SharedPtr<T> IExport<T>::resolve(const SharedPtr<ExporterBase>& current,
+                                   token_iterator& tokens, T*)
   {
     if (!tokens) { return {}; }
 
@@ -56,11 +57,10 @@ namespace NamingScheme
     auto share = resolve_share(tokens);
     if (share) { return share; }
 
-    auto  ptr          = resolve_ptr(tokens);
-    auto& self         = dynamic_cast<ExporterBase&>(*this);
-    auto  current_lock = self.sharedFromThis<ExporterBase>();
-    if (ptr) { return std::shared_ptr<T>(current_lock.sliced(), ptr); }
-    throw Exception::NoExport();
+    auto ptr = resolve_ptr(tokens);
+    if (ptr) { return std::shared_ptr<T>(current.sliced(), ptr); }
+
+    return {};
   }
 
   template<typename T>

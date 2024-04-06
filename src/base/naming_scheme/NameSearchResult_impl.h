@@ -70,7 +70,7 @@ void NameSearchResult<T>::resolveExporter()
 
     [[maybe_unused]]
     auto n_tokens = tokens.size();
-    auto next_exporter = exporter->resolve(tokens);
+    auto next_exporter = exporter->resolve(cache.topExporter(), tokens);
     if (!next_exporter) {
       return;
     }
@@ -116,7 +116,7 @@ SharedPtr<T> NameSearchResult<T>::resolveLastStep()
     return {};
   }
 
-  auto data = exporter->resolve(tokens);
+  auto data = exporter->resolve(cache.topExporter(), tokens);
   if (!data) {
     status = not_found;
     return {};

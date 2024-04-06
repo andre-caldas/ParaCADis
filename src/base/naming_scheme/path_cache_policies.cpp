@@ -26,6 +26,7 @@
 
 #include <base/expected_behaviour/SharedPtr.h>
 
+#include <cmath>
 #include <ranges>
 
 using namespace NamingScheme;
@@ -63,14 +64,18 @@ void TimedWeakChain::pushExporter(SharedPtr<ExporterBase>&& exporter, token_iter
 
 bool TimedWeakChain::pruneCache()
 {
-  // First, we declare the cache as hasPartiallyExpired().
-  // After that we start popping from `exporters`. Therefore, the `-1`.
-  auto prune_count = (std::chrono::steady_clock::now() - start) / layer_duration - 1;
-  if(prune_count < 0) {
-    prune_count = 0;
+  if(exporters.size() == 0) {
+    return false; // Cache not useful.
   }
 
-  exporters.erase(exporters.end()-prune_count, exporters.end());
+  // First, we declare the cache as hasPartiallyExpired().
+  // After that we start popping from `exporters`. Therefore, the `-1`.
+  std::size_t prune_count = (std::chrono::steady_clock::now() - start) / layer_duration - 1;
+  if(prune_count > 0) {
+    prune_count = std::max(prune_count, exporters.size());
+    exporters.erase(exporters.end()-prune_count, exporters.end());
+  }
+
   while(!exporters.empty()) {
     auto& info = exporters.back();
     if(auto ptr = info.weak_ptr.lock()) {
@@ -78,7 +83,7 @@ bool TimedWeakChain::pruneCache()
       return true;
     }
   }
-  return {};
+  return false;
 }
 
 SharedPtr<ExporterBase> TimedWeakChain::pop()

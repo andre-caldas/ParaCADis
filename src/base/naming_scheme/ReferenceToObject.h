@@ -49,7 +49,8 @@ namespace NamingScheme
    *
    * @see  IExport<>.
    */
-  template<typename T, std::derived_from<PathCachePolicyBase> CachePolicy>
+  template<typename T,
+           std::derived_from<PathCachePolicyBase> CachePolicy = TimedWeakChain>
   class ReferenceTo
   {
   public:
@@ -58,8 +59,10 @@ namespace NamingScheme
     ReferenceTo& operator=(const ReferenceTo&) = default;
     ReferenceTo& operator=(ReferenceTo&&)      = default;
 
-    template<typename... Args>
-    ReferenceTo(Args&&... args) : path(std::forward<Args>(args)...) {}
+    template<typename ROOT, typename... Args>
+    ReferenceTo(ROOT&& root, Args&&... args)
+        : path(std::forward<ROOT>(root),
+               ListOfPathTokens{{std::forward<Args>(args)}...}) {}
 
     /**
      * Fully resolves the chain up to the last token.
@@ -73,11 +76,14 @@ namespace NamingScheme
     PathToObject& getPath();
 
   private:
-    PathToObject        path;
-    CachePolicy         cache;
-    NameSearchResult<T> searchResult{cache};
+    PathToObject path;
+    CachePolicy  cache;
+
+    mutable NameSearchResult<T> searchResult{cache};
   };
 
 }  // namespace NamingScheme
+
+#include "ReferenceToObject_impl.h"
 
 #endif

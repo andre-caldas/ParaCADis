@@ -74,21 +74,21 @@ ListOfPathTokens ListOfPathTokens::unserialize(Xml::Reader&)
  */
 
 PathToObject::PathToObject(Uuid root_uuid, ListOfPathTokens tokens)
-    : ListOfPathTokens(std::move(tokens))
-    , root_uuid(std::move(root_uuid))
+    : root_uuid(std::move(root_uuid))
+    , list_of_tokens(std::move(tokens))
 {
 }
 
 PathToObject::PathToObject(const SharedPtr<ExporterBase>& root, ListOfPathTokens tokens)
-    : ListOfPathTokens(std::move(tokens))
-    , root_weak_ptr(root.getWeakPtr())
+    : root_weak_ptr(root.getWeakPtr())
     , root_uuid(root->getUuid())
+    , list_of_tokens(std::move(tokens))
 {
 }
 
 PathToObject::PathToObject(std::string root_url, ListOfPathTokens tokens)
-    : ListOfPathTokens(std::move(tokens))
-    , root_url(root_url)
+    : root_url(root_url)
+    , list_of_tokens(std::move(tokens))
 {
   throw ::Exception::NotImplemented();
 }
@@ -100,7 +100,7 @@ PathToObject PathToObject::operator+(PathToken extra_token) const
 
 PathToObject PathToObject::operator+(ListOfPathTokens extra_tokens) const
 {
-  ListOfPathTokens path(*this);
+  ListOfPathTokens path(list_of_tokens);
   path << std::move(extra_tokens);
   PathToObject result(root_uuid, std::move(path));
   result.root_weak_ptr = root_weak_ptr;
@@ -109,7 +109,7 @@ PathToObject PathToObject::operator+(ListOfPathTokens extra_tokens) const
 }
 
 
-SharedPtr<ExporterBase> PathToObject::getRoot()
+SharedPtr<ExporterBase> PathToObject::getRoot() const
 {
   auto result = root_weak_ptr.lock();
   if(result) {
@@ -125,7 +125,7 @@ void PathToObject::serialize(Xml::Writer& writer) const noexcept
   auto tag_writer = writer.newTag(PathToObject_Tag{});
   try {
     root_uuid.serialize(writer);
-    for (const auto& token: tokens) { token.serialize(writer); }
+    for (const auto& token: getTokens()) { token.serialize(writer); }
   } catch (const std::exception& s) {
     tag_writer.reportException(s);
   }

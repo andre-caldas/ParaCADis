@@ -24,6 +24,7 @@
 #define ExpectedBehaviour_SharedPtr_H
 
 #include <memory>
+#include <type_traits>
 #include <utility>
 
 template<typename T>
@@ -47,12 +48,13 @@ class WeakPtr;
  * }
  * ptr->doStuff();
  */
-template<typename T>
+template<typename T,
+         typename NotBool = std::conditional_t<std::is_class_v<T>, T, int>>
 class SharedPtr : public std::shared_ptr<T>
 {
 public:
   using value_type = T;
-  SharedPtr()      = default;
+  SharedPtr() = default;
   SharedPtr(const SharedPtr&) = default;
   SharedPtr(SharedPtr&&) = default;
   SharedPtr(const std::shared_ptr<T>& shared);
@@ -67,7 +69,13 @@ public:
 
   T* operator->() const;
   T& operator*() const;
-  operator T&() const { return **this; }
+
+  // TODO: funny story...
+  // I want, for convenience, automatic convertion to T&.
+  // Except when T = bool. What is the best way to implement it?
+  // The other option would be having a SharedPtrBase,
+  // subclass with automatic conversion and specialize without it!
+  operator NotBool&() const;
 
   template<typename... Args>
   static SharedPtr<T> make_shared(Args&&... args)
@@ -75,10 +83,11 @@ public:
     return std::make_shared<T>(std::forward<Args>(args)...);
   }
 
-  bool operator==(const SharedPtr<T>& other) const noexcept
+  template<typename S>
+  bool operator==(const SharedPtr<S>& other) const noexcept
   {
-    // TODO: Why do I need "this"??? Remove and wee if compiler complains.
-    return this->get() == other.get();
+    // TODO: Why do I need "this"??? Try to remove in the future.
+    return dynamic_cast<void*>(this->get()) == dynamic_cast<void*>(other.get());
   }
 
   WeakPtr<T> getWeakPtr() const;

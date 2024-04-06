@@ -33,58 +33,69 @@
 #include <memory>
 #include <optional>
 
-template<typename T>
-SharedPtr<T>::SharedPtr(const std::shared_ptr<T>& shared)
+template<typename T, typename NotBool>
+SharedPtr<T, NotBool>::SharedPtr(const std::shared_ptr<T>& shared)
     : std::shared_ptr<T>(shared)
 {
 }
 
-template<typename T>
-SharedPtr<T>::SharedPtr(std::shared_ptr<T>&& shared)
+template<typename T, typename NotBool>
+SharedPtr<T, NotBool>::SharedPtr(std::shared_ptr<T>&& shared)
     : std::shared_ptr<T>(std::move(shared))
 {
 }
 
-template<typename T>
+template<typename T, typename NotBool>
 template<typename X>
-SharedPtr<T>::SharedPtr(const SharedPtr<X>& shared, T X::* localPointer)
+SharedPtr<T, NotBool>::SharedPtr(const SharedPtr<X>& shared, T X::* localPointer)
     : std::shared_ptr<T>(shared, &(shared->*localPointer))
 {
 }
 
-template<typename T>
+template<typename T, typename NotBool>
 template<typename X>
-SharedPtr<T>::SharedPtr(SharedPtr<X>&& shared, T X::* localPointer)
+SharedPtr<T, NotBool>::SharedPtr(SharedPtr<X>&& shared, T X::* localPointer)
     : std::shared_ptr<T>(std::move(shared), &(shared->*localPointer))
 {
 }
 
-template<typename T>
-T* SharedPtr<T>::operator->() const
+template<typename T, typename NotBool>
+T* SharedPtr<T, NotBool>::operator->() const
 {
   if (!*this) { throw std::bad_optional_access{}; }
   return std::shared_ptr<T>::operator->();
 }
 
-template<typename T>
-T& SharedPtr<T>::operator*() const
+template<typename T, typename NotBool>
+T& SharedPtr<T, NotBool>::operator*() const
 {
   if (!*this) { throw std::bad_optional_access{}; }
   return std::shared_ptr<T>::operator*();
 }
 
-template<typename T>
-WeakPtr<T> SharedPtr<T>::getWeakPtr() const
+template<typename T, typename NotBool>
+SharedPtr<T, NotBool>::operator NotBool&() const
+{
+  if constexpr(std::is_same_v<NotBool, int>) {
+    static int x = 0;
+    return x;
+  } else {
+    return **this;
+  }
+}
+
+
+template<typename T, typename NotBool>
+WeakPtr<T> SharedPtr<T, NotBool>::getWeakPtr() const
 {
   return WeakPtr<T>((const std::shared_ptr<T>&)(*this));
 }
 
-template<typename T>
-const std::shared_ptr<T>& SharedPtr<T>::sliced() const
+template<typename T, typename NotBool>
+const std::shared_ptr<T>& SharedPtr<T, NotBool>::sliced() const
 {
   if (!*this) { throw std::bad_optional_access{}; }
   return *this;
 }
 
 #endif  // ExpectedBehaviour_SharedPtr_impl_H
-

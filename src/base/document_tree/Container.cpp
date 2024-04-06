@@ -75,7 +75,7 @@ void Container::addElement(SharedPtr<ExporterBase> element)
 
   Threads::WriterGate gate{non_containers};
   if (gate->contains(element->getUuid())) {
-    throw Exception::ElementAlreadyInContainer(element, *this);
+    throw Exception::ElementAlreadyInContainer(*element, *this);
   }
   gate->emplace(element->getUuid(), std::move(element));
 }
@@ -84,7 +84,7 @@ void Container::addContainer(SharedPtr<Container> container)
 {
   Threads::WriterGate gate{containers};
   if (gate->contains(container->getUuid())) {
-    throw Exception::ElementAlreadyInContainer(container, *this);
+    throw Exception::ElementAlreadyInContainer(*container, *this);
   }
   gate->emplace(container->getUuid(), std::move(container));
 }
@@ -208,18 +208,13 @@ Container::resolve_share(token_iterator& tokens, ExporterBase*)
     return {};
   }
 
-  auto result = Chainables::resolve_share(tokens);
-  if(result)
-  {
-    return result;
-  }
-
   auto& token = tokens.front();
   if (token.isUuid())
   {
     auto it = non_containers.find(token);
     if(it != non_containers.end())
     {
+      tokens.advance(1);
       return it->second;
     }
     return {};
@@ -229,6 +224,7 @@ Container::resolve_share(token_iterator& tokens, ExporterBase*)
   {
     if(ptr->getName() == token.getName())
     {
+      tokens.advance(1);
       return ptr;
     }
   }

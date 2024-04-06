@@ -60,7 +60,8 @@ namespace NamingScheme
     /**
      * Calls resolve_ptr() and resolve_share().
      */
-    SharedPtr<T> resolve(token_iterator& tokens);
+    virtual SharedPtr<T> resolve(const SharedPtr<ExporterBase>& current,
+                                 token_iterator& tokens, T* = nullptr);
 
   protected:
     /**
