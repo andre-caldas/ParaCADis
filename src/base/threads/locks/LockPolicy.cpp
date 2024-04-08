@@ -26,31 +26,36 @@
 #include <algorithm>
 #include <limits>
 #include <numeric>
+#include <ranges>
 #include <stack>
 #include <unordered_set>
 
 namespace Threads
 {
 
+  struct OperationInfo
+  {
+    const int maxPivot;
+    const int max;
+    const bool isExclusive;
+  };
+
   thread_local std::unordered_set<const MutexData*> threadExclusiveMutexes;
-  thread_local std::unordered_set<const MutexData*> threadNonExclusiveMutexes;
-  thread_local std::stack<bool>                     isLayerExclusive;
-  thread_local std::stack<int>                      layerNumber;
-  thread_local std::stack<std::unordered_set<const MutexData*>> threadMutexLayers;
+  thread_local std::unordered_set<const MutexData*> threadSharedMutexes;
+  thread_local std::stack<OperationInfo> operationInfo;
 
   bool LockPolicy::hasAnyLock()
   {
     assert(
-        threadMutexLayers.empty()
-        == (threadExclusiveMutexes.empty() && threadNonExclusiveMutexes.empty()));
-    return !threadMutexLayers.empty();
+        operationInfo.empty()
+        == (threadExclusiveMutexes.empty() && threadSharedMutexes.empty()));
+    return !operationInfo.empty();
   }
 
   bool LockPolicy::isLocked(const MutexData* mutex)
   {
-    bool has_exclusive     = threadExclusiveMutexes.contains(mutex);
-    bool has_non_exclusive = threadNonExclusiveMutexes.contains(mutex);
-    return has_exclusive || has_non_exclusive;
+    bool has_shared = threadSharedMutexes.contains(mutex);
+    return has_shared || isLockedExclusively(mutex);
   }
 
   bool LockPolicy::isLocked(const MutexData& mutex)
@@ -60,6 +65,9 @@ namespace Threads
 
   bool LockPolicy::isLockedExclusively(const MutexData* mutex)
   {
+    if(mutex->my_pivot) {
+      return isLockedExclusively(mutex->my_pivot);
+    }
     return threadExclusiveMutexes.contains(mutex);
   }
 
@@ -68,239 +76,233 @@ namespace Threads
     return isLockedExclusively(&mutex);
   }
 
-  void LockPolicy::detachFromThread()
-  {
-    if (has_ignored_mutexes) {
-      assert(false);
-      throw Exception::NewThreadRequiresReleaseableLock{};
-    }
-    assert(!mutexes.empty());
-
-    // Confirm all mutexes are in the topmost layer.
-    assert(!threadMutexLayers.empty());
-    auto layer = threadMutexLayers.top();
-    for (auto mutex: mutexes) {
-      if (!layer.contains(mutex)) {
-        assert(false);
-        throw Exception::NewThreadRequiresReleaseableLock{};
-      }
-    }
-
-    _detachFromThread();
-  }
-
-  bool LockPolicy::isDetached() const
-  {
-    return is_detached;
-  }
-
-  bool LockPolicy::hasIgnoredMutexes() const
-  {
-    return has_ignored_mutexes;
-  }
-
-  int LockPolicy::minLayerNumber() const
+  int LockPolicy::minMutex() const
   {
     return std::transform_reduce(
-        mutexes.cbegin(), mutexes.cend(), std::numeric_limits<int>::max(),
+        mainMutexes.cbegin(), mainMutexes.cend(), std::numeric_limits<int>::max(),
         [](int a, int b){return std::min(a,b);},
         [](const MutexData* m) { return m->layer; });
   }
 
-  int LockPolicy::maxLayerNumber() const
+  int LockPolicy::maxMutex() const
   {
     return std::transform_reduce(
-        mutexes.cbegin(), mutexes.cend(), std::numeric_limits<int>::min(),
+        mainMutexes.cbegin(), mainMutexes.cend(), std::numeric_limits<int>::min(),
         [](int a, int b){return std::max(a,b);},
         [](const MutexData* m) { return m->layer; });
   }
 
-  const std::unordered_set<MutexData*>& LockPolicy::getMutexes() const
+  int LockPolicy::minPivot() const
   {
-    return mutexes;
+    return std::transform_reduce(
+        pivotMutexes.cbegin(), pivotMutexes.cend(), std::numeric_limits<int>::max(),
+        [](int a, int b){return std::min(a,b);},
+        [](const MutexData* m) { return m->pivotLayer(); });
+  }
+
+  int LockPolicy::maxPivot() const
+  {
+    return std::transform_reduce(
+        pivotMutexes.cbegin(), pivotMutexes.cend(), std::numeric_limits<int>::min(),
+        [](int a, int b){return std::max(a,b);},
+        [](const MutexData* m) { return m->pivotLayer(); });
+  }
+
+  const std::unordered_set<MutexData*>& LockPolicy::getMainMutexes() const
+  {
+    return mainMutexes;
+  }
+
+  const std::unordered_set<MutexData*>& LockPolicy::getPivotMutexes() const
+  {
+    return pivotMutexes;
   }
 
   void LockPolicy::_detachFromThread()
   {
-    if (is_detached) {
-      return;
-    }
-    is_detached = true;
-
-    if (mutexes.empty()) {
+    if (mainMutexes.empty()) {
+      assert(pivotMutexes.empty());
       return;
     }
 
-    for (auto mutex: mutexes) {
-      assert(
-          threadExclusiveMutexes.contains(mutex)
-          || threadNonExclusiveMutexes.contains(mutex));
-      threadExclusiveMutexes.erase(mutex);
-      threadNonExclusiveMutexes.erase(mutex);
-      assert(!threadMutexLayers.empty());
-      threadMutexLayers.top().erase(mutex);
+    assert(!operationInfo.empty());
+    bool is_exclusive = operationInfo.top().isExclusive;
+
+    for (auto mutex: mainMutexes) {
+      if(is_exclusive) {
+        assert(threadExclusiveMutexes.contains(mutex));
+        threadExclusiveMutexes.erase(mutex);
+      } else {
+        assert(threadSharedMutexes.contains(mutex));
+        threadSharedMutexes.erase(mutex);
+      }
     }
 
-    assert(!threadMutexLayers.empty());
-    if (!threadMutexLayers.empty() && threadMutexLayers.top().empty()) {
-      threadMutexLayers.pop();
-      isLayerExclusive.pop();
-      layerNumber.pop();
-      assert(isLayerExclusive.size() == threadMutexLayers.size());
-      assert(isLayerExclusive.size() == layerNumber.size());
+    for (auto mutex: pivotMutexes) {
+      assert(threadSharedMutexes.contains(mutex));
+      threadSharedMutexes.erase(mutex);
     }
-  }
 
-  void LockPolicy::attachToThread(bool is_exclusive)
-  {
-    assert(!hasAnyLock());
-    assert(!mutexes.empty());
-    assert(!has_ignored_mutexes);
-    if (!is_detached) {
-      assert(false);
-      throw Exception::NewThreadRequiresMovedLock{};
-    }
-    _processLock(is_exclusive);
-    assert(
-        mutexes.size() == threadExclusiveMutexes.size()
-        || mutexes.size() == threadNonExclusiveMutexes.size());
+    operationInfo.pop();
   }
 
   void LockPolicy::_processLock(bool is_exclusive)
   {
-    assert(is_detached);
-    is_detached = false;
-
-    if (mutexes.empty()) {
-      // A container.end() does this!
-      return;
-    }
-
-    /*
-     * When we have absolutely no mutexes,
-     * just lock as required.
-     */
-    if (!hasAnyLock()) {
-      assert(threadExclusiveMutexes.empty());
-      assert(threadNonExclusiveMutexes.empty());
-
-      // Lock everything that was requested.
-      threadMutexLayers.push({mutexes.cbegin(), mutexes.cend()}); // TODO: ranges.
-      assert(threadMutexLayers.size() == 1);
-      isLayerExclusive.push(is_exclusive);
-      layerNumber.push(maxLayerNumber());
-      assert(isLayerExclusive.size() == threadMutexLayers.size());
-      assert(isLayerExclusive.size() == layerNumber.size());
-      if (is_exclusive) {
-        threadExclusiveMutexes = {mutexes.cbegin(), mutexes.cend()};
-      } else {
-        threadNonExclusiveMutexes = {mutexes.cbegin(), mutexes.cend()};
-      }
+    assert(pivotMutexes.empty());
+    if (mainMutexes.empty()) {
+      assert(false);
       return;
     }
 
     if (is_exclusive) {
       _processExclusiveLock();
     } else {
-      _processNonExclusiveLock();
+      _processSharedLock();
     }
   }
 
   void LockPolicy::_processExclusiveLock()
   {
-    assert(!threadExclusiveMutexes.empty() || !threadNonExclusiveMutexes.empty());
-    assert(!threadMutexLayers.empty());
-    assert(isLayerExclusive.size() == threadMutexLayers.size());
-    assert(isLayerExclusive.size() == layerNumber.size());
+    assert(pivotMutexes.empty());
 
-    // remove already locked "exclusive" mutexes from the list.
-    for (auto it = mutexes.begin(); it != mutexes.end();) {
+    // remove already locked "main" mutexes from the list.
+    // And ensures they are not locked non-exclusively.
+    bool removed_exclusive = false;
+    for (auto it = mainMutexes.begin(); it != mainMutexes.end();) {
+      if (threadSharedMutexes.contains(*it)) {
+        assert(!threadExclusiveMutexes.contains(*it));
+        throw Exception::NoExclusiveOverNonExclusive();
+      }
       if (threadExclusiveMutexes.contains(*it)) {
+        removed_exclusive = true;
         assert(isLockedExclusively(*it));
-        it                  = mutexes.erase(it);
-        has_ignored_mutexes = true;
+        it = mainMutexes.erase(it);
       } else {
         ++it;
       }
     }
 
-    if (mutexes.empty()) {
-      // Nothing to lock.
-      assert(!threadMutexLayers.top().empty());
+    // Either we have already locked every mutex,
+    // or we have locked none of them.
+    assert(!removed_exclusive || mainMutexes.empty());
+
+    if (mainMutexes.empty()) {
       return;
     }
 
-    // do not allow already locked "non-exclusive" mutexes in the list.
-    for (auto mutex: mutexes) {
-      if (threadNonExclusiveMutexes.contains(mutex)) {
-        // We cannot exclusively lock if it is already shared.
-        throw Exception::NoExclusiveOverNonExclusive();
+    _registerPivots();
+
+    auto maxP = maxPivot();
+    auto maxM = maxMutex();
+    assert(maxP <= maxM);
+    if(!operationInfo.empty()) {
+      // Check if operations are, according to the policy,
+      // compatible with current state.
+      auto& current_info = operationInfo.top();
+
+      if(current_info.isExclusive) {
+        if(minPivot() <= current_info.max) {
+          throw Exception::NoLocksAfterExclusiveLock();
+        }
+      } else {
+        assert(minPivot() <= minMutex());
+        // New pivots must be the same level or higher.
+        if(minPivot() < current_info.maxPivot) {
+          throw Exception::AlreadyHasBiggerLayer(minPivot());
+        }
+        if(minMutex() <= current_info.max) {
+          throw Exception::AlreadyHasLayer(minMutex());
+        }
       }
     }
 
-    // Create layers if needed.
-    int min = minLayerNumber();
-    assert(!layerNumber.empty());
-    if (min <= layerNumber.top()) {
-      throw Exception::AlreadyHasLayer{min};
-    }
+    // Store OperationInfo.
+    operationInfo.emplace(
+        OperationInfo{.maxPivot=maxP, .max=maxM, .isExclusive=true});
 
-    /// @todo search those inserts and substitute for insert_range().
-    threadExclusiveMutexes.insert(mutexes.cbegin(), mutexes.cend());
-    threadMutexLayers.push({mutexes.cbegin(), mutexes.cend()});
-    isLayerExclusive.push(true);
-    layerNumber.push(maxLayerNumber());
-    assert(isLayerExclusive.size() == threadMutexLayers.size());
-    assert(isLayerExclusive.size() == layerNumber.size());
-    assert(!threadMutexLayers.top().empty());
+    threadExclusiveMutexes.insert(mainMutexes.cbegin(), mainMutexes.cend());
+    threadSharedMutexes.insert(pivotMutexes.cbegin(), pivotMutexes.cend());
     assert(!threadExclusiveMutexes.empty());
   }
 
-  void LockPolicy::_processNonExclusiveLock()
+  void LockPolicy::_processSharedLock()
   {
-    assert(!threadExclusiveMutexes.empty() || !threadNonExclusiveMutexes.empty());
-    assert(!threadMutexLayers.empty());
-    assert(isLayerExclusive.size() == threadMutexLayers.size());
-    assert(isLayerExclusive.size() == layerNumber.size());
+    assert(pivotMutexes.empty());
 
-    // remove already locked "exclusive" and "non-exclusive" mutexes from the list.
-    for (auto it = mutexes.begin(); it != mutexes.end();) {
+    // remove already locked "main" mutexes from the list.
+    // And ensures they are not locked non-exclusively.
+    for (auto it = mainMutexes.begin(); it != mainMutexes.end();) {
       if (threadExclusiveMutexes.contains(*it)
-          || threadNonExclusiveMutexes.contains(*it)) {
+          || threadSharedMutexes.contains(*it)) {
         assert(isLocked(*it));
-        it                  = mutexes.erase(it);
-        has_ignored_mutexes = true;
+        it = mainMutexes.erase(it);
       } else {
         ++it;
       }
     }
 
-    if (mutexes.empty()) {
-      // Nothing to lock.
-      assert(!threadMutexLayers.top().empty());
+    if (mainMutexes.empty()) {
       return;
     }
 
-    assert(!isLayerExclusive.empty());
-    if (isLayerExclusive.top()) {
-      // Create layers if needed.
-      int min = minLayerNumber();
-      assert(!layerNumber.empty());
-      if (min < layerNumber.top()) {
-        throw Exception::AlreadyHasBiggerLayer(min);
+    _registerPivots();
+
+    auto maxP = maxPivot();
+    auto maxM = maxMutex();
+    assert(maxP <= maxM);
+    if(!operationInfo.empty()) {
+      // Check if operations are, according to the policy,
+      // compatible with current state.
+      auto& current_info = operationInfo.top();
+      if(current_info.isExclusive) {
+        if(minPivot() < current_info.max) {
+          throw Exception::NoLocksAfterExclusiveLock();
+        }
+      } else {
+        // New pivots must be the same level or higher.
+        if(minPivot() < current_info.maxPivot) {
+          throw Exception::AlreadyHasBiggerLayer(minPivot());
+        }
+        if(maxP < current_info.maxPivot) {maxP = current_info.maxPivot;}
+        if(maxM < current_info.max) {maxM = current_info.max;}
       }
-      if (min == layerNumber.top() && isLayerExclusive.top()) {
-        throw Exception::NoLocksAfterExclusiveLock();
-      }
-      threadMutexLayers.emplace();
-      isLayerExclusive.push(false);
-      layerNumber.push(maxLayerNumber());
-      assert(isLayerExclusive.size() == threadMutexLayers.size());
-      assert(isLayerExclusive.size() == layerNumber.size());
     }
 
-    threadMutexLayers.top().insert(mutexes.cbegin(), mutexes.cend());
-    threadNonExclusiveMutexes.insert(mutexes.cbegin(), mutexes.cend());
+    // Store OperationInfo.
+    operationInfo.emplace(
+        OperationInfo{.maxPivot=maxPivot(), .max=maxMutex(), .isExclusive=false});
+
+    threadSharedMutexes.insert(mainMutexes.cbegin(), mainMutexes.cend());
+    threadSharedMutexes.insert(pivotMutexes.cbegin(), pivotMutexes.cend());
+    assert(!threadSharedMutexes.empty());
+  }
+
+  void LockPolicy::_registerPivots()
+  {
+    for(const auto* mutex: mainMutexes) {
+      // The pivot is registered, unless it is also a main mutex.
+      while(mutex->my_pivot) {
+        if(!mainMutexes.contains(mutex->my_pivot)
+            && !threadExclusiveMutexes.contains(mutex->my_pivot)
+            && !threadSharedMutexes.contains(mutex->my_pivot))
+        {
+          pivotMutexes.insert(mutex->my_pivot);
+        }
+        mutex = mutex->my_pivot;
+      }
+    }
+
+    assert(std::ranges::none_of(pivotMutexes,
+                                [this](auto* mutex)
+                                {return mainMutexes.contains(mutex);}));
+
+    assert(std::ranges::none_of(pivotMutexes,
+                                [](auto* mutex)
+                                {return threadExclusiveMutexes.contains(mutex);}));
+
+    assert(std::ranges::none_of(pivotMutexes,
+                                [](auto* mutex)
+                                {return threadSharedMutexes.contains(mutex);}));
   }
 
   LockPolicy::~LockPolicy()

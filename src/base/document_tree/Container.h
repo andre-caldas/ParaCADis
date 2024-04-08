@@ -28,7 +28,7 @@
 #include <base/naming_scheme/Chainables.h>
 #include <base/naming_scheme/Exporter.h>
 #include <base/naming_scheme/IExport.h>
-#include <base/threads/locks/MutexData.h>
+#include <base/threads/locks/MutexesWithPivot.h>
 #include <base/threads/safe_structs/ThreadSafeMap.h>
 
 #include <concepts>
@@ -97,16 +97,19 @@ namespace DocumentTree
     template<typename Key, typename Val>
     using UnorderedMap = Threads::SafeStructs::ThreadSafeUnorderedMap<Key, Val>;
 
-    // TODO: do we need to use the same mutex?
-    // It is safer, for sure.
-    // Maybe we could enforce SharedLock of Exporter::mutex
-    // before the ExclusiveLock or SharedLock for the "sub-container" mutex.
-    // That would be theoretically less "blocking".
+    // Data protected by mutexes.
     UnorderedMap<uuid_type, SharedPtr<NamingScheme::ExporterBase>> non_containers;
     UnorderedMap<uuid_type, SharedPtr<Container>> containers;
+    DeferenceableCoordinateSystem                 coordinate_system;
 
-    DeferenceableCoordinateSystem coordinate_system;
-    mutable Threads::GatherMutexData<Threads::MutexData, Threads::MutexData, Threads::MutexData>
+    /**
+     * This is the pivot mutex. No one should use it directly.
+     * @attention A SharedLock on it is not what you expect.
+     * Use `mutex` instead.
+     * @see MutexesWithPivot.
+     */
+    mutable Threads::MutexesWithPivot<
+        Threads::MutexData, Threads::MutexData, Threads::MutexData>
         mutex{non_containers.getMutexData(),
               containers.getMutexData(),
               coordinate_system.getMutexData()};

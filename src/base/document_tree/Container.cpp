@@ -208,23 +208,58 @@ Container::resolve_share(token_iterator& tokens, ExporterBase*)
     return {};
   }
 
-  auto& token = tokens.front();
-  if (token.isUuid())
-  {
-    auto it = non_containers.find(token);
-    if(it != non_containers.end())
-    {
-      tokens.advance(1);
-      return it->second;
+  token_iterator toks = tokens;
+  { // first token
+    auto& token = toks.front();
+    toks.advance(1);
+    if(!token.isName()) {
+      return {};
     }
+
+    if(token.getName() != "elements") {
+      return {};
+    }
+  }
+
+  auto& token = toks.front();
+  toks.advance(1);
+  Threads::ReaderGate gate{containers, non_containers};
+
+  // Uuid.
+  if(token.isUuid())
+  {
+    auto it_n = gate[non_containers].find(token);
+    if(it_n != gate[non_containers].end())
+    {
+      tokens = toks;
+      return it_n->second;
+    }
+
+    auto it_c = gate[containers].find(token);
+    if(it_c != gate[containers].end())
+    {
+      tokens = toks;
+      return it_c->second;
+    }
+
     return {};
   }
 
+  // Name.
   for(auto& [uuid, ptr] : non_containers)
   {
     if(ptr->getName() == token.getName())
     {
-      tokens.advance(1);
+      tokens = toks;
+      return ptr;
+    }
+  }
+
+  for(auto& [uuid, ptr] : containers)
+  {
+    if(ptr->getName() == token.getName())
+    {
+      tokens = toks;
       return ptr;
     }
   }

@@ -45,9 +45,9 @@ namespace Threads
      */
     [[nodiscard]]
     SharedLock(SharedLock&& other_lock) = default;
-    template<C_MutexGatherOrData Mutex>
+    template<C_MutexGatherOrData ...Mutex>
     [[nodiscard]]
-    SharedLock(Mutex& mutex);
+    SharedLock(Mutex&... mutex);
 
   private:
     std::vector<std::shared_lock<YesItIsAMutex>> locks;

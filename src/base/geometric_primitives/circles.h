@@ -43,13 +43,13 @@ struct CirclePointRadiusNormalData {
  */
 class CirclePointRadiusNormal
     : public NamingScheme::Exporter<CirclePointRadiusNormalData>
-    , public NamingScheme::SafeIExport<DeferenceablePoint, CirclePointRadiusNormalData,
+    , public NamingScheme::IExportStruct<DeferenceablePoint, CirclePointRadiusNormalData,
                                 {&CirclePointRadiusNormalData::center, "center"},
                                 {&CirclePointRadiusNormalData::center, "c"}>
-    , public NamingScheme::SafeIExport<DeferenceableVector, CirclePointRadiusNormalData,
+    , public NamingScheme::IExportStruct<DeferenceableVector, CirclePointRadiusNormalData,
                                 {&CirclePointRadiusNormalData::normal, "normal"},
                                 {&CirclePointRadiusNormalData::normal, "n"}>
-    , public NamingScheme::SafeIExport<Real, CirclePointRadiusNormalData,
+    , public NamingScheme::IExportStruct<Real, CirclePointRadiusNormalData,
                                 {&CirclePointRadiusNormalData::radius, "radius"},
                                 {&CirclePointRadiusNormalData::radius, "r2"}>
     , public NamingScheme::Chainables<DeferenceablePoint, DeferenceableVector>
@@ -78,7 +78,7 @@ struct Circle3PointsData {
  */
 class Circle3Points
     : public NamingScheme::Exporter<Circle3PointsData>
-    , public NamingScheme::SafeIExport<DeferenceablePoint, Circle3PointsData,
+    , public NamingScheme::IExportStruct<DeferenceablePoint, Circle3PointsData,
                                 {&Circle3PointsData::a, "a"},
                                 {&Circle3PointsData::a, "p1"},
                                 {&Circle3PointsData::b, "b"},
@@ -114,12 +114,12 @@ struct Circle2PointsDirectionData {
  */
 class Circle2PointsDirection
     : public NamingScheme::Exporter<Circle2PointsDirectionData>
-    , public NamingScheme::SafeIExport<DeferenceablePoint, Circle2PointsDirectionData,
+    , public NamingScheme::IExportStruct<DeferenceablePoint, Circle2PointsDirectionData,
                                 {&Circle2PointsDirectionData::a, "a"},
                                 {&Circle2PointsDirectionData::a, "p1"},
                                 {&Circle2PointsDirectionData::b, "b"},
                                 {&Circle2PointsDirectionData::b, "p2"}>
-    , public NamingScheme::SafeIExport<DeferenceableVector, Circle2PointsDirectionData,
+    , public NamingScheme::IExportStruct<DeferenceableVector, Circle2PointsDirectionData,
                                 {&Circle2PointsDirectionData::d, "d"},
                                 {&Circle2PointsDirectionData::d, "to_center"}>
     , public NamingScheme::Chainables<DeferenceablePoint, DeferenceableVector>

@@ -27,6 +27,7 @@
 
 #include <base/type_traits/Utils.h>
 
+#include <cassert>
 #include <limits>
 #include <memory>
 #include <mutex>
@@ -55,6 +56,7 @@ namespace Threads
    * this hierarchy by keeping a #layer number.
    */
   struct MutexData {
+    MutexData*    my_pivot = nullptr;
     YesItIsAMutex mutex;
     const int     layer = 0;
 
@@ -65,6 +67,20 @@ namespace Threads
     MutexData(int layer) : layer(layer) {}
     MutexData(const MutexData&) = delete;
     MutexData& operator=(const MutexData&) = delete;
+
+    int pivotLayer() const
+    {
+      if(my_pivot) {
+        assert(layer >= my_pivot->layer);
+        return my_pivot->pivotLayer();
+      }
+      return layer;
+    }
+
+    void setPivot(MutexData& p) {
+      assert(!my_pivot);
+      my_pivot = &p;
+    }
   };
 
   template<typename T>
@@ -76,7 +92,8 @@ namespace Threads
   template<typename... M>
   struct GatherMutexData : GatherMutexDataBase {
     static_assert(sizeof...(M) == 0, "GatherMutexData must be specialized.");
-    static constexpr std::size_t size() { return 0; }
+    static constexpr std::size_t nMutexes() { return 0; }
+    void setPivot(MutexData&) {}
   };
 
   template<typename First, typename... M>
@@ -86,13 +103,18 @@ namespace Threads
     GatherMutexData<M...> others;
 
     constexpr GatherMutexData(First& f, M&... m) : first(f), others{m...} {}
-    static constexpr std::size_t size()
+    static constexpr std::size_t nMutexes()
     {
       if constexpr(!C_MutexData<First>){
-        return First::size() + decltype(others)::size();
+        return First::nMutexes() + decltype(others)::nMutexes();
       } else {
-        return 1 + decltype(others)::size();
+        return 1 + decltype(others)::nMutexes();
       }
+    }
+
+    void setPivot(MutexData& p) {
+      first.setPivot(p);
+      others.setPivot(p);
     }
   };
 
@@ -101,42 +123,6 @@ namespace Threads
 
   template<typename T>
   concept C_MutexGatherOrData = C_MutexData<T> || C_GatherMutexData<T>;
-
-  template<typename First, typename... M>
-  constexpr auto
-  lockThemAll(First& f, M&... m)
-  {
-    if constexpr ((C_MutexData<First>) && (... && C_MutexData<M>)) {
-      return std::make_unique<
-          std::scoped_lock<YesItIsAMutex, TypeTraits::ForEach_t<YesItIsAMutex, M>...>
-      >(f.mutex, m.mutex...);
-    }
-    else
-    {
-      // Is the first a MutexData?
-      if constexpr (C_MutexData<First>) {
-        return lockThemAll(m..., f);
-      }
-      else
-      {
-        // Remove f.first if it is an empty list?
-        if constexpr (std::same_as<decltype(f.first), GatherMutexData<>>) {
-          return lockThemAll(f.others, m...);
-        }
-        else
-        {
-          // Split First into pices.
-          return lockThemAll(f.first, f.others, m...);
-        }
-      }
-    }
-  }
-
-  constexpr auto
-  lockThemAll()
-  {
-    return std::make_unique<std::scoped_lock<>>();
-  }
 
 
   /**

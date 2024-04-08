@@ -149,10 +149,10 @@ struct DeferenceableCoordinateSystemData {
 
 class DeferenceableCoordinateSystem
     : public NamingScheme::Exporter<DeferenceableCoordinateSystemData>
-    , public NamingScheme::SafeIExport<DeferenceablePoint, DeferenceableCoordinateSystemData,
+    , public NamingScheme::IExportStruct<DeferenceablePoint, DeferenceableCoordinateSystemData,
                                 {&DeferenceableCoordinateSystemData::origin, "origin"},
                                 {&DeferenceableCoordinateSystemData::origin, "o"}>
-    , public NamingScheme::SafeIExport<DeferenceableVector, DeferenceableCoordinateSystemData,
+    , public NamingScheme::IExportStruct<DeferenceableVector, DeferenceableCoordinateSystemData,
                                 {&DeferenceableCoordinateSystemData::bx, "bx"},
                                 {&DeferenceableCoordinateSystemData::bx, "x"},
                                 {&DeferenceableCoordinateSystemData::bx, "i"},

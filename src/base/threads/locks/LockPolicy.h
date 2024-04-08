@@ -57,23 +57,35 @@ namespace Threads
   {
   public:
     static bool hasAnyLock();
+
+    /**
+     * Indicates that the @a mutex is "conceptually"
+     * locked by this thread.
+     *
+     * We say "conceptually", because whenever a pivot is exclusively locked,
+     * the pivoted mutex is also considered exclusively locked.
+     */
+    /// @{
     static bool isLocked(const MutexData* mutex);
     static bool isLocked(const MutexData& mutex);
+    /// @}
+
+    /**
+     * Indicates that the @a mutex is "conceptually"
+     * locked exclusively by this thread.
+     *
+     * We say "conceptually", because whenever a pivot is exclusively locked,
+     * the pivoted mutex is also considered exclusively locked.
+     */
+    /// @{
     static bool isLockedExclusively(const MutexData* mutex);
     static bool isLockedExclusively(const MutexData& mutex);
-
-    void detachFromThread();
-    void attachToThread(bool is_exclusive);
+    /// @}
 
   protected:
     /**
      * Implements the lock policy.
-     * @param is_exclusive - Is it an exclusive lock?
-     * @param mutex - A MutexData instance.
      */
-    template<C_MutexData... MutN>
-    LockPolicy(bool is_exclusive, MutN&... mutex);
-
     template<typename... MutN>
     LockPolicy(bool is_exclusive, MutN&... mutex);
 
@@ -82,32 +94,31 @@ namespace Threads
     LockPolicy() = delete;
     virtual ~LockPolicy();
 
-    bool isDetached() const;
-    bool hasIgnoredMutexes() const;
+    int minPivot() const;
+    int maxPivot() const;
+    int minMutex() const;
+    int maxMutex() const;
 
-    int minLayerNumber() const;
-    int maxLayerNumber() const;
-
-    const std::unordered_set<MutexData*>& getMutexes() const;
+    const std::unordered_set<MutexData*>& getMainMutexes() const;
+    const std::unordered_set<MutexData*>& getPivotMutexes() const;
 
   private:
-    bool is_detached         = true;
-    bool has_ignored_mutexes = false;
-
-    std::unordered_set<MutexData*> mutexes;
+    std::unordered_set<MutexData*> mainMutexes;
+    std::unordered_set<MutexData*> pivotMutexes;
 
     template<C_GatherMutexData G, typename... MutN>
-    inline void unfold_mutexes(G& g, MutN&... mutex);
+    inline void unfold_mutexes(bool is_exclusive, G& g, MutN&... mutex);
 
     template<C_MutexData M, typename... MutN>
-    inline void unfold_mutexes(M& m, MutN&... mutex);
+    inline void unfold_mutexes(bool is_exclusive, M& m, MutN&... mutex);
 
     template<C_MutexData ... MutN>
-    void unfold_mutexes(MutN&... mutex);
+    void unfold_mutexes(bool is_exclusive, MutN&... mutex);
 
     void _processLock(bool is_exclusive);
     void _processExclusiveLock();
-    void _processNonExclusiveLock();
+    void _processSharedLock();
+    void _registerPivots();
     /**
      * @brief Removes information from thread_local variables.
      */

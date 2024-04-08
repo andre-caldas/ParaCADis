@@ -138,7 +138,14 @@ namespace NamingScheme
   public:
     Exporter(const Exporter&) = delete;
     template<typename... Args>
-    Exporter(Args&&... args) : safeData(*this, args...)
+    Exporter(Threads::MutexData& m, Args&&... args)
+        : ExporterBase(m)
+        , safeData(*this, std::forward<Args>(args)...)
+    {
+    }
+    template<typename... Args>
+    Exporter(Args&&... args)
+        : safeData(*this, std::forward<Args>(args)...)
     {
     }
 
@@ -146,7 +153,7 @@ namespace NamingScheme
     auto getWriterGate() noexcept { return safeData.getWriterGate(); }
 
   private:
-    safe_struct_t safeData;
+    safe_struct_t safeData{mutex};
   };
 
 }  // namespace NamingScheme

@@ -29,6 +29,9 @@
 
 #include <base/expected_behaviour/SharedPtr.h>
 
+#include <memory>
+#include <vector>
+
 namespace Threads
 {
 
@@ -44,12 +47,9 @@ namespace Threads
 
     void release();
 
-    [[maybe_unused]]
-    auto detachFromThread();
-
   private:
     using locks_t = decltype(
-        lockThemAll<Mutex...>(*(Mutex*)nullptr...))::element_type;
+        lockAllExclusive<Mutex...>(*(Mutex*)nullptr...))::element_type;
 
     /*
      * After constructed, std::scoped_lock cannot be changed.
@@ -64,6 +64,7 @@ namespace Threads
      * information: the std::thread instance.
      */
     std::shared_ptr<locks_t> locks;
+    std::vector<std::shared_lock<YesItIsAMutex>> pivot_shared_locks;
   };
 
 

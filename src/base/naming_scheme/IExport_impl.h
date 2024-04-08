@@ -93,7 +93,7 @@ namespace NamingScheme
 
 
   template<typename T, class DataStruct, EachExportedData... dataInfo>
-  T* SafeIExport<T, DataStruct, dataInfo...>::resolve_ptr(token_iterator& tokens, T*)
+  T* IExportStruct<T, DataStruct, dataInfo...>::resolve_ptr(token_iterator& tokens, T*)
   {
     if (!tokens) {
       assert(false && "Why is this being called? There are no more tokens!");

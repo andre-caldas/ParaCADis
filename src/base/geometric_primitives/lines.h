@@ -49,12 +49,12 @@ struct Line2PointsData {
  */
 class Line2Points
     : public NamingScheme::Exporter<Line2PointsData>
-    , public NamingScheme::SafeIExport<DeferenceablePoint, Line2PointsData,
+    , public NamingScheme::IExportStruct<DeferenceablePoint, Line2PointsData,
                                 {&Line2PointsData::start, "start"},
                                 {&Line2PointsData::start, "a"},
                                 {&Line2PointsData::end, "end"},
                                 {&Line2PointsData::end, "b"}>
-    , public NamingScheme::SafeIExport<bool, Line2PointsData,
+    , public NamingScheme::IExportStruct<bool, Line2PointsData,
                                 {&Line2PointsData::is_bounded_start, "is_bounded_start"},
                                 {&Line2PointsData::is_bounded_end, "is_bounded_end"}>
     , public NamingScheme::Chainables<DeferenceablePoint>
@@ -88,13 +88,13 @@ struct LinePointDirectionData {
  */
 class LinePointDirection
     : public NamingScheme::Exporter<LinePointDirectionData>
-    , public NamingScheme::SafeIExport<DeferenceablePoint, LinePointDirectionData,
+    , public NamingScheme::IExportStruct<DeferenceablePoint, LinePointDirectionData,
                                 {&LinePointDirectionData::start, "start"},
                                 {&LinePointDirectionData::start, "a"}>
-    , public NamingScheme::SafeIExport<DeferenceableVector, LinePointDirectionData,
+    , public NamingScheme::IExportStruct<DeferenceableVector, LinePointDirectionData,
                                 {&LinePointDirectionData::direction, "direction"},
                                 {&LinePointDirectionData::direction, "v"}>
-    , public NamingScheme::SafeIExport<bool, LinePointDirectionData,
+    , public NamingScheme::IExportStruct<bool, LinePointDirectionData,
                                 {&LinePointDirectionData::is_bounded_start, "is_bounded_start"},
                                 {&LinePointDirectionData::is_bounded_end, "is_bounded_end"}>
     , public NamingScheme::Chainables<DeferenceablePoint, DeferenceableVector>

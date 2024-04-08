@@ -20,60 +20,75 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef Threads_LockPolicy_inc_H
-#define Threads_LockPolicy_inc_H
+#ifndef Threads_MutexesWithPivot_H
+#define Threads_MutexesWithPivot_H
 
-#include "LockPolicy.h"
-#include "exceptions.h"
-#include "MutexesWithPivot.h"
+#include "MutexData.h"
 
-#include <algorithm>
-#include <cassert>
-#include <memory>
-#include <mutex>
-#include <shared_mutex>
+#include <concepts>
 
 namespace Threads
 {
 
-  template<typename... MutN>
-  LockPolicy::LockPolicy(const bool is_exclusive, MutN&... mutex)
-  {
-    unfold_mutexes(is_exclusive, mutex...);
-    _processLock(is_exclusive);
-  }
+  struct MutexesWithPivotBase {};
 
-  template<C_GatherMutexData G, typename... MutN>
-  void LockPolicy::unfold_mutexes(bool is_exclusive, G& g, MutN&... mutex)
+  template<typename... M>
+  struct MutexesWithPivot
+      : MutexesWithPivotBase
+      , GatherMutexData<MutexData, M...>
   {
-    if constexpr (C_MutexesWithPivot<G> && is_exclusive) {
-      // We do not need to exclusively lock what is behind the pivot.
-      unfold_mutexes(is_exclusive, g.pivot, mutex...);
-    } else {
-      unfold_mutexes(is_exclusive, g.first, g.others, mutex...);
+    MutexData pivot;
+    MutexesWithPivot(M&... m)
+        : GatherMutexData<MutexData, M...>{pivot, m...}
+    {
+      for(auto* mut: {&m...}) {
+        mut->setPivot(pivot);
+      }
+    }
+  };
+
+
+  /**
+   * Concept of a `MutexesWithPivot`.
+   */
+  template<typename T>
+  concept C_MutexesWithPivot = std::derived_from<T, MutexesWithPivotBase>;
+
+
+  template<typename First, typename... M>
+  constexpr auto
+  lockAllExclusive(First& f, M&... m)
+  {
+    if constexpr ((C_MutexData<First>) && (... && C_MutexData<M>)) {
+      // f.pivot and m.pivot... will be treated by LockPolicy.
+      return std::make_unique<
+          std::scoped_lock<YesItIsAMutex, TypeTraits::ForEach_t<YesItIsAMutex, M>...>
+      >(f.mutex, m.mutex...);
+    }
+    else if constexpr (C_MutexData<First>) {
+      // Is the first a MutexData?
+      return lockAllExclusive(m..., f);
+    }
+    else if constexpr (std::same_as<const First, const GatherMutexData<>>) {
+      // Remove f if it is an empty list?
+      return lockAllExclusive(m...);
+    }
+    else if constexpr (C_MutexesWithPivot<First>)
+    {
+      // We only lock the pivot.
+      return lockAllExclusive(f.pivot, m...);
+    }
+    else
+    {
+      // Split First into pices.
+      return lockAllExclusive(f.first, f.others, m...);
     }
   }
 
-  template<C_MutexData M, typename... MutN>
-  void LockPolicy::unfold_mutexes(const bool is_exclusive, M& m, MutN&... mutex)
+  constexpr auto
+  lockAllExclusive()
   {
-    if constexpr ((C_MutexData<MutN> && ...)) {
-      assert(mainMutexes.empty());
-      assert(pivotMutexes.empty());
-
-      mainMutexes = {&m, &mutex...};
-    } else {
-      unfold_mutexes(is_exclusive, mutex..., m);
-    }
-  }
-
-  template<C_MutexData ... MutN>
-  void LockPolicy::unfold_mutexes(const bool /*is_exclusive*/, MutN&... mutex)
-  {
-    assert(mainMutexes.empty());
-    assert(pivotMutexes.empty());
-
-    mainMutexes = {&mutex...};
+    return std::make_unique<std::scoped_lock<>>();
   }
 
 }  // namespace Threads

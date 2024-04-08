@@ -154,7 +154,7 @@ namespace NamingScheme
    * Exports data managed by Exporter<DataStruct>.
    */
   template<typename T, class DataStruct, EachExportedData... dataInfo>
-  class SafeIExport : public IExport<T>
+  class IExportStruct : public IExport<T>
   {
   protected:
     T* resolve_ptr(token_iterator& tokens, T* = nullptr) override;

@@ -25,14 +25,23 @@
 
 #include "reader_locks.h"
 
+#include <map>
+
 namespace Threads {
 
-template<C_MutexGatherOrData Mutex>
-SharedLock::SharedLock(Mutex& mutex)
-    : LockPolicy(false, mutex)
+template<C_MutexGatherOrData... Mutex>
+SharedLock::SharedLock(Mutex&... mutex)
+    : LockPolicy(false, mutex...)
 {
-  locks.reserve(getMutexes().size());
-  for(auto m: getMutexes()) {
+  std::multimap<int, MutexData*> all_mutexes;
+  for(auto m: getPivotMutexes()) {
+    all_mutexes.emplace(m->layer, m);
+  }
+  for(auto m: getMainMutexes()) {
+    all_mutexes.emplace(m->layer, m);
+  }
+  locks.reserve(all_mutexes.size());
+  for(auto [l, m]: all_mutexes) {
     locks.emplace_back(std::shared_lock(m->mutex));
   }
 }

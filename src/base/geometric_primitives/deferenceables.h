@@ -47,7 +47,7 @@ struct TripletStruct {
  */
 class DeferenceablePoint
     : public NamingScheme::Exporter<TripletStruct>
-    , public NamingScheme::SafeIExport<Real, TripletStruct,
+    , public NamingScheme::IExportStruct<Real, TripletStruct,
                                        {&TripletStruct::x, "x"},
                                        {&TripletStruct::y, "y"},
                                        {&TripletStruct::z, "z"}>
@@ -77,7 +77,7 @@ public:
  */
 class DeferenceableVector
     : public NamingScheme::Exporter<TripletStruct>
-    , public NamingScheme::SafeIExport<Real, TripletStruct,
+    , public NamingScheme::IExportStruct<Real, TripletStruct,
                                        {&TripletStruct::x, "x"},
                                        {&TripletStruct::y, "y"},
                                        {&TripletStruct::z, "z"}>

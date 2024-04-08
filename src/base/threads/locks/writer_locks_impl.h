@@ -25,7 +25,9 @@
 
 #include "writer_locks.h"
 
-#include <memory>
+#include "MutexesWithPivot.h"
+
+#include <map>
 
 namespace Threads {
 
@@ -35,19 +37,25 @@ ExclusiveLock<Mutex...>::ExclusiveLock(Mutex&... mutexes)
 {
   using GatherThemAll = GatherMutexData<Mutex...>;
 
+  // Locks non-exclusivelly, according to LockPolicy.
+  std::multimap<int, MutexData*> all_mutexes;
+  for(auto m: getPivotMutexes()) {
+    all_mutexes.emplace(m->layer, m);
+  }
+  pivot_shared_locks.reserve(all_mutexes.size());
+  for(auto [l, m]: all_mutexes) {
+    pivot_shared_locks.emplace_back(std::shared_lock(m->mutex));
+  }
+
   /*
-   * Here we know that if this is not the first lock,
-   * all previous locks in the same layer were exclusive
-   * and the very first one already contains this one.
-   *    * If this is not the first one, mutexes is empty.
-   * Otherwise, mutexes = {container.getMutexPtr()...}.
-   *    * Example:
+   * First you have to lock everything you are going to use.
    * ExclusiveLock l1(m1, m2);
-   * ExclusiveLock l2(m1); // Does nothing.
+   * ExclusiveLock l2(m1); // Does nothing. (inside some method)
    */
-  assert(getMutexes().empty() || getMutexes().size() == GatherThemAll::size());
-  if (!getMutexes().empty()) {
-    locks = lockThemAll(mutexes...);
+  assert(getMainMutexes().empty()
+         || getMainMutexes().size() == GatherThemAll::nMutexes());
+  if (!getMainMutexes().empty()) {
+    locks = lockAllExclusive(mutexes...);
   }
 }
 
@@ -55,13 +63,6 @@ template<C_MutexGatherOrData... Mutex>
 void ExclusiveLock<Mutex...>::release()
 {
   locks.reset();
-}
-
-template<C_MutexGatherOrData... Mutex>
-auto ExclusiveLock<Mutex...>::detachFromThread()
-{
-  LockPolicy::detachFromThread();
-  return locks;
 }
 
 
