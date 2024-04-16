@@ -66,8 +66,12 @@ namespace Threads
      * the pivoted mutex is also considered exclusively locked.
      */
     /// @{
-    static bool isLocked(const MutexData* mutex);
     static bool isLocked(const MutexData& mutex);
+    static bool isLocked(const MutexVector& mutexes);
+    template<C_MutexGather Gather>
+    static bool isLocked(const Gather& gather);
+    template<C_MutexHolder Holder>
+    static bool isLocked(const Holder& holder);
     /// @}
 
     /**
@@ -78,7 +82,6 @@ namespace Threads
      * the pivoted mutex is also considered exclusively locked.
      */
     /// @{
-    static bool isLockedExclusively(const MutexData* mutex);
     static bool isLockedExclusively(const MutexData& mutex);
     /// @}
 
@@ -86,7 +89,7 @@ namespace Threads
     /**
      * Implements the lock policy.
      */
-    template<typename... MutN>
+    template<C_MutexLike... MutN>
     LockPolicy(bool is_exclusive, MutN&... mutex);
 
     LockPolicy(LockPolicy&&) = default;
@@ -94,33 +97,23 @@ namespace Threads
     LockPolicy() = delete;
     virtual ~LockPolicy();
 
-    int minPivot() const;
-    int maxPivot() const;
     int minMutex() const;
     int maxMutex() const;
 
-    const std::unordered_set<MutexData*>& getMainMutexes() const;
-    const std::unordered_set<MutexData*>& getPivotMutexes() const;
+    const std::unordered_set<MutexData*>& getMutexes() const;
 
   private:
-    std::unordered_set<MutexData*> mainMutexes;
-    std::unordered_set<MutexData*> pivotMutexes;
+    std::unordered_set<MutexData*> mutexes;
 
-    template<C_GatherMutexData G, typename... MutN>
-    inline void unfold_mutexes(bool is_exclusive, G& g, MutN&... mutex);
-
-    template<C_MutexData M, typename... MutN>
-    inline void unfold_mutexes(bool is_exclusive, M& m, MutN&... mutex);
-
-    template<C_MutexData ... MutN>
-    void unfold_mutexes(bool is_exclusive, MutN&... mutex);
+    static bool isLocked(const MutexData* mutex);
+    static bool isLockedExclusively(const MutexData* mutex);
 
     void _processLock(bool is_exclusive);
     void _processExclusiveLock();
     void _processSharedLock();
-    void _registerPivots();
+
     /**
-     * @brief Removes information from thread_local variables.
+     * Removes information from thread_local variables.
      */
     void _detachFromThread();
   };

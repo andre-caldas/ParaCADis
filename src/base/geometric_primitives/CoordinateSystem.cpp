@@ -130,13 +130,13 @@ DeferenceableCoordinateSystem::DeferenceableCoordinateSystem(
 
 CoordinateSystem DeferenceableCoordinateSystem::getCoordinateSystem() const noexcept
 {
-  auto gate = getReaderGate();
+  Threads::ReaderGate gate{*this};
   return {gate->origin, gate->bx, gate->by, gate->bz};
 }
 
 std::unique_ptr<DeferenceableCoordinateSystem> DeferenceableCoordinateSystem::deepCopy() const
 {
-  auto gate = getReaderGate();
+  Threads::ReaderGate gate{*this};
   return std::make_unique<DeferenceableCoordinateSystem>(
       gate->origin, gate->bx, gate->by, gate->bz);
 }

@@ -145,6 +145,14 @@ struct DeferenceableCoordinateSystemData {
   DeferenceableVector bx     = {1, 0, 0};
   DeferenceableVector by     = {0, 1, 0};
   DeferenceableVector bz     = {0, 0, 1};
+
+  DeferenceableCoordinateSystemData() = default;
+  DeferenceableCoordinateSystemData(const Point& origin) : origin(origin) {}
+  DeferenceableCoordinateSystemData(const Point& origin,
+                                    const Vector& bx,
+                                    const Vector& by,
+                                    const Vector& bz)
+      : origin(origin), bx(bx), by(by), bz(bz) {}
 };
 
 class DeferenceableCoordinateSystem

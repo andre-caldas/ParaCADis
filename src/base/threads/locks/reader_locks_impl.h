@@ -25,71 +25,80 @@
 
 #include "reader_locks.h"
 
+#include <base/expected_behaviour/SharedPtr.h>
+
 #include <map>
 
 namespace Threads {
 
-template<C_MutexGatherOrData... Mutex>
-SharedLock::SharedLock(Mutex&... mutex)
-    : LockPolicy(false, mutex...)
-{
-  std::multimap<int, MutexData*> all_mutexes;
-  for(auto m: getPivotMutexes()) {
-    all_mutexes.emplace(m->layer, m);
+  template<C_MutexLike... Mutex>
+  SharedLock::SharedLock(Mutex&... mutex)
+      : LockPolicy(false, mutex...)
+  {
+    lock();
   }
-  for(auto m: getMainMutexes()) {
-    all_mutexes.emplace(m->layer, m);
-  }
-  locks.reserve(all_mutexes.size());
-  for(auto [l, m]: all_mutexes) {
-    locks.emplace_back(std::shared_lock(m->mutex));
-  }
-}
 
 
-template<C_MutexHolderWithGates Holder>
-ReaderGate<Holder>::ReaderGate(const Holder& holder)
-    : SharedLock(getMutex(holder))
-    , data(Holder::ReaderGate::getProtectedData(holder))
-{
-}
-
-
-template<C_MutexHolderWithGates ... Holders>
-ReaderGate<Holders...>::ReaderGate(const Holders&... holders)
-    : locks{getMutex(holders)...}
+  template<C_MutexHolderWithGates ... Holders>
+  ReaderGate<Holders...>::ReaderGate(const Holders&... holders)
+      : lock{getMutex(holders)...}
 #ifndef NDEBUG
-    , all_holders{&holders...}
+      , all_holders{&holders...}
 #endif
-{
+  {
+  }
+
+  template<C_MutexHolderWithGates ... Holders>
+  template<C_MutexHolderWithGates Holder>
+  auto& ReaderGate<Holders...>::operator[](const Holder& holder) const
+  {
+    assert(all_holders.contains(&holder));
+    return Holder::GateInfo::getData(holder);
+  }
+
+  template<C_MutexHolderWithGates ... Holders>
+  template<C_MutexHolderWithGates Holder>
+  auto& ReaderGate<Holders...>::getNonConst(Holder& holder) const
+  {
+    assert(all_holders.contains(&holder));
+    return Holder::GateInfo::getData(holder);
+  }
+
+
+  template<C_MutexHolderWithGates Holder>
+  ReaderGate<Holder>::ReaderGate(const Holder& holder)
+      : lock(getMutex(holder))
+      , holder(holder)
+  {
+  }
+
+  template<C_MutexHolderWithGates Holder>
+  const auto& ReaderGate<Holder>::operator*() const
+  {
+    return Holder::GateInfo::getData(holder);
+  }
+
+  template<C_MutexHolderWithGates Holder>
+  auto& ReaderGate<Holder>::getNonConst(Holder& h) const
+  {
+    assert(&h == &holder);
+    return Holder::GateInfo::getData(h);
+  }
+
+
+  template<C_MutexHolderWithGates Holder>
+  ReaderGateKeeper<Holder>::ReaderGateKeeper(Holder&& holder)
+      : lock(getMutex(holder))
+      , holder(holder)
+  {
+  }
+
+  template<C_MutexHolderWithGates Holder>
+  const auto& ReaderGateKeeper<Holder>::operator*() const
+  {
+    return Holder::GateInfo::getData(holder);
+  }
+
 }
 
-template<C_MutexHolderWithGates ... Holders>
-template<C_MutexHolderWithGates Holder>
-auto& ReaderGate<Holders...>::operator[](const Holder& holder) const
-{
-  assert(all_holders.contains(&holder));
-  return Holder::ReaderGate::getProtectedData(holder);
-}
-
-
-template<C_MutexHolder Holder, typename T, T Holder::* localData>
-LocalReaderGate<localData>::LocalReaderGate(const Holder& holder)
-    : _GateBase(holder)
-    , data(holder.*localData)
-{}
-
-template<C_MutexHolder Holder, typename T, T Holder::* localData>
-const T& LocalReaderGate<localData>::operator*() const
-{
-  return data;
-}
-
-template<C_MutexHolder Holder, typename T, T Holder::* localData>
-const T* LocalReaderGate<localData>::operator->() const
-{
-  return &data;
-}
-
-}
 #endif

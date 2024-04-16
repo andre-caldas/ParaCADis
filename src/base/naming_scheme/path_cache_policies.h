@@ -23,9 +23,8 @@
 #ifndef NamingScheme_PathCachePolicies_H
 #define NamingScheme_PathCachePolicies_H
 
+#include "ResultHolder.h"
 #include "types.h"
-
-#include <base/expected_behaviour/SharedPtr.h>
 
 #include <chrono>
 
@@ -42,8 +41,8 @@ namespace NamingScheme
      */
     virtual void prepare(token_iterator& tokens) = 0;
     virtual token_iterator topTokens() const = 0;
-    virtual const SharedPtr<ExporterBase>& topExporter() const = 0;
-    virtual void pushExporter(SharedPtr<ExporterBase>&& exporter, token_iterator tokens) = 0;
+    virtual const ResultHolder<ExporterBase>& topExporter() const = 0;
+    virtual void pushExporter(ResultHolder<ExporterBase>&& exporter, token_iterator tokens) = 0;
     virtual void invalidate() = 0;
 
     /**
@@ -53,12 +52,12 @@ namespace NamingScheme
      * 1. Discard part of the cache, according to policy.
      * 2. Discard the last ExporterBase, to treat it as the "final pointer".
      */
-    virtual SharedPtr<ExporterBase> pop() = 0;
+    virtual ResultHolder<ExporterBase> pop() = 0;
 
     /**
      * Discards part of the cache according to the policy.
      * @return True when the cache is still usable, meaning that
-     * you may call NameSearchResult::resolveExporter().
+     * you may call NameSearch::resolveExporter().
      */
     virtual bool pruneCache() = 0;
 
@@ -83,11 +82,12 @@ namespace NamingScheme
     void prepare(token_iterator& tokens) override;
     void invalidate() override;
     token_iterator topTokens() const override;
-    const SharedPtr<ExporterBase>& topExporter() const override;
-    void pushExporter(SharedPtr<ExporterBase>&& exporter, token_iterator tokens) override;
+    const ResultHolder<ExporterBase>& topExporter() const override;
+    void pushExporter(ResultHolder<ExporterBase>&& exporter,
+                      token_iterator tokens) override;
 
     bool pruneCache() override;
-    SharedPtr<ExporterBase> pop() override;
+    ResultHolder<ExporterBase> pop() override;
     bool hasPartiallyExpired() const override;
 
   private:
@@ -96,13 +96,14 @@ namespace NamingScheme
 
     struct exporter_info_t
     {
-      exporter_info_t(WeakPtr<ExporterBase> w, token_iterator t) noexcept
-          : weak_ptr(std::move(w)), tokens(t) {}
-      WeakPtr<ExporterBase> weak_ptr;
-      token_iterator        tokens;
+      exporter_info_t(const ResultHolder<ExporterBase>& h,
+                      token_iterator t) noexcept
+          : weak_result(h.getReleasedShared()), tokens(t) {}
+      ResultHolder<ExporterBase> weak_result;
+      token_iterator             tokens;
     };
     std::vector<exporter_info_t> exporters;
-    SharedPtr<ExporterBase>      top_exporter;
+    ResultHolder<ExporterBase>   top_exporter;
   };
 
 }  // namespace NamingScheme

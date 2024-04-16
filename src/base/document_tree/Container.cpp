@@ -201,7 +201,7 @@ bool Container::contains(std::string_view name) const
 
 
 SharedPtr<ExporterBase>
-Container::resolve_share(token_iterator& tokens, ExporterBase*)
+Container::resolve_shared(token_iterator& tokens, ExporterBase*)
 {
   if(!tokens)
   {
@@ -268,7 +268,7 @@ Container::resolve_share(token_iterator& tokens, ExporterBase*)
 }
 
 SharedPtr<Container>
-Container::resolve_share(token_iterator& tokens, Container*)
+Container::resolve_shared(token_iterator& tokens, Container*)
 {
   auto& token = tokens.front();
   if (token.isUuid())

@@ -22,6 +22,8 @@
 
 #include "deferenceables.h"
 
+#include <base/threads/locks/reader_locks.h>
+
 DeferenceablePoint::DeferenceablePoint(const Point& p)
     : Exporter{p.x(), p.y(), p.z()}
 {
@@ -34,7 +36,7 @@ DeferenceablePoint::DeferenceablePoint(Real x, Real y, Real z)
 
 DeferenceablePoint::operator Point() const noexcept
 {
-  auto gate = getReaderGate();
+  Threads::ReaderGate gate{*this};
   return Point{gate->x, gate->y, gate->z};
 }
 
@@ -56,7 +58,7 @@ DeferenceableVector::DeferenceableVector(Real x, Real y, Real z)
 
 DeferenceableVector::operator Vector() const noexcept
 {
-  auto gate = getReaderGate();
+  Threads::ReaderGate gate{*this};
   return Vector{gate->x, gate->y, gate->z};
 }
 
@@ -68,17 +70,17 @@ std::unique_ptr<DeferenceableVector> DeferenceableVector::deepCopy() const
 
 /**
  * Template instantiation.
- * There is no need to include NameSearchResult_impl.h for those.
+ * There is no need to include NameSearch_impl.h for those.
  */
 #include <base/naming_scheme/IExport.h>
 #include <base/naming_scheme/IExport_impl.h>
-#include <base/naming_scheme/NameSearchResult.h>
-#include <base/naming_scheme/NameSearchResult_impl.h>
+#include <base/naming_scheme/NameSearch.h>
+#include <base/naming_scheme/NameSearch_impl.h>
 
 using namespace NamingScheme;
 
 template class IExport<DeferenceablePoint>;
 template class IExport<DeferenceableVector>;
 
-template class NameSearchResult<DeferenceablePoint>;
-template class NameSearchResult<DeferenceableVector>;
+template class NameSearch<DeferenceablePoint>;
+template class NameSearch<DeferenceableVector>;

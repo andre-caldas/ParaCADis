@@ -28,16 +28,19 @@
 #include <base/type_traits/Utils.h>
 
 #include <cassert>
+#include <concepts>
 #include <limits>
 #include <memory>
 #include <mutex>
 #include <type_traits>
+#include <unordered_set>
+#include <vector>
 
 namespace Threads
 {
 
   /**
-   * The lock policy uses a @class MutexData to represent one mutex.
+   * The lock policy uses a MutexData to represent one mutex.
    *
    * The lock policy organizes locks in a hierarchy.
    * In a simple setting, shared locks can be locked
@@ -56,7 +59,6 @@ namespace Threads
    * this hierarchy by keeping a #layer number.
    */
   struct MutexData {
-    MutexData*    my_pivot = nullptr;
     YesItIsAMutex mutex;
     const int     layer = 0;
 
@@ -67,62 +69,119 @@ namespace Threads
     MutexData(int layer) : layer(layer) {}
     MutexData(const MutexData&) = delete;
     MutexData& operator=(const MutexData&) = delete;
-
-    int pivotLayer() const
-    {
-      if(my_pivot) {
-        assert(layer >= my_pivot->layer);
-        return my_pivot->pivotLayer();
-      }
-      return layer;
-    }
-
-    void setPivot(MutexData& p) {
-      assert(!my_pivot);
-      my_pivot = &p;
-    }
   };
 
   template<typename T>
-  concept C_MutexData = std::same_as<const T, const MutexData>;
+  concept C_MutexData = std::same_as<std::remove_cvref_t<T>, MutexData>;
 
 
-  struct GatherMutexDataBase {};
+  struct MutexGatherBase {};
 
-  template<typename... M>
-  struct GatherMutexData : GatherMutexDataBase {
-    static_assert(sizeof...(M) == 0, "GatherMutexData must be specialized.");
-    static constexpr std::size_t nMutexes() { return 0; }
-    void setPivot(MutexData&) {}
-  };
+  template<typename... T>
+  struct GatherMutexData : MutexGatherBase {};
 
-  template<typename First, typename... M>
-  struct GatherMutexData<First, M...> : GatherMutexDataBase
+  template<typename First, typename... MutexDataFormat>
+  struct GatherMutexData<First, MutexDataFormat...> : MutexGatherBase
   {
+    constexpr GatherMutexData(First& first, MutexDataFormat&... others)
+        : first(first), others(others...) {}
     First& first;
-    GatherMutexData<M...> others;
+    GatherMutexData<MutexDataFormat...> others;
+  };
 
-    constexpr GatherMutexData(First& f, M&... m) : first(f), others{m...} {}
-    static constexpr std::size_t nMutexes()
-    {
-      if constexpr(!C_MutexData<First>){
-        return First::nMutexes() + decltype(others)::nMutexes();
-      } else {
-        return 1 + decltype(others)::nMutexes();
-      }
+  template<typename T>
+  concept C_MutexGather = std::derived_from<std::remove_cvref_t<T>, MutexGatherBase>;
+
+  template<typename T>
+  concept C_EmptyMutexGather = std::same_as<std::remove_cvref_t<T>, GatherMutexData<>>;
+
+  using DummyMutex = GatherMutexData<>;
+
+  /**
+   * Indicates if the type can be converted at compile time to a pack of MutexData.
+   */
+  template<typename T>
+  concept C_MutexGatherOrData = C_MutexGather<T> || C_MutexData<T>;
+
+
+  constexpr std::vector<MutexData*>
+  getPlainMutexes() { return {}; }
+
+  template<C_MutexGatherOrData First, C_MutexGatherOrData... MutexDataFormat>
+  constexpr std::vector<MutexData*>
+  getPlainMutexes(First& f, MutexDataFormat&... m)
+  {
+    if constexpr(C_MutexData<First> && (C_MutexData<MutexDataFormat> && ...)) {
+      return {&f, &m...};
+    } else if constexpr (C_MutexData<First>) {
+      return getPlainMutexes(m..., f);
+    } else if constexpr (C_EmptyMutexGather<First>) {
+      return getPlainMutexes(m...);
+    } else {
+      return getPlainMutexes(f.first, f.others, m...);
     }
+  }
 
-    void setPivot(MutexData& p) {
-      first.setPivot(p);
-      others.setPivot(p);
+  class MutexVector
+  {
+  private:
+    using set_t = std::vector<MutexData*>;
+    set_t mutexes;
+
+  public:
+    template<C_MutexGatherOrData... MutexLike>
+    constexpr MutexVector(MutexLike&... m)
+        : mutexes(getPlainMutexes(m...)) {}
+
+    template<typename... MutexLike>
+    constexpr MutexVector(MutexLike&... m)
+        : mutexes(unfold({}, m...)) {}
+
+    /// @attention Might repeat mutexes.
+    auto cbegin() const { return mutexes.cbegin(); }
+    auto cend() const { return mutexes.cend(); }
+
+    operator std::unordered_set<MutexData*>()
+    { return {mutexes.cbegin(), mutexes.cend()}; }
+
+  private:
+    set_t unfold(set_t&& set) { return set; }
+
+    template<typename First, typename... MutexLike>
+    set_t unfold(set_t&& set, First& f, MutexLike&... m)
+    {
+      if constexpr((C_MutexData<First> && ... && C_MutexData<MutexLike>)) {
+        if(set.empty()) {
+          return {&f, &m...};
+        }
+        set_t other_set = {&f, &m...};
+        set.insert(set.end(), other_set.cbegin(), other_set.cend());
+        return std::move(set);
+      } else if constexpr(C_MutexData<First>) {
+        // Just rotate so we can add all of them at the end, at once.
+        return unfold(std::move(set), m..., f);
+      } else if constexpr (C_EmptyMutexGather<First>) {
+        // Removes the empty gathering.
+        return unfold(std::move(set), m...);
+      } else if constexpr(C_MutexGather<First>) {
+        // Splits the gathering in two.
+        return unfold(std::move(set), f.first, f.other, m...);
+      } else if constexpr(std::same_as<std::remove_cvref_t<First>, MutexVector>) {
+        // Consumes the MutexVector by aggregating it to the "set".
+        set.insert(set.end(), f.cbegin(), f.cend());
+        return unfold(std::move(set), m...);
+      } else {
+        static_assert(false,
+                      "We can only unfold MutexData, MutexGather or MutexVector.");
+      }
     }
   };
 
   template<typename T>
-  concept C_GatherMutexData = std::derived_from<T, GatherMutexDataBase>;
+  concept C_MutexVector = std::same_as<std::remove_cvref_t<T>, MutexVector>;
 
   template<typename T>
-  concept C_MutexGatherOrData = C_MutexData<T> || C_GatherMutexData<T>;
+  concept C_MutexLike = C_MutexGatherOrData<T> || C_MutexVector<T>;
 
 
   /**
@@ -131,7 +190,8 @@ namespace Threads
    */
   template<typename T>
   concept C_MutexHolder = requires(T a) {
-    { a } -> std::convertible_to<MutexData&>;
+    a.getMutexLike();
+    {a.getMutexLike()} -> C_MutexLike;
   };
 
   /**
@@ -148,10 +208,11 @@ namespace Threads
     // Type of the struct that holds the data for each record.
 //    typename T::record_t;
 
-    typename T::ReaderGate;
-//    a.getReaderGate();
-//    typename T::WriterGate;
-//    a.getWriterGate();
+    typename T::GateInfo;
+//    T::GateInfo::getData;
+//    T::GateInfo::getMutex;
+//    std::invoke<T::GateInfo::getData, ???>;
+//    std::invoke<T::GateInfo::getMutex, ???>;
   };
 
 }  // namespace Threads

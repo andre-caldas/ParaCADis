@@ -38,39 +38,30 @@ namespace Threads::SafeStructs
   class ThreadSafeStruct
   {
   private:
-    mutable Threads::MutexData defaultMutex;
-    Threads::MutexData&        mutex = defaultMutex;
+    mutable Threads::MutexData mutex;
     Struct                     theStruct;
 
     std::thread::id activeThread;
     std::thread     dedicatedThread;
 
   public:
-    using self_t    = ThreadSafeStruct;
+    using self_t   = ThreadSafeStruct;
     using record_t = Struct;
-    using mutex_data_t = MutexData;
 
     template<typename... Args>
     ThreadSafeStruct(Args&&... args);
 
-    template<C_MutexHolder MutexHolder, typename... Args>
-    ThreadSafeStruct(MutexHolder& holder, Args&&... args);
-
     virtual ~ThreadSafeStruct();
 
-    using ReaderGate = Threads::LocalReaderGate<&self_t::theStruct>;
-    using WriterGate = Threads::LocalWriterGate<&self_t::theStruct>;
-
-    ReaderGate getReaderGate() const noexcept { return {*this}; }
-    WriterGate getWriterGate() noexcept { return {*this}; }
+    using GateInfo = Threads::LocalGateInfo<&self_t::theStruct,
+                                            &self_t::mutex>;
 
     void cancelThreads();
 
     std::thread& getDedicatedThread();
 
   public:
-    constexpr MutexData& getMutexData() const { return mutex; }
-    constexpr operator MutexData&() const { return mutex; }
+    constexpr auto& getMutexLike() const { return mutex; }
   };
 
 }  // namespace Threads::SafeStructs

@@ -23,11 +23,10 @@
 #ifndef NamingScheme_IExport_H
 #define NamingScheme_IExport_H
 
+#include "ResultHolder.h"
 #include "types.h"
 
-#include <base/expected_behaviour/SharedPtr.h>
 #include <base/threads/safe_structs/ThreadSafeStruct.h>
-#include <base/threads/locks/LockPolicy.h>
 
 #include <algorithm>
 #include <map>
@@ -35,9 +34,6 @@
 
 namespace NamingScheme
 {
-
-  template<typename T>
-  class NameSearchResultT;
 
   /**
    * @brief Any class that exports some type T must subclass @class IExport<T>.
@@ -55,20 +51,22 @@ namespace NamingScheme
   class IExport
   {
   public:
-    using NameSearchResult = NameSearchResultT<T>;
-
     /**
      * Calls resolve_ptr() and resolve_share().
      */
-    virtual SharedPtr<T> resolve(const SharedPtr<ExporterBase>& current,
-                                 token_iterator& tokens, T* = nullptr);
+    virtual ResultHolder<T> resolve(const ResultHolder<ExporterBase>& current,
+                                    token_iterator& tokens, T* = nullptr);
 
   protected:
     /**
      * Implement, to return a member of this object.
      *
-     * To be more precise, you can return a pointer if the pointer
+     * To be more precise, the ResultHolder<T> that will be finally
+     * constructed by resolve(), will be constructed directly from @a current,
+     * and from the pointer returned by resolve_ptr().
+     * You can implement this virtual method if the returned pointer
      * is guaranteed to exist as long as this object exists.
+     * In general, it will be a pointer to a member object.
      *
      * @attention This is called from virtual resolve().
      * If you override resolve(), this might not get called at all.
@@ -81,7 +79,9 @@ namespace NamingScheme
     virtual T* resolve_ptr(token_iterator& tokens, T* = nullptr);
 
     /**
-     * @brief Implement, to return a @class SharedPtr to any object.
+     * Implement, to return a ResultHolder to object managed by a SharedPtr<T>.
+     *
+     * This is to be used only for a T* pointer that is not protected by a mutex.
      *
      * @attention This is called from virtual resolve().
      * If you override resolve(), this might not get called at all.
@@ -91,7 +91,7 @@ namespace NamingScheme
      *
      * @todo Is is possible to REMOVE this T* = nullptr.
      */
-    virtual SharedPtr<T> resolve_share(token_iterator& tokens, T* = nullptr);
+    virtual SharedPtr<T> resolve_shared(token_iterator& tokens, T* = nullptr);
   };
 
 
@@ -111,51 +111,14 @@ namespace NamingScheme
 
 
   /**
-   * Holds local pointers to exported data.
-   *
-   * @todo REMOVE this if it is not used. Probably it is not,
-   * because it is not thread safe.
-   *
-   * @example
-   * struct ConcurrentData {
-   *   DeferenceablePoint start;
-   *   DeferenceablePoint end;
-   *   bool is_bounded_start;
-   *   bool is_bounded_end;
-   * };
-   * using SafeStruct = Threads::SafeStructs::ThreadSafeStruct<ConcurrentData>;
-   * ConcurrentData concurrentData;
-   *
-   * static NamingScheme::ExportedData<SafeStruct, DeferenceablePoint
-   *   , {&ConcurrentData::start, "start"}
-   *   , {&ConcurrentData::start, "a"}
-   *   , {&ConcurrentData::end, "end"}
-   *   , {&ConcurrentData::end, "b"}
-   *  > exportedPoints;
-   *
-   * static NamingScheme::ExportedData<SafeStruct, bool
-   *   , {&ConcurrentData::is_bounded_start, "is_bounded_start"}
-   *   , {&ConcurrentData::is_bounded_end, "is_bounded_end"}
-   *  > exportedBools;
-   */
-  template<Threads::C_MutexHolderWithGates C, typename T,
-           EachExportedData... dataInfo>
-  struct ExportedData
-  {
-    const std::map<std::string, T C::record_t::*> map
-        = {{dataInfo.name,dataInfo.local_ptr}...};
-
-    const T* get(const C::ReaderGate& gate, std::string_view id) const;
-    T* get(const C::WriterGate& gate, std::string_view id) const;
-  };
-
-
-  /**
    * Exports data managed by Exporter<DataStruct>.
    */
   template<typename T, class DataStruct, EachExportedData... dataInfo>
   class IExportStruct : public IExport<T>
   {
+  private:
+    Threads::SafeStructs::ThreadSafeStruct<DataStruct> data;
+
   protected:
     T* resolve_ptr(token_iterator& tokens, T* = nullptr) override;
 
@@ -166,7 +129,7 @@ namespace NamingScheme
 
 }  // namespace NamingScheme
 
-// TODO: remove this and instantiate templates in a cpp file.
+// TODO: remove this and use modules.
 #include "IExport_impl.h"
 
 #endif

@@ -49,12 +49,8 @@ namespace NamingScheme
   class ExporterBase
   {
   public:
-    using mutex_data_t = Threads::MutexData;
-
     // In IExport<> generates ambiguity, so we put it here.
     using token_iterator = NamingScheme::token_iterator;
-
-    ExporterBase(const ExporterBase&) = delete;
 
     ExporterBase()          = default;
     virtual ~ExporterBase() = default;
@@ -83,14 +79,6 @@ namespace NamingScheme
     operator Uuid::uuid_type() const;
 
     /**
-     * Must satisfy `Threads::C_MutexHolder`.
-     */
-     /// @{
-    constexpr mutex_data_t& getMutexData() const { return mutex; }
-    constexpr operator mutex_data_t&() const { return mutex; }
-     /// @}
-
-    /**
      * Globally registers a Uuid.
      *
      * This is specially useful when serializing
@@ -117,16 +105,9 @@ namespace NamingScheme
      */
     static SharedPtr<ExporterBase> getByUuid(Uuid::uuid_type uuid);
 
-  protected:
-    mutable Threads::MutexData mutex;
-
   private:
     NameAndUuid id;
   };
-
-  static_assert(
-      Threads::C_MutexHolder<ExporterBase>,
-      "ExporterBase should implement C_MutexHolder.");
 
 
   template<typename DataStruct>
@@ -137,24 +118,32 @@ namespace NamingScheme
 
   public:
     Exporter(const Exporter&) = delete;
-    template<typename... Args>
-    Exporter(Threads::MutexData& m, Args&&... args)
-        : ExporterBase(m)
-        , safeData(*this, std::forward<Args>(args)...)
-    {
-    }
+
     template<typename... Args>
     Exporter(Args&&... args)
-        : safeData(*this, std::forward<Args>(args)...)
+        : safeData(std::forward<Args>(args)...)
     {
     }
 
-    auto getReaderGate() const noexcept { return safeData.getReaderGate(); }
-    auto getWriterGate() noexcept { return safeData.getWriterGate(); }
+    /**
+     * Must satisfy `Threads::C_MutexHolder`.
+     */
+    constexpr auto& getMutexLike() const { return safeData.getMutexLike(); }
 
   private:
-    safe_struct_t safeData{mutex};
+    safe_struct_t safeData;
+
+  public:
+    using GateInfo = Threads::LocalBridgeInfo<&Exporter::safeData>;
   };
+
+  namespace detail {
+    struct test {};
+  }
+
+  static_assert(
+      Threads::C_MutexHolder<Exporter<detail::test>>,
+      "Exporter should implement C_MutexHolder.");
 
 }  // namespace NamingScheme
 

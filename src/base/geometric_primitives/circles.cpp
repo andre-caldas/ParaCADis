@@ -29,7 +29,7 @@ CirclePointRadiusNormal::CirclePointRadiusNormal(Point center, Real radius, Vect
 
 std::unique_ptr<CirclePointRadiusNormal> CirclePointRadiusNormal::deepCopy() const
 {
-  auto gate = getReaderGate();
+  Threads::ReaderGate gate{*this};
   return std::make_unique<CirclePointRadiusNormal>(gate->center, gate->radius, gate->normal);
 }
 
@@ -41,7 +41,7 @@ Circle3Points::Circle3Points(Point a, Point b, Point c)
 
 std::unique_ptr<Circle3Points> Circle3Points::deepCopy() const
 {
-  auto gate = getReaderGate();
+  Threads::ReaderGate gate{*this};
   return std::make_unique<Circle3Points>(gate->a, gate->b, gate->c);
 }
 
@@ -53,19 +53,19 @@ Circle2PointsDirection::Circle2PointsDirection(Point a, Point b, Vector d)
 
 std::unique_ptr<Circle2PointsDirection> Circle2PointsDirection::deepCopy() const
 {
-  auto gate = getReaderGate();
+  Threads::ReaderGate gate{*this};
   return std::make_unique<Circle2PointsDirection>(gate->a, gate->b, gate->d);
 }
 
 
 /**
  * Template instantiation.
- * There is no need to include NameSearchResult_impl.h for those.
+ * There is no need to include NameSearch_impl.h for those.
  */
 #include <base/naming_scheme/IExport.h>
 #include <base/naming_scheme/IExport_impl.h>
-#include <base/naming_scheme/NameSearchResult.h>
-#include <base/naming_scheme/NameSearchResult_impl.h>
+#include <base/naming_scheme/NameSearch.h>
+#include <base/naming_scheme/NameSearch_impl.h>
 
 using namespace NamingScheme;
 
@@ -73,6 +73,6 @@ template class IExport<CirclePointRadiusNormal>;
 template class IExport<Circle3Points>;
 template class IExport<Circle2PointsDirection>;
 
-template class NameSearchResult<CirclePointRadiusNormal>;
-template class NameSearchResult<Circle3Points>;
-template class NameSearchResult<Circle2PointsDirection>;
+template class NameSearch<CirclePointRadiusNormal>;
+template class NameSearch<Circle3Points>;
+template class NameSearch<Circle2PointsDirection>;

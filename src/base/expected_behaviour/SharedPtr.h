@@ -116,6 +116,9 @@ public:
 
   WeakPtr(const SharedPtr<T>& shared) : WeakPtr(shared.getWeakPtr()) {}
   SharedPtr<T> lock() const noexcept { return std::weak_ptr<T>::lock(); }
+
+  template<typename S>
+  WeakPtr<S> cast() const { return lock().template cast<S>().getWeakPtr(); }
 };
 
 #include "SharedPtr_impl.h"

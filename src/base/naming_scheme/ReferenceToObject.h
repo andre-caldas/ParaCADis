@@ -23,7 +23,7 @@
 #ifndef NamingScheme_ReferenceToObject_H
 #define NamingScheme_ReferenceToObject_H
 
-#include "NameSearchResult.h"
+#include "NameSearch.h"
 #include "PathToObject.h"
 #include "path_cache_policies.h"
 #include "types.h"
@@ -67,7 +67,7 @@ namespace NamingScheme
     /**
      * Fully resolves the chain up to the last token.
      */
-    SharedPtr<T> resolve() const;
+    ResultHolder<T> resolve() const;
 
     /**
      * Gets a reference to the PathToObject.
@@ -79,7 +79,7 @@ namespace NamingScheme
     PathToObject path;
     CachePolicy  cache;
 
-    mutable NameSearchResult<T> searchResult{cache};
+    mutable NameSearch<T> searchResult{cache};
   };
 
 }  // namespace NamingScheme

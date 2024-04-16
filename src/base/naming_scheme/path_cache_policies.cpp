@@ -24,8 +24,6 @@
 
 #include "Exporter.h"
 
-#include <base/expected_behaviour/SharedPtr.h>
-
 #include <cmath>
 #include <ranges>
 
@@ -33,7 +31,7 @@ using namespace NamingScheme;
 
 void TimedWeakChain::prepare(token_iterator& tokens)
 {
-  top_exporter.reset();
+  top_exporter.releaseShared();
   exporters.clear();
   exporters.reserve(tokens.size());
   start = std::chrono::steady_clock::now();
@@ -41,7 +39,7 @@ void TimedWeakChain::prepare(token_iterator& tokens)
 
 void TimedWeakChain::invalidate()
 {
-  top_exporter.reset();
+  top_exporter.releaseShared();
   exporters.clear();
 }
 
@@ -51,12 +49,12 @@ token_iterator TimedWeakChain::topTokens() const
   return exporters.back().tokens;
 }
 
-const SharedPtr<ExporterBase>& TimedWeakChain::topExporter() const
+const ResultHolder<ExporterBase>& TimedWeakChain::topExporter() const
 {
   return top_exporter;
 }
 
-void TimedWeakChain::pushExporter(SharedPtr<ExporterBase>&& exporter, token_iterator tokens)
+void TimedWeakChain::pushExporter(ResultHolder<ExporterBase>&& exporter, token_iterator tokens)
 {
   exporters.emplace_back(exporter, tokens);
   top_exporter = std::move(exporter);
@@ -78,18 +76,18 @@ bool TimedWeakChain::pruneCache()
 
   while(!exporters.empty()) {
     auto& info = exporters.back();
-    if(auto ptr = info.weak_ptr.lock()) {
-      top_exporter = ptr;
+    if(auto ptr = info.weak_result.getLockedShared()) {
+      top_exporter = std::move(ptr);
       return true;
     }
   }
   return false;
 }
 
-SharedPtr<ExporterBase> TimedWeakChain::pop()
+ResultHolder<ExporterBase> TimedWeakChain::pop()
 {
   assert(!exporters.empty());
-  auto result = exporters.back().weak_ptr.lock();
+  auto result = exporters.back().weak_result.getLockedShared();
   exporters.pop_back();
   return result;
 }

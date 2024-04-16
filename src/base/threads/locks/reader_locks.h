@@ -39,25 +39,21 @@ namespace Threads
   class SharedLock : public LockPolicy
   {
   public:
-    /**
-     * The movable constructor is so that you can have the mutex locked
-     * and handled to a LockedIterator.
-     */
     [[nodiscard]]
     SharedLock(SharedLock&& other_lock) = default;
-    template<C_MutexGatherOrData ...Mutex>
+    template<C_MutexLike... Mutex>
     [[nodiscard]]
     SharedLock(Mutex&... mutex);
 
   private:
     std::vector<std::shared_lock<YesItIsAMutex>> locks;
+    void lock();
   };
 
 
   /**
-   * The ReaderGate class.
+   * The ReaderGate class for many (or zero!) data.
    */
-  /// @{
   template<C_MutexHolderWithGates... Holders>
   class ReaderGate
   {
@@ -67,54 +63,71 @@ namespace Threads
     template<C_MutexHolderWithGates Holder>
     auto& operator[](const Holder& holder) const;
 
+    /**
+     * Gets a non-const reference.
+     *
+     * A big dilema... we do not want `operator*()` to return non-const.
+     * However, there are situations where you want a shared lock,
+     * because you do not want to change the data, while you sill
+     * want a non-const pointer. Maybe you want to store it,
+     * like in case of IExport<T>::resolve().
+     */
+    template<C_MutexHolderWithGates Holder>
+     auto& getNonConst(Holder& holder) const;
+
   private:
-    std::array<SharedLock, sizeof...(Holders)> locks;
+    SharedLock lock;
 #ifndef NDEBUG
     const std::unordered_set<const void*> all_holders;
 #endif
   };
 
+
+  /**
+   * The ReaderGate class for one data.
+   */
   template<C_MutexHolderWithGates Holder>
-  class ReaderGate<Holder> : public SharedLock
+  class ReaderGate<Holder>
   {
   public:
     ReaderGate(const Holder& holder);
+    ReaderGate(Holder&& holder) = delete;
 
-    auto& operator*() { return data; }
-    auto* operator->() { return &data; }
+    const auto& operator*() const;
+    const auto* operator->() const { return &**this; }
+
+    /**
+     * Gets a non-const reference.
+     *
+     * A big dilema... we do not want `operator*()` to return non-const.
+     * However, there are situations where you want a shared lock,
+     * because you do not want to change the data, while you sill
+     * want a non-const pointer. Maybe you want to store it,
+     * like in case of IExport<T>::resolve().
+     */
+     auto& getNonConst(Holder& holder) const;
 
   private:
-    Holder::ReaderGate::protected_data_t& data;
+    SharedLock lock;
+    const Holder& holder;
   };
-  /// @}
 
 
   /**
-   * The LocalReaderGate class.
+   * The ReaderGate class for one data.
    */
-  /// @{
-  /// Allow template specialization.
-  template<auto PTR_TO_MEMBER>
-  class LocalReaderGate {};
-
-  template<C_MutexHolder Holder, typename T, T Holder::* localData>
-  class LocalReaderGate<localData> : public _GateBase<SharedLock>
+  template<C_MutexHolderWithGates Holder>
+  class ReaderGateKeeper
   {
   public:
-    LocalReaderGate(const Holder& holder);
+    ReaderGateKeeper(Holder&& holder);
 
-    using protected_data_t = const T;
-
-    const T& operator*() const;
-    const T* operator->() const;
+    const auto& operator*() const;
+    const auto* operator->() const { return &**this; }
 
   private:
-    const T& data;
-
-    static const T& getProtectedData(const Holder& holder) { return holder.*localData; }
-
-    template<C_MutexHolderWithGates... Holders>
-    friend class ReaderGate;
+    SharedLock lock;
+    Holder holder;
   };
   /// @}
 

@@ -23,11 +23,6 @@
 #ifndef ExpectedBehaviour_SharedPtr_impl_H
 #define ExpectedBehaviour_SharedPtr_impl_H
 
-#ifndef ExpectedBehaviour_SharedPtr_H
-// The following error is because we do not want to incentivate developers
-// to use "SharedPtr_impl.h" instead of "SharedPtr.h".
-#  error "Include SharedPtr.h before including SharedPtr_impl.h. Do you need 'impl'?"
-#endif
 #include "SharedPtr.h"  // Just to make tools happy!
 
 #include <memory>

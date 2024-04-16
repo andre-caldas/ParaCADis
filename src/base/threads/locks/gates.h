@@ -25,43 +25,100 @@
 
 #include "MutexData.h"
 
+#include <base/expected_behaviour/SharedPtr.h>
+#include <base/type_traits/deference_until.h>
+
 #include <concepts>
 #include <memory>
 
 namespace Threads
 {
 
-  class MutexData;
+  template<typename T>
+  constexpr auto& getMutex(T& mutex)
+  {
+    if constexpr(C_MutexLike<T>) {
+      return mutex;
+    } else {
+      auto& holder = deferenceUntilCheck<
+          []<typename X> consteval {return C_MutexHolder<X>;}>(mutex);
+      return holder.getMutexLike();
+    }
+  }
 
-  template<C_MutexData MData>
-  MutexData& getMutex(MData& mutex) { return mutex; }
-  template<C_MutexHolder Holder>
-  Holder::mutex_data_t& getMutex(const Holder& holder) { return holder; }
 
   /**
-   * Base class for all gates.
+   * Information to implement gates exported by a C_MutexHolderWithGates.
    */
-  template<typename LockType>
-  class _GateBase
+  /// @{
+  /// Just for template specialization.
+  template<auto PTR_TO_MEMBER, auto PTR_TO_MUTEX>
+  class LocalGateInfo {};
+
+  /**
+   * Info to export a member of a C_MutexHolder through a local pointer.
+   *
+   * Usage:
+   * using GateInfo = LocalGateInfo<&SELF::exportedData>;
+   */
+  template<typename Holder,
+           typename T, T Holder::* localData,
+           typename M, M Holder::* localMutex>
+  struct LocalGateInfo<localData, localMutex>
   {
-  public:
-    _GateBase(MutexData& mutex);
-    _GateBase(_GateBase&&) = default;
+    static auto& getData(const Holder& holder)
+    { return deferenceIfPossible(holder.*localData); }
 
-    /**
-     * @brief Releases the lock.
-     */
-    void release();
+    static auto& getData(Holder& holder)
+    { return deferenceIfPossible(holder.*localData); }
 
-    /**
-     * @brief Re acquires the shared lock and resumes processing.
-     */
-    void resume();
-
-  private:
-    MutexData& mutex;
-    std::unique_ptr<LockType> lock;
+    static auto& getMutex(const Holder& holder)
+    { return getMutex(holder.*localMutex); }
   };
+  /// @}
+
+
+  /**
+   * Information to implement gates exported by a C_MutexHolderWithGates
+   * to other C_MutexHolderWithGates.
+   */
+  /// @{
+  /// Just for template specialization.
+  template<auto PTR_TO_MEMBER>
+  class LocalBridgeInfo {};
+
+  /**
+   * Info to export a member of a C_MutexHolder through a local pointer.
+   *
+   * Usage:
+   * using GateInfo = LocalGateInfo<&SELF::exportedData>;
+   */
+  template<typename Holder,
+           typename T, T Holder::* localHolder>
+  struct LocalBridgeInfo<localHolder>
+  {
+    static auto& getData(const Holder& holder)
+    {
+      auto& other_holder = deferenceIfPossible(holder.*localHolder);
+      using info_t = std::decay_t<decltype(other_holder)>::GateInfo;
+      return info_t::getData(other_holder);
+    }
+
+    static auto& getData(Holder& holder)
+    {
+      auto& other_holder = deferenceIfPossible(holder.*localHolder);
+      using info_t = std::decay_t<decltype(other_holder)>::GateInfo;
+      return info_t::getData(other_holder);
+    }
+
+    static auto& getMutex(const Holder& holder)
+    {
+      auto& other_holder = deferenceIfPossible(holder.*localHolder);
+      using info_t = std::decay_t<decltype(other_holder)>::GateInfo;
+      return info_t::getMutex(other_holder);
+    }
+  };
+  /// @}
 
 }  // namespace Threads
 

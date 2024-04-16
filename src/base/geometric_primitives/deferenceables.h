@@ -32,7 +32,9 @@
  * DataStruct for DeferenceablePoint and DeferenceableVector.
  */
 struct TripletStruct {
-  Real x, y, z;
+  Real x = 0;
+  Real y = 0;
+  Real z = 0;
 };
 
 /**
@@ -53,6 +55,7 @@ class DeferenceablePoint
                                        {&TripletStruct::z, "z"}>
 {
 public:
+  DeferenceablePoint() = default;
   DeferenceablePoint(const Point& p);
   DeferenceablePoint(Real x, Real y, Real z);
   operator Point() const noexcept;
@@ -83,6 +86,7 @@ class DeferenceableVector
                                        {&TripletStruct::z, "z"}>
 {
 public:
+  DeferenceableVector() = default;
   DeferenceableVector(const Vector& v);
   DeferenceableVector(Real x, Real y, Real z);
   operator Vector() const noexcept;

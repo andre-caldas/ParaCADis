@@ -24,17 +24,17 @@
 
 /**
  * Template instantiation.
- * There is no need to include NameSearchResult_impl.h for those.
+ * There is no need to include NameSearch_impl.h for those.
  */
 #include <base/naming_scheme/IExport.h>
 #include <base/naming_scheme/IExport_impl.h>
-#include <base/naming_scheme/NameSearchResult.h>
-#include <base/naming_scheme/NameSearchResult_impl.h>
+#include <base/naming_scheme/NameSearch.h>
+#include <base/naming_scheme/NameSearch_impl.h>
 
 using namespace NamingScheme;
 
 template class IExport<Real>;
 template class IExport<Point>;
 
-template class NameSearchResult<Real>;
-template class NameSearchResult<Point>;
+template class NameSearch<Real>;
+template class NameSearch<Point>;

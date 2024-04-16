@@ -28,7 +28,6 @@
 #include <base/naming_scheme/Chainables.h>
 #include <base/naming_scheme/Exporter.h>
 #include <base/naming_scheme/IExport.h>
-#include <base/threads/locks/MutexesWithPivot.h>
 #include <base/threads/safe_structs/ThreadSafeMap.h>
 
 #include <concepts>
@@ -87,9 +86,9 @@ namespace DocumentTree
     bool contains(uuid_type uuid) const;
 
     SharedPtr<ExporterBase>
-    resolve_share(token_iterator& tokens, ExporterBase* = nullptr) override;
+    resolve_shared(token_iterator& tokens, ExporterBase* = nullptr) override;
     SharedPtr<Container>
-    resolve_share(token_iterator& tokens, Container* = nullptr) override;
+    resolve_shared(token_iterator& tokens, Container* = nullptr) override;
     DeferenceableCoordinateSystem*
     resolve_ptr(token_iterator& tokens, DeferenceableCoordinateSystem* = nullptr) override;
 
@@ -108,16 +107,14 @@ namespace DocumentTree
      * Use `mutex` instead.
      * @see MutexesWithPivot.
      */
-    mutable Threads::MutexesWithPivot<
+    mutable Threads::GatherMutexData<
         Threads::MutexData, Threads::MutexData, Threads::MutexData>
-        mutex{non_containers.getMutexData(),
-              containers.getMutexData(),
-              coordinate_system.getMutexData()};
+        mutex{non_containers.getMutexLike(),
+              containers.getMutexLike(),
+              coordinate_system.getMutexLike()};
 
   public:
-    using mutex_data_t = decltype(mutex);
-    constexpr mutex_data_t& getMutexData() const { return mutex; }
-    constexpr operator mutex_data_t&() const { return mutex; }
+    constexpr auto& getMutexLike() const { return mutex; }
   };
 
   static_assert(Threads::C_MutexHolder<Container>, "A container is a C_MutexHolder.");

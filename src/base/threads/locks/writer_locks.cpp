@@ -22,14 +22,45 @@
 
 #include "writer_locks.h"
 
-using namespace Threads;
+namespace Threads
+{
 
-/**
- * Template instantiation.
- * You don't need to include the "_impl.h" files
- * if you are locking a gate for writing.
- */
-#include "gates_impl.h"
-#include "writer_locks_impl.h"
+  void ExclusiveLock::lock()
+  {
+    // We mimic std::lock, which unfortunately:
+    // 1. Demands two mutexes or more.
+    // 2. Only works with templates, not with a dynamic set of mutexes.
+    auto& mutexes = getMutexes();
+    if(mutexes.empty()) {
+      return;
+    }
 
-template class Threads::_GateBase<ExclusiveLock<MutexData>>;
+    locks.reserve(mutexes.size());
+
+    auto current = mutexes.begin();
+    auto first = mutexes.begin();
+    do
+    {
+      locks.clear();
+      locks.emplace_back(std::unique_lock{(*current)->mutex});
+      while(true)
+      {
+        ++current;
+        if(current == mutexes.end()) {
+          current = mutexes.begin();
+        }
+        if(current == first) {
+          break;
+        }
+        std::unique_lock next{(*current)->mutex, std::try_to_lock_t{}};
+        if(!next) {
+          first = current;
+          break;
+        }
+        locks.emplace_back(std::move(next));
+      }
+    } while(current != first);
+    assert(locks.size() == mutexes.size());
+  }
+
+}

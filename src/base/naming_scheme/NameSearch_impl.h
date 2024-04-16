@@ -20,23 +20,24 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef NamingScheme_NameSearchResult_impl_H
-#define NamingScheme_NameSearchResult_impl_H
+#ifndef NamingScheme_NameSearch_impl_H
+#define NamingScheme_NameSearch_impl_H
 
 #include "Exporter.h"
-#include "NameSearchResult.h"
+#include "NameSearch.h"
 
 #include <base/threads/locks/LockPolicy.h>
+#include <base/threads/locks/reader_locks.h>
 
 #include <type_traits>
 
 using namespace NamingScheme;
 
 template<typename T>
-SharedPtr<T> NameSearchResult<T>::tryCache()
+ResultHolder<T> NameSearch<T>::tryCache()
 {
   if(!cache.hasPartiallyExpired()) {
-    auto data = data_weak.lock();
+    auto data = data_weak.getLockedShared();
     if(data) {
       return data;
     }
@@ -50,16 +51,17 @@ SharedPtr<T> NameSearchResult<T>::tryCache()
 }
 
 template<typename T>
-SharedPtr<T> NameSearchResult<T>
-    ::resolve(SharedPtr<ExporterBase> root, token_iterator tokens)
+ResultHolder<T>
+NameSearch<T>::resolve(SharedPtr<ExporterBase> root, token_iterator tokens)
 {
-  cache.pushExporter(std::move(root), tokens);
+  // TODO: assert using std::enable_shared_from_this that we do not need a mutex.
+  cache.pushExporter(ResultHolder<ExporterBase>{std::move(root)}, tokens);
   resolveExporter();
   return resolveLastStep();
 }
 
 template<typename T>
-void NameSearchResult<T>::resolveExporter()
+void NameSearch<T>::resolveExporter()
 {
   auto tokens = cache.topTokens();
   while (tokens) {
@@ -70,20 +72,22 @@ void NameSearchResult<T>::resolveExporter()
 
     [[maybe_unused]]
     auto n_tokens = tokens.size();
-    auto next_exporter = exporter->resolve(cache.topExporter(), tokens);
+    Threads::ReaderGate gate{exporter};
+    auto next_exporter = gate.getNonConst(exporter)
+                             .resolve(cache.topExporter(), tokens);
     if (!next_exporter) {
       return;
     }
     assert(n_tokens != tokens.size() && "Resolution is not consuming tokens.");
-    assert(next_exporter != cache.topExporter());
+    assert(cache.topExporter() != next_exporter);
     cache.pushExporter(std::move(next_exporter), tokens);
   }
 }
 
 template<typename T>
-SharedPtr<T> NameSearchResult<T>::resolveLastStep()
+ResultHolder<T> NameSearch<T>::resolveLastStep()
 {
-  auto tokens   = cache.topTokens();
+  auto tokens = cache.topTokens();
 
   // Are we looking for an exporter?
   if constexpr (std::is_same_v<std::remove_cv_t<T>, ExporterBase>) {
@@ -93,7 +97,7 @@ SharedPtr<T> NameSearchResult<T>::resolveLastStep()
     }
     status = success;
     auto last = cache.pop();
-    data_weak = last;
+    data_weak = last.getReleasedShared();
     return last;
   }
 
@@ -103,7 +107,7 @@ SharedPtr<T> NameSearchResult<T>::resolveLastStep()
     auto ptr = last.cast<T>();
     if (ptr) {
       status = success;
-      data_weak = ptr;
+      data_weak = ptr.getReleasedShared();
       return ptr;
     }
     status = too_few_tokens;
@@ -116,7 +120,9 @@ SharedPtr<T> NameSearchResult<T>::resolveLastStep()
     return {};
   }
 
-  auto data = exporter->resolve(cache.topExporter(), tokens);
+  Threads::ReaderGate gate{exporter};
+  auto data = gate.getNonConst(exporter)
+                  .resolve(cache.topExporter(), tokens);
   if (!data) {
     status = not_found;
     return {};
@@ -127,7 +133,7 @@ SharedPtr<T> NameSearchResult<T>::resolveLastStep()
     return {};
   }
   status = success;
-  data_weak = data;
+  data_weak = data.getReleasedShared();
   return data;
 }
 

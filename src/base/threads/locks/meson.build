@@ -11,7 +11,6 @@ locks_src = [
 locks_includes = [
   'exceptions.h',
   'gates.h',
-  'gates_impl.h',
   'LockedIterator.h',
   'LockPolicy.h',
   'LockPolicy_inl.h',
@@ -20,6 +19,7 @@ locks_includes = [
   'PolicyProxy.h',
   'PolicyProxy_inl.h',
   'reader_locks.h',
+  'reader_locks_impl.h',
   'writer_locks.h',
   'writer_locks_impl.h',
   'YesItIsAMutex.h',

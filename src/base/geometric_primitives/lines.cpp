@@ -30,7 +30,7 @@ Line2Points::Line2Points(Point start, Point end,
 
 std::unique_ptr<Line2Points> Line2Points::deepCopy() const
 {
-  auto gate = getReaderGate();
+  Threads::ReaderGate gate{*this};
   return std::make_unique<Line2Points>(gate->start, gate->end,
                                        gate->is_bounded_start, gate->is_bounded_end);
 }
@@ -44,24 +44,24 @@ LinePointDirection::LinePointDirection(Point start, Vector direction,
 
 std::unique_ptr<LinePointDirection> LinePointDirection::deepCopy() const
 {
-  auto gate = getReaderGate();
+  Threads::ReaderGate gate{*this};
   return std::make_unique<LinePointDirection>(gate->start, gate->direction,
                                               gate->is_bounded_start, gate->is_bounded_end);
 }
 
 /**
  * Template instantiation.
- * There is no need to include NameSearchResult_impl.h for those.
+ * There is no need to include NameSearch_impl.h for those.
  */
 #include <base/naming_scheme/IExport.h>
 #include <base/naming_scheme/IExport_impl.h>
-#include <base/naming_scheme/NameSearchResult.h>
-#include <base/naming_scheme/NameSearchResult_impl.h>
+#include <base/naming_scheme/NameSearch.h>
+#include <base/naming_scheme/NameSearch_impl.h>
 
 using namespace NamingScheme;
 
 template class IExport<Line2Points>;
 template class IExport<LinePointDirection>;
 
-template class NameSearchResult<Line2Points>;
-template class NameSearchResult<LinePointDirection>;
+template class NameSearch<Line2Points>;
+template class NameSearch<LinePointDirection>;

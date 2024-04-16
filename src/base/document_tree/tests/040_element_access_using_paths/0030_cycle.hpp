@@ -22,8 +22,6 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-using namespace DocumentTree;
-
 SCENARIO("Accessing a containers with cycles", "[simple]")
 {
   GIVEN("...")

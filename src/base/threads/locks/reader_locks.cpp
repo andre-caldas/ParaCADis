@@ -22,11 +22,24 @@
 
 #include "reader_locks.h"
 
-using namespace Threads;
+namespace Threads
+{
 
-/**
- * Template instantiation.
- */
-#include "gates_impl.h"
+  void SharedLock::lock()
+  {
+    // We can simply lock, without further worries
+    // if we lock the lower layers first.
+    std::multimap<int, MutexData*> ordered_mutexes;
+    auto& mutexes = getMutexes();
 
-template class Threads::_GateBase<SharedLock>;
+    for(auto m: mutexes) {
+      ordered_mutexes.emplace(m->layer, m);
+    }
+
+    locks.reserve(mutexes.size());
+    for(auto [l, m]: ordered_mutexes) {
+      locks.emplace_back(m->mutex);
+    }
+  }
+
+}

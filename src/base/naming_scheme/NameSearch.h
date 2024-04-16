@@ -20,13 +20,13 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef NamingScheme_NameSearchResult_H
-#define NamingScheme_NameSearchResult_H
+#ifndef NamingScheme_NameSearch_H
+#define NamingScheme_NameSearch_H
 
 #include "path_cache_policies.h"
+#include "ResultHolder.h"
 #include "types.h"
 
-#include <base/expected_behaviour/SharedPtr.h>
 #include <base/threads/locks/reader_locks.h>
 #include <base/threads/locks/writer_locks.h>
 
@@ -42,10 +42,10 @@ namespace NamingScheme
    * All information for the resolved ReferenceToOjbect.
    */
   template<typename T>
-  class NameSearchResult
+  class NameSearch
   {
   public:
-    NameSearchResult(PathCachePolicyBase& cache) : cache(cache) {}
+    NameSearch(PathCachePolicyBase& cache) : cache(cache) {}
 
     /**
      * Resolves without trying the cache.
@@ -54,12 +54,12 @@ namespace NamingScheme
      * trying the cache. If the cache succeds, you do not need to
      * acquire a @a root.
      */
-    SharedPtr<T> resolve(SharedPtr<ExporterBase> root, token_iterator tokens);
+    ResultHolder<T> resolve(SharedPtr<ExporterBase> root, token_iterator tokens);
 
     /**
      * Tries the cache.
      */
-    SharedPtr<T> tryCache();
+    ResultHolder<T> tryCache();
 
     /**
      * Invalidates the cache.
@@ -67,8 +67,8 @@ namespace NamingScheme
     void invalidateCache() { data_weak = {}; cache.invalidate(); }
 
   protected:
-    void         resolveExporter(void);
-    SharedPtr<T> resolveLastStep(void);
+    void            resolveExporter(void);
+    ResultHolder<T> resolveLastStep(void);
 
     enum {
       not_resolved_yet = '0',  ///< Method resolve() not called, yet.
@@ -80,12 +80,14 @@ namespace NamingScheme
     } status = not_resolved_yet;
 
   private:
-    PathCachePolicyBase& cache;
-    WeakPtr<T>           data_weak;
+    /// Cache for the "chainable" part of the path.
+    PathCachePolicyBase&  cache;
+    /// Cache for the path final node (that might not be chainable).
+    ResultHolder<T>       data_weak;
   };
 
 }  // namespace NamingScheme
 
-#include "NameSearchResult_impl.h"
+#include "NameSearch_impl.h"
 
 #endif

@@ -65,7 +65,7 @@ namespace NamingScheme
   {
     auto uuid = shared_ptr->getUuid();
     assert(uuid.isValid());
-    auto gate = map.getWriterGate();
+    Threads::WriterGate gate{map};
     gate->emplace(uuid, std::move(shared_ptr));
   }
 

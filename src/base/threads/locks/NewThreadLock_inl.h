@@ -90,7 +90,7 @@ namespace Threads
   bool NewThreadLock<MutexHolder>::resumeReading()
   {
     assert(!sharedLock && !exclusiveLock);
-    sharedLock = std::make_unique<SharedLock>(mutexHolder.getMutexData());
+    sharedLock = std::make_unique<SharedLock>(mutexHolder.getMutexLike());
     if (isThreadObsolete()) {
       release();
       return false;

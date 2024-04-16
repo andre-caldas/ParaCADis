@@ -25,6 +25,8 @@
 #include "Exporter.h"
 #include "PathToken.h"
 
+#include <base/exceptions.h>
+
 using namespace NamingScheme;
 
 ListOfPathTokens::ListOfPathTokens(std::initializer_list<PathToken> init) : tokens(init)
@@ -60,12 +62,12 @@ ListOfPathTokens& ListOfPathTokens::operator<<(ListOfPathTokens extra_tokens)
 
 void ListOfPathTokens::serialize(Xml::Writer& writer) const noexcept
 {
-  writer.reportException(::Exception::NotImplemented{});
+  writer.reportException(Exception::NotImplemented{});
 }
 
 ListOfPathTokens ListOfPathTokens::unserialize(Xml::Reader&)
 {
-  throw ::Exception::NotImplemented();
+  throw Exception::NotImplemented();
 }
 
 /*

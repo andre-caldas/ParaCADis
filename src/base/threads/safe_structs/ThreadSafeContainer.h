@@ -34,15 +34,14 @@ namespace Threads::SafeStructs
   class ThreadSafeContainer
   {
   protected:
-    mutable Threads::MutexData mutex;
-    ContainerType              container;
+    mutable MutexData mutex;
+    ContainerType     container;
 
   public:
     using self_t = ThreadSafeContainer;
-    using mutex_data_t = MutexData;
 
-    typedef ContainerType                         unsafe_container_t;
-    typedef typename unsafe_container_t::iterator container_iterator;
+    typedef ContainerType                               unsafe_container_t;
+    typedef typename unsafe_container_t::iterator       container_iterator;
     typedef typename unsafe_container_t::const_iterator container_const_iterator;
 
     typedef LockedIterator<container_iterator>       iterator;
@@ -52,11 +51,6 @@ namespace Threads::SafeStructs
 
     ThreadSafeContainer(int mutex_layer)
         : mutex(mutex_layer)
-    {
-    }
-
-    ThreadSafeContainer(MutexData& m)
-        : mutex(m)
     {
     }
 
@@ -73,18 +67,14 @@ namespace Threads::SafeStructs
     void   clear();
 
 
-    using ReaderGate = Threads::LocalReaderGate<&self_t::container>;
-    using WriterGate = Threads::LocalWriterGate<&self_t::container>;
-
-    ReaderGate getReaderGate() const noexcept { return ReaderGate{*this}; }
-    WriterGate getWriterGate() noexcept { return WriterGate{*this}; }
+    using GateInfo = Threads::LocalGateInfo<&self_t::container,
+                                            &self_t::mutex>;
 
     template<typename SomeHolder>
     void setParentMutex(SomeHolder& tsc);
 
   public:
-    constexpr operator MutexData&() const { return mutex; }
-    constexpr MutexData& getMutexData() const { return mutex; }
+    constexpr auto& getMutexLike() const { return mutex; }
   };
 
 }  // namespace Threads::SafeStructs

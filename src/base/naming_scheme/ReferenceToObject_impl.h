@@ -28,7 +28,7 @@
 namespace NamingScheme {
 
 template<typename T, std::derived_from<PathCachePolicyBase> CachePolicy>
-SharedPtr<T> ReferenceTo<T, CachePolicy>::resolve() const
+ResultHolder<T> ReferenceTo<T, CachePolicy>::resolve() const
 {
   auto result = searchResult.tryCache();
   if(result) {
