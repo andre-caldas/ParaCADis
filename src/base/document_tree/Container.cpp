@@ -208,21 +208,7 @@ Container::resolve_shared(token_iterator& tokens, ExporterBase*)
     return {};
   }
 
-  token_iterator toks = tokens;
-  { // first token
-    auto& token = toks.front();
-    toks.advance(1);
-    if(!token.isName()) {
-      return {};
-    }
-
-    if(token.getName() != "elements") {
-      return {};
-    }
-  }
-
-  auto& token = toks.front();
-  toks.advance(1);
+  auto& token = tokens.front();
   Threads::ReaderGate gate{containers, non_containers};
 
   // Uuid.
@@ -231,14 +217,14 @@ Container::resolve_shared(token_iterator& tokens, ExporterBase*)
     auto it_n = gate[non_containers].find(token);
     if(it_n != gate[non_containers].end())
     {
-      tokens = toks;
+      tokens.advance(1);
       return it_n->second;
     }
 
     auto it_c = gate[containers].find(token);
     if(it_c != gate[containers].end())
     {
-      tokens = toks;
+      tokens.advance(1);
       return it_c->second;
     }
 
@@ -250,7 +236,7 @@ Container::resolve_shared(token_iterator& tokens, ExporterBase*)
   {
     if(ptr->getName() == token.getName())
     {
-      tokens = toks;
+      tokens.advance(1);
       return ptr;
     }
   }
@@ -259,7 +245,7 @@ Container::resolve_shared(token_iterator& tokens, ExporterBase*)
   {
     if(ptr->getName() == token.getName())
     {
-      tokens = toks;
+      tokens.advance(1);
       return ptr;
     }
   }
@@ -276,6 +262,7 @@ Container::resolve_shared(token_iterator& tokens, Container*)
     auto it = containers.find(token);
     if(it != containers.end())
     {
+      tokens.advance(1);
       return it->second;
     }
     return {};
@@ -285,6 +272,7 @@ Container::resolve_shared(token_iterator& tokens, Container*)
   {
     if(ptr->getName() == token.getName())
     {
+      tokens.advance(1);
       return ptr;
     }
   }
