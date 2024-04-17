@@ -46,7 +46,7 @@ ResultHolder<ExporterBase>
 Chainables<EachChainable...>::chain_resolve(const ResultHolder<ExporterBase>& current,
                                             token_iterator& tokens)
 {
-  auto exporter = dynamic_cast<IExport<First>&>(*this);
+  auto& exporter = dynamic_cast<IExport<First>&>(*this);
   auto result = exporter.resolve(current, tokens);
   if(result)
   {
