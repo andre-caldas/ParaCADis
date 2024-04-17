@@ -118,6 +118,7 @@ namespace NamingScheme
 
   public:
     Exporter(const Exporter&) = delete;
+    Exporter& operator=(const Exporter&) = delete;
 
     template<typename... Args>
     Exporter(Args&&... args)

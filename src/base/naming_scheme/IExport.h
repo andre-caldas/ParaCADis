@@ -50,6 +50,11 @@ namespace NamingScheme
   template<typename T>
   class IExport
   {
+  protected:
+    IExport() = default;
+    IExport(const IExport&) = default;
+    IExport& operator=(const IExport&) = default;
+
   public:
     /**
      * Calls resolve_ptr() and resolve_share().
@@ -117,6 +122,11 @@ namespace NamingScheme
   class IExportStruct : public IExport<T>
   {
   protected:
+    IExportStruct() = default;
+    IExportStruct(const IExportStruct&) = default;
+    IExportStruct& operator=(const IExportStruct&) = default;
+    using IExport<T>::IExport;
+
     T* resolve_ptr(token_iterator& tokens, T* = nullptr) override;
 
   private:
