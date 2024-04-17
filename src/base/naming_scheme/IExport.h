@@ -116,9 +116,6 @@ namespace NamingScheme
   template<typename T, class DataStruct, EachExportedData... dataInfo>
   class IExportStruct : public IExport<T>
   {
-  private:
-    Threads::SafeStructs::ThreadSafeStruct<DataStruct> data;
-
   protected:
     T* resolve_ptr(token_iterator& tokens, T* = nullptr) override;
 

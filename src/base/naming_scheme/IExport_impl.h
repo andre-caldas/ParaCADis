@@ -93,6 +93,10 @@ namespace NamingScheme
     auto localPtr = map.at(name);
     tokens.advance(1);
 
+    assert(dynamic_cast<Exporter<DataStruct>*>(this)
+           && "The exported structure must be provided by Exporter<...>.");
+
+    auto& data = dynamic_cast<Exporter<DataStruct>&>(*this);
     Threads::WriterGate gate{data};
     return &((*gate).*localPtr);
   }
