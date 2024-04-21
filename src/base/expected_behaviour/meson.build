@@ -5,7 +5,6 @@ expected_behaviour_src = [
 expected_behaviour_includes = [
   'SharedPtr.h',
   'SharedPtr_impl.h',
-  'SharedFromThis.h',
 ]
 
 install_headers(expected_behaviour_includes,

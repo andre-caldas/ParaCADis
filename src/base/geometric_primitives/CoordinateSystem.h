@@ -147,6 +147,7 @@ struct DeferenceableCoordinateSystemData {
   DeferenceableVector bz     = {0, 0, 1};
 
   DeferenceableCoordinateSystemData() = default;
+  DeferenceableCoordinateSystemData(DeferenceableCoordinateSystemData&&) = default;
   DeferenceableCoordinateSystemData(const Point& origin) : origin(origin) {}
   DeferenceableCoordinateSystemData(const Point& origin,
                                     const Vector& bx,
@@ -174,8 +175,10 @@ class DeferenceableCoordinateSystem
 {
 public:
   DeferenceableCoordinateSystem() = default;
-  DeferenceableCoordinateSystem(Point origin) noexcept;
-  DeferenceableCoordinateSystem(Point origin, Vector x, Vector y, Vector z) noexcept;
+  DeferenceableCoordinateSystem(const Point& origin) noexcept;
+  DeferenceableCoordinateSystem(
+      const Point& origin,
+      const Vector& x, const Vector& y, const Vector& z) noexcept;
   CoordinateSystem getCoordinateSystem() const noexcept;
 
   std::unique_ptr<DeferenceableCoordinateSystem> deepCopy() const;

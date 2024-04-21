@@ -23,7 +23,7 @@
 #include "circles.h"
 
 CirclePointRadiusNormal::CirclePointRadiusNormal(Point center, Real radius, Vector normal)
-    : Exporter{std::move(center), std::move(normal), std::move(radius)}
+    : Exporter{{std::move(center), std::move(normal), std::move(radius)}}
 {
 }
 
@@ -35,7 +35,7 @@ std::unique_ptr<CirclePointRadiusNormal> CirclePointRadiusNormal::deepCopy() con
 
 
 Circle3Points::Circle3Points(Point a, Point b, Point c)
-    : Exporter{std::move(a), std::move(b), std::move(c)}
+    : Exporter{{std::move(a), std::move(b), std::move(c)}}
 {
 }
 
@@ -43,18 +43,6 @@ std::unique_ptr<Circle3Points> Circle3Points::deepCopy() const
 {
   Threads::ReaderGate gate{*this};
   return std::make_unique<Circle3Points>(gate->a, gate->b, gate->c);
-}
-
-
-Circle2PointsDirection::Circle2PointsDirection(Point a, Point b, Vector d)
-    : Exporter{std::move(a), std::move(b), std::move(d)}
-{
-}
-
-std::unique_ptr<Circle2PointsDirection> Circle2PointsDirection::deepCopy() const
-{
-  Threads::ReaderGate gate{*this};
-  return std::make_unique<Circle2PointsDirection>(gate->a, gate->b, gate->d);
 }
 
 
@@ -71,8 +59,6 @@ using namespace NamingScheme;
 
 template class IExport<CirclePointRadiusNormal>;
 template class IExport<Circle3Points>;
-template class IExport<Circle2PointsDirection>;
 
 template class NameSearch<CirclePointRadiusNormal>;
 template class NameSearch<Circle3Points>;
-template class NameSearch<Circle2PointsDirection>;

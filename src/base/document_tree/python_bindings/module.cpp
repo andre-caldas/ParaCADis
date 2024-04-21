@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
+ *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,64 +20,41 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef BASE_Threads_ThreadSafeStruct_H
-#define BASE_Threads_ThreadSafeStruct_H
+#include <nanobind/nanobind.h>
 
-#include <base/threads/locks/reader_locks.h>
-#include <base/threads/locks/writer_locks.h>
+#include "module.h"
 
-#include <thread>
+#include <base/document_tree/Container.h>
+#include <base/naming_scheme/PathToken.h>
 
-namespace Threads::SafeStructs
+namespace nb = nanobind;
+using namespace nb::literals;
+using namespace DocumentTree;
+using namespace NamingScheme;
+
+void init_document_tree(nb::module_& parent_module)
 {
-
-  /**
-   * @brief Encapsulates a struct/class to use SharedLock and ExclusiveLock.
-   */
-  template<typename Struct>
-  class ThreadSafeStruct
-  {
-  private:
-    mutable Threads::MutexData mutex;
-    Struct                     theStruct;
-
-    std::thread::id activeThread;
-    std::thread     dedicatedThread;
-
-  public:
-    using self_t   = ThreadSafeStruct;
-    using record_t = Struct;
-
-    ThreadSafeStruct() = default;
-    ThreadSafeStruct(record_t&& record);
-
-    /**
-     * Move constructor.
-     * @attention We assume without check that no other threads have
-     * access to the moved structure.
-     */
-    ThreadSafeStruct(ThreadSafeStruct&& other)
-        : theStruct(std::move(other.theStruct)) {}
-
-    // We could have a copy constructor.
-    // But... do we want to?
-//    ThreadSafeStruct(const ThreadSafeStruct& other);
-
-    virtual ~ThreadSafeStruct();
-
-    using GateInfo = Threads::LocalGateInfo<&self_t::theStruct,
-                                            &self_t::mutex>;
-
-    void cancelThreads();
-
-    std::thread& getDedicatedThread();
-
-  public:
-    constexpr auto& getMutexLike() const { return mutex; }
-  };
-
-}  // namespace Threads::SafeStructs
-
-#include "ThreadSafeStruct_inl.h"
-
+  auto m = parent_module.def_submodule("document");
+  m.doc() = "Manages the nodes in a ParaCADis document structure.";
+  nb::class_<Container>(
+      m, "Container",
+      "A container with coordinate system to hold other objects or containers.")
+      .def(nb::init<>(),
+           "Creates an empty container.")
+#if 0
+      .def("contains",
+           nb::overload_cast<Uuid::uuid_type>(&Container::contains), "uuid"_a,
+           "Verifies if the container holds or not the corresponding element.")
+      .def("get_element",
+           nb::overload_cast<Uuid::uuid_type>(&Container::contains), "uuid"_a,
+           "Retrives the corresponding element.")
+      .def("add_element", &Container::addElement, xxxxx,
+           "Adds an element to the container.")
+      .def("remove_element", &Container::removeElement, xxxxx,
+           "Removes the corresponding element from the container.")
+      .def("move_element_to", &Container::moveElementTo, xxxxx,
+           "Moves an element from one container to some other container.")
 #endif
+      .def("__repr__",
+           [](const Container& c){ return "<CONTAINER... (put info here)>"; });
+}

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
+ *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,64 +20,30 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef BASE_Threads_ThreadSafeStruct_H
-#define BASE_Threads_ThreadSafeStruct_H
+#include <nanobind/nanobind.h>
 
-#include <base/threads/locks/reader_locks.h>
-#include <base/threads/locks/writer_locks.h>
+#include "module.h"
 
-#include <thread>
+#include <base/naming_scheme/PathToken.h>
 
-namespace Threads::SafeStructs
+namespace nb = nanobind;
+using namespace nb::literals;
+using namespace NamingScheme;
+
+nb::module_ init_naming_scheme(nb::module_& parent_module)
 {
+  auto m = parent_module.def_submodule("naming_scheme");
+  m.doc() = "Implements object access through a name/path mechanism.";
 
-  /**
-   * @brief Encapsulates a struct/class to use SharedLock and ExclusiveLock.
-   */
-  template<typename Struct>
-  class ThreadSafeStruct
-  {
-  private:
-    mutable Threads::MutexData mutex;
-    Struct                     theStruct;
+  nb::class_<PathToken>(m, "PathToken",
+                        "A token that composes a path to an object."
+                        " Usually it is a name or a path_token returned by some method.")
+      .def(nb::init<std::string>())
+      .def("__repr__",
+           [](const PathToken&){ return "<PATHTOKEN... (put info here)>"; });
 
-    std::thread::id activeThread;
-    std::thread     dedicatedThread;
+  nb::class_<ExporterBase>(m, "ExporterBase",
+                           "Base class for types that export other types.");
 
-  public:
-    using self_t   = ThreadSafeStruct;
-    using record_t = Struct;
-
-    ThreadSafeStruct() = default;
-    ThreadSafeStruct(record_t&& record);
-
-    /**
-     * Move constructor.
-     * @attention We assume without check that no other threads have
-     * access to the moved structure.
-     */
-    ThreadSafeStruct(ThreadSafeStruct&& other)
-        : theStruct(std::move(other.theStruct)) {}
-
-    // We could have a copy constructor.
-    // But... do we want to?
-//    ThreadSafeStruct(const ThreadSafeStruct& other);
-
-    virtual ~ThreadSafeStruct();
-
-    using GateInfo = Threads::LocalGateInfo<&self_t::theStruct,
-                                            &self_t::mutex>;
-
-    void cancelThreads();
-
-    std::thread& getDedicatedThread();
-
-  public:
-    constexpr auto& getMutexLike() const { return mutex; }
-  };
-
-}  // namespace Threads::SafeStructs
-
-#include "ThreadSafeStruct_inl.h"
-
-#endif
+  return m;
+}

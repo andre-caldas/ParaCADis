@@ -95,41 +95,4 @@ public:
   { return deepCopy(); }
 };
 
-
-/**
- * DataStruct for Circle2PointsDirection.
- */
-struct Circle2PointsDirectionData {
-  DeferenceablePoint  a;
-  DeferenceablePoint  b;
-  DeferenceableVector d;
-};
-
-/**
- * An oriented circle defined by two points and the "distance vector" to the center.
- *
- * Take the oriented line segment a --> b.
- * Rotate it 90 degrees counter-clockwise. Place it over the midpoint (a+b)/2.
- * Walk the provided distance and you are standing over the circle center.
- */
-class Circle2PointsDirection
-    : public NamingScheme::Exporter<Circle2PointsDirectionData>
-    , public NamingScheme::IExportStruct<DeferenceablePoint, Circle2PointsDirectionData,
-                                {&Circle2PointsDirectionData::a, "a"},
-                                {&Circle2PointsDirectionData::a, "p1"},
-                                {&Circle2PointsDirectionData::b, "b"},
-                                {&Circle2PointsDirectionData::b, "p2"}>
-    , public NamingScheme::IExportStruct<DeferenceableVector, Circle2PointsDirectionData,
-                                {&Circle2PointsDirectionData::d, "d"},
-                                {&Circle2PointsDirectionData::d, "to_center"}>
-    , public NamingScheme::Chainables<DeferenceablePoint, DeferenceableVector>
-{
-public:
-  Circle2PointsDirection(Point a, Point b, Vector chord_to_center);
-
-  std::unique_ptr<Circle2PointsDirection> deepCopy() const;
-  std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
-  { return deepCopy(); }
-};
-
 #endif

@@ -27,4 +27,5 @@ document_tree_lib = library(
 
 libs_upto_now += [document_tree_lib]
 
+subdir('python_bindings')
 subdir('tests')

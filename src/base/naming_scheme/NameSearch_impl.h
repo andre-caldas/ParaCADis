@@ -24,6 +24,7 @@
 #define NamingScheme_NameSearch_impl_H
 
 #include "Exporter.h"
+#include "IExport.h"
 #include "NameSearch.h"
 
 #include <base/threads/locks/LockPolicy.h>

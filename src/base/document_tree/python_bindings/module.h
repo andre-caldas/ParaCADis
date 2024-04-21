@@ -20,67 +20,13 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef ExpectedBehaviour_SharedFromThis_H
-#define ExpectedBehaviour_SharedFromThis_H
+#ifndef DocumentTree_PY_module_h
+#define DocumentTree_PY_module_h
 
-#include "SharedPtr.h"
+#include <nanobind/nanobind.h>
 
-#include <memory>
+namespace nb = nanobind;
 
-/**
- * A class with some improvements over std::enable_shared_from_this.
- */
-template<typename Default>
-class SharedFromThis
-    : public std::enable_shared_from_this<Default>
-{
-public:
-  virtual ~SharedFromThis() = default;
+void init_document_tree(nb::module_& parent_module);
 
-  template<typename X = Default>
-  SharedPtr<X> sharedFromThis();
-  template<typename X = Default>
-  SharedPtr<const X> sharedFromThis() const;
-
-  template<typename X = Default>
-  WeakPtr<X> weakFromThis();
-  template<typename X = Default>
-  WeakPtr<const X> weakFromThis() const;
-};
-
-template<typename D>
-template<typename X>
-SharedPtr<X> SharedFromThis<D>::sharedFromThis()
-{
-  auto shared = this->shared_from_this();
-  assert(shared);
-  return std::static_pointer_cast<X>(std::move(shared));
-}
-
-template<typename D>
-template<typename X>
-SharedPtr<const X> SharedFromThis<D>::sharedFromThis() const
-{
-  auto shared = this->shared_from_this();
-  assert(shared);
-  return std::static_pointer_cast<const X>(std::move(shared));
-}
-
-template<typename D>
-template<typename X>
-WeakPtr<X> SharedFromThis<D>::weakFromThis()
-{
-  // We cannot cast a weak_ptr. :-(
-  return sharedFromThis<X>();
-}
-
-template<typename D>
-template<typename X>
-WeakPtr<const X> SharedFromThis<D>::weakFromThis() const
-{
-  // We cannot cast a weak_ptr. :-(
-  return sharedFromThis<const X>();
-}
-
-#endif  // ExpectedBehaviour_SharedFromThis_H
-
+#endif

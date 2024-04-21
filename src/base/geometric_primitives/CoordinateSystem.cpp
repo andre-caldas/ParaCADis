@@ -117,14 +117,16 @@ CoordinateSystem CoordinateSystem::compose(const CoordinateSystem& c) const
 /*
  * DeferenceableCoordinateSystem.
  */
-DeferenceableCoordinateSystem::DeferenceableCoordinateSystem(Point origin) noexcept
-    : Exporter{std::move(origin)}
+DeferenceableCoordinateSystem::DeferenceableCoordinateSystem(
+    const Point& origin) noexcept
+    : Exporter{{origin}}
 {
 }
 
 DeferenceableCoordinateSystem::DeferenceableCoordinateSystem(
-    Point origin, Vector x, Vector y, Vector z) noexcept
-    : Exporter{std::move(origin), std::move(x), std::move(y), std::move(z)}
+    const Point& origin,
+    const Vector& x, const Vector& y, const Vector& z) noexcept
+    : Exporter{{origin, x, y, z}}
 {
 }
 

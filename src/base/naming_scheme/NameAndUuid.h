@@ -55,6 +55,9 @@ namespace NamingScheme
     /// @{
     NameAndUuid(const NameAndUuid&)    = delete;
     void operator=(const NameAndUuid&) = delete;
+    /// We do allow move construction.
+    NameAndUuid(NameAndUuid&&)    = default;
+    void operator=(NameAndUuid&&) = delete;
     /// @}
 
     /**

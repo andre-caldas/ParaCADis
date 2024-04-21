@@ -39,3 +39,5 @@ naming_scheme_lib = library(
 )
 
 libs_upto_now += [naming_scheme_lib]
+
+subdir('python_bindings')

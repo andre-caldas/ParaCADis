@@ -56,6 +56,7 @@ class DeferenceablePoint
 {
 public:
   DeferenceablePoint() = default;
+  DeferenceablePoint(DeferenceablePoint&&) = default;
   DeferenceablePoint(const Point& p);
   DeferenceablePoint(Real x, Real y, Real z);
   operator Point() const noexcept;
@@ -87,6 +88,7 @@ class DeferenceableVector
 {
 public:
   DeferenceableVector() = default;
+  DeferenceableVector(DeferenceableVector&&) = default;
   DeferenceableVector(const Vector& v);
   DeferenceableVector(Real x, Real y, Real z);
   operator Vector() const noexcept;

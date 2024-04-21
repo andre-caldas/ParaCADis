@@ -33,3 +33,5 @@ geometric_primitives_lib = library(
 )
 
 libs_upto_now += [geometric_primitives_lib]
+
+subdir('python_bindings')

@@ -26,9 +26,8 @@ namespace Threads::SafeStructs
 {
 
 template<typename Struct>
-template<typename... Args>
-ThreadSafeStruct<Struct>::ThreadSafeStruct(Args&&... args)
-    : theStruct(args...)
+ThreadSafeStruct<Struct>::ThreadSafeStruct(record_t&& record)
+    : theStruct(std::move(record))
 {}
 
 template<typename Struct>

@@ -25,12 +25,12 @@
 #include <base/threads/locks/reader_locks.h>
 
 DeferenceablePoint::DeferenceablePoint(const Point& p)
-    : Exporter{p.x(), p.y(), p.z()}
+    : Exporter{{p.x(), p.y(), p.z()}}
 {
 }
 
 DeferenceablePoint::DeferenceablePoint(Real x, Real y, Real z)
-    : Exporter{std::move(x), std::move(y), std::move(z)}
+    : Exporter{{std::move(x), std::move(y), std::move(z)}}
 {
 }
 
@@ -47,12 +47,12 @@ std::unique_ptr<DeferenceablePoint> DeferenceablePoint::deepCopy() const
 
 
 DeferenceableVector::DeferenceableVector(const Vector& v)
-    : Exporter{v.x(), v.y(), v.z()}
+    : Exporter{{v.x(), v.y(), v.z()}}
 {
 }
 
 DeferenceableVector::DeferenceableVector(Real x, Real y, Real z)
-    : Exporter{std::move(x), std::move(y), std::move(z)}
+    : Exporter{{std::move(x), std::move(y), std::move(z)}}
 {
 }
 

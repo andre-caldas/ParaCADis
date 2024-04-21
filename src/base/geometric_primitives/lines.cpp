@@ -24,7 +24,7 @@
 
 Line2Points::Line2Points(Point start, Point end,
                          bool is_bounded_start, bool is_bounded_end)
-    : Exporter{std::move(start), std::move(end), is_bounded_start, is_bounded_end}
+    : Exporter{{std::move(start), std::move(end), is_bounded_start, is_bounded_end}}
 {
 }
 
@@ -38,7 +38,7 @@ std::unique_ptr<Line2Points> Line2Points::deepCopy() const
 
 LinePointDirection::LinePointDirection(Point start, Vector direction,
                                        bool is_bounded_start, bool is_bounded_end)
-    : Exporter{std::move(start), std::move(direction), is_bounded_start, is_bounded_end}
+    : Exporter{{std::move(start), std::move(direction), is_bounded_start, is_bounded_end}}
 {
 }
 

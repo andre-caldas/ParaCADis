@@ -52,7 +52,14 @@ namespace NamingScheme
     // In IExport<> generates ambiguity, so we put it here.
     using token_iterator = NamingScheme::token_iterator;
 
-    ExporterBase()          = default;
+    ExporterBase()               = default;
+    ExporterBase(ExporterBase&&) = default;
+
+    /// Do not really copy anything, because copies
+    /// must have a different id and probably should have
+    /// a different name.
+    ExporterBase(const ExporterBase&) {}
+
     virtual ~ExporterBase() = default;
 
     /**
@@ -117,12 +124,10 @@ namespace NamingScheme
     using safe_struct_t = Threads::SafeStructs::ThreadSafeStruct<data_t>;
 
   public:
-    Exporter(const Exporter&) = delete;
-    Exporter& operator=(const Exporter&) = delete;
-
-    template<typename... Args>
-    Exporter(Args&&... args)
-        : safeData(std::forward<Args>(args)...)
+    Exporter()           = default;
+    Exporter(Exporter&&) = default;
+    Exporter(data_t&& data)
+        : safeData(std::move(data))
     {
     }
 

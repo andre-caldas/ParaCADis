@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
+ *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,64 +20,16 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef BASE_Threads_ThreadSafeStruct_H
-#define BASE_Threads_ThreadSafeStruct_H
+#include <nanobind/nanobind.h>
 
-#include <base/threads/locks/reader_locks.h>
-#include <base/threads/locks/writer_locks.h>
+#include <base/document_tree/python_bindings/module.h>
+#include <base/expected_behaviour/SharedPtr.h>
+#include <base/geometric_primitives/python_bindings/module.h>
+#include <base/naming_scheme/python_bindings/module.h>
 
-#include <thread>
-
-namespace Threads::SafeStructs
-{
-
-  /**
-   * @brief Encapsulates a struct/class to use SharedLock and ExclusiveLock.
-   */
-  template<typename Struct>
-  class ThreadSafeStruct
-  {
-  private:
-    mutable Threads::MutexData mutex;
-    Struct                     theStruct;
-
-    std::thread::id activeThread;
-    std::thread     dedicatedThread;
-
-  public:
-    using self_t   = ThreadSafeStruct;
-    using record_t = Struct;
-
-    ThreadSafeStruct() = default;
-    ThreadSafeStruct(record_t&& record);
-
-    /**
-     * Move constructor.
-     * @attention We assume without check that no other threads have
-     * access to the moved structure.
-     */
-    ThreadSafeStruct(ThreadSafeStruct&& other)
-        : theStruct(std::move(other.theStruct)) {}
-
-    // We could have a copy constructor.
-    // But... do we want to?
-//    ThreadSafeStruct(const ThreadSafeStruct& other);
-
-    virtual ~ThreadSafeStruct();
-
-    using GateInfo = Threads::LocalGateInfo<&self_t::theStruct,
-                                            &self_t::mutex>;
-
-    void cancelThreads();
-
-    std::thread& getDedicatedThread();
-
-  public:
-    constexpr auto& getMutexLike() const { return mutex; }
-  };
-
-}  // namespace Threads::SafeStructs
-
-#include "ThreadSafeStruct_inl.h"
-
-#endif
+NB_MODULE(paracadis, m) {
+  m.doc() = "ParaCADis python interface library.";
+  auto n = init_naming_scheme(m);
+  init_geometric_primitives(m, n);
+  init_document_tree(m);
+}
