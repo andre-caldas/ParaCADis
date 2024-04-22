@@ -26,6 +26,7 @@
 
 #include <base/document_tree/Container.h>
 #include <base/naming_scheme/PathToken.h>
+#include <python_bindings/SharedPtr_type_caster.h>
 
 namespace nb = nanobind;
 using namespace nb::literals;
@@ -48,8 +49,10 @@ void init_document_tree(nb::module_& parent_module)
       .def("get_element",
            nb::overload_cast<Uuid::uuid_type>(&Container::contains), "uuid"_a,
            "Retrives the corresponding element.")
-      .def("add_element", &Container::addElement, xxxxx,
+#endif
+      .def("add_element", &Container::addElement, "element"_a,
            "Adds an element to the container.")
+#if 0
       .def("remove_element", &Container::removeElement, xxxxx,
            "Removes the corresponding element from the container.")
       .def("move_element_to", &Container::moveElementTo, xxxxx,

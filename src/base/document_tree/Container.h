@@ -57,8 +57,8 @@ namespace DocumentTree
     SharedPtr<ExporterBase> getElement(uuid_type uuid) const;
     SharedPtr<Container> getContainer(uuid_type uuid) const;
 
-    template<std::convertible_to<const Container&> C>
-    void addElement(SharedPtr<C> c) { addContainer(std::move(c)); }
+//    template<std::convertible_to<const Container&> C>
+//    void addElement(SharedPtr<C> c) { addContainer(std::move(c)); }
     void addElement(SharedPtr<ExporterBase> element);
     void addContainer(SharedPtr<Container> container);
 

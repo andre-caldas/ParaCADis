@@ -20,17 +20,40 @@
  *                                                                          *
  ***************************************************************************/
 
-#include <nanobind/nanobind.h>
+#ifndef PY_SHARED_PTR_TYPE_CASTER_H
+#define PY_SHARED_PTR_TYPE_CASTER_H
 
-#include <base/document_tree/python_bindings/module.h>
+#include <nanobind/stl/shared_ptr.h>
 #include <base/expected_behaviour/SharedPtr.h>
-#include <base/geometric_primitives/python_bindings/module.h>
-#include <base/naming_scheme/python_bindings/module.h>
 
-NB_MODULE(paracadis, m) {
-  m.doc() = "ParaCADis python interface library.";
+NAMESPACE_BEGIN(NB_NAMESPACE)
+NAMESPACE_BEGIN(detail)
 
-  auto n = init_naming_scheme(m);
-  init_geometric_primitives(m, n);
-  init_document_tree(m);
-}
+template <typename T>
+struct type_caster<SharedPtr<T>>
+    : type_caster<std::shared_ptr<T>>
+{
+  NB_TYPE_CASTER(SharedPtr<T>, type_caster<std::shared_ptr<T>>::Caster::Name)
+
+  bool from_python(handle src, uint8_t flags, cleanup_list *cleanup) noexcept
+  {
+    if(!type_caster<std::shared_ptr<T>>::from_python(src, flags, cleanup))
+    {
+      return false;
+    }
+    // Can we use std::move()? Or ::value is accessed by other people?
+    value = std::move(type_caster<std::shared_ptr<T>>::value);
+    return true;
+  }
+
+  static handle from_cpp(
+      const Value &value, rv_policy p, cleanup_list *cleanup) noexcept
+  {
+    return type_caster<std::shared_ptr<T>>::from_cpp(value.sliced(), p, cleanup);
+  }
+};
+
+NAMESPACE_END(detail)
+NAMESPACE_END(NB_NAMESPACE)
+
+#endif

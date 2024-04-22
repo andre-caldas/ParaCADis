@@ -88,7 +88,8 @@ void init_geometric_primitives(nb::module_& parent_module,
       .def(nb::init<Real, Real, Real>(), "x"_a, "y"_a, "z"_a)
       .def(nb::init<const Vector&>())
       .def("__repr__",
-           [](const Vector&){ return "<DEFERENCEABLEVECTOR... (put info here)>"; });
+           [](const DeferenceableVector&)
+           { return "<DEFERENCEABLEVECTOR... (put info here)>"; });
 
   /*
    * Point.
@@ -112,7 +113,8 @@ void init_geometric_primitives(nb::module_& parent_module,
       .def(nb::init<Real, Real, Real>(), "x"_a, "y"_a, "z"_a)
       .def(nb::init<const Point&>())
       .def("__repr__",
-           [](const Point&){ return "<DEFERENCEABLEPOINT... (put info here)>"; });
+           [](const DeferenceablePoint&)
+           { return "<DEFERENCEABLEPOINT... (put info here)>"; });
 
 
   /*
@@ -129,7 +131,8 @@ void init_geometric_primitives(nb::module_& parent_module,
            " those points are also boundaries when 'is_bounded_start'"
            " or 'is_bounded_end' are set to True.")
       .def("__repr__",
-           [](const Point&){ return "<LINE2POINTS... (put info here)>"; });
+           [](const Line2Points&)
+           { return "<LINE2POINTS... (put info here)>"; });
 
   /*
    * LinePointDirection.
@@ -146,7 +149,8 @@ void init_geometric_primitives(nb::module_& parent_module,
            " those points are also boundaries when 'is_bounded_start'"
            " or 'is_bounded_end' are set to True.")
       .def("__repr__",
-           [](const Point&){ return "<LINEPOINTDIRECTION... (put info here)>"; });
+           [](const LinePointDirection&)
+           { return "<LINEPOINTDIRECTION... (put info here)>"; });
 
 
   /*
@@ -165,7 +169,8 @@ void init_geometric_primitives(nb::module_& parent_module,
            "Creates the circle cetered at 'center', with radius 'radius'"
            " and orientation given the the 'normal' vector.")
       .def("__repr__",
-           [](const Point&){ return "<CIRCLEPOINTRADIUSNORMAL... (put info here)>"; });
+           [](const CirclePointRadiusNormal&)
+           { return "<CIRCLEPOINTRADIUSNORMAL... (put info here)>"; });
 
   /*
    * Circle3Points.
@@ -178,7 +183,8 @@ void init_geometric_primitives(nb::module_& parent_module,
            "The circle passes by the given points."
            " The orientation is determined by the sequence 'a->b->c'.")
       .def("__repr__",
-           [](const Point&){ return "<CIRCLE3POINTS... (put info here)>"; });
+           [](const Circle3Points&)
+           { return "<CIRCLE3POINTS... (put info here)>"; });
 
   /*
    * DeferenceableCoordinateSystem.
@@ -192,7 +198,8 @@ void init_geometric_primitives(nb::module_& parent_module,
            "Translated coordinate system with axis."
            " The axis need to be orthonormal.")
       .def("__repr__",
-           [](const Point&){ return "<DEF_COORDINATESYSTEM... (put info here)>"; });
+           [](const DeferenceableCoordinateSystem&)
+           { return "<DEF_COORDINATESYSTEM... (put info here)>"; });
 }
 
 #endif
