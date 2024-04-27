@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
+ *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,61 +20,52 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef SafeStructs_ThreadSafeContainer_H
-#define SafeStructs_ThreadSafeContainer_H
+#ifndef MessageQueue_SignalQueue_H
+#define MessageQueue_SignalQueue_H
 
-#include <base/threads/locks/LockedIterator.h>
-#include <base/threads/locks/reader_locks.h>
-#include <base/threads/locks/writer_locks.h>
+#include <base/expected_behaviour/SharedPtr.h>
+#include <base/threads/safe_structs/ThreadSafeQueue.h>
 
-namespace Threads::SafeStructs
+#include <functional>
+#include <memory>
+#include <semaphore>
+
+namespace Threads
 {
 
-  template<typename ContainerType>
-  class ThreadSafeContainer
+  /**
+   * Recieves and executes in order every recieved "message".
+   */
+  class SignalQueue
   {
-  protected:
-    mutable MutexData mutex;
-    ContainerType     container;
-
+    using function_t = std::function<void()>;
   public:
-    using self_t = ThreadSafeContainer;
+    SignalQueue()
+        : messageCount(std::make_shared<std::counting_semaphore<>>(0)) {}
 
-    typedef ContainerType                               unsafe_container_t;
-    typedef typename unsafe_container_t::iterator       container_iterator;
-    typedef typename unsafe_container_t::const_iterator container_const_iterator;
+    /**
+     * Spawns a thread that continually waits for a signal
+     * and executes the corresponding callback.
+     *
+     * It can be called more than once.
+     */
+    void run_thread(const SharedPtr<SignalQueue>& self);
 
-    typedef LockedIterator<container_iterator>       iterator;
-    typedef LockedIterator<container_const_iterator> const_iterator;
+    /**
+     * Pushes a callback to the queue.
+     */
+    void push(function_t&& callback);
 
-    ThreadSafeContainer() = default;
+  private:
+    SafeStructs::ThreadSafeQueue<function_t> callBacks;
 
-    ThreadSafeContainer(int mutex_layer)
-        : mutex(mutex_layer)
-    {
-    }
-
-    auto begin();
-    auto begin() const;
-    auto cbegin() const;
-
-    auto end();
-    auto end() const;
-    auto cend() const;
-
-    size_t size() const;
-    bool   empty() const;
-    void   clear();
-
-
-    using GateInfo = Threads::LocalGateInfo<&self_t::container,
-                                            &self_t::mutex>;
-
-    constexpr auto& getMutexLike() const { return mutex; }
+    /**
+     * We use a SharedPtr here because we want to make it possible
+     * for the SignalQueue be destroyed while we wait for new messages.
+     */
+    SharedPtr<std::counting_semaphore<>> messageCount{0};
   };
 
-}  // namespace Threads::SafeStructs
+}
 
-#include "ThreadSafeContainer_inl.h"
-
-#endif  // SafeStructs_ThreadSafeContainer_H
+#endif

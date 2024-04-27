@@ -20,61 +20,22 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef SafeStructs_ThreadSafeContainer_H
-#define SafeStructs_ThreadSafeContainer_H
+#include "MutexData.h"
+#include "LockPolicy.h"
 
-#include <base/threads/locks/LockedIterator.h>
-#include <base/threads/locks/reader_locks.h>
-#include <base/threads/locks/writer_locks.h>
+#include <base/threads/message_queue/MutexSignal.h>
 
-namespace Threads::SafeStructs
+namespace Threads
 {
 
-  template<typename ContainerType>
-  class ThreadSafeContainer
+  void MutexData::report_exclusive_unlock() const
   {
-  protected:
-    mutable MutexData mutex;
-    ContainerType     container;
+    assert(LockPolicy::isLockedExclusively(*this)
+           && "The signal must be sent while still holding an exclusive lock.");
+    if(!signal) { return; }
+    // Since we have an exclusive lock,
+    // we assume the signal pointer is valid.
+    signal->emit_signal();
+  }
 
-  public:
-    using self_t = ThreadSafeContainer;
-
-    typedef ContainerType                               unsafe_container_t;
-    typedef typename unsafe_container_t::iterator       container_iterator;
-    typedef typename unsafe_container_t::const_iterator container_const_iterator;
-
-    typedef LockedIterator<container_iterator>       iterator;
-    typedef LockedIterator<container_const_iterator> const_iterator;
-
-    ThreadSafeContainer() = default;
-
-    ThreadSafeContainer(int mutex_layer)
-        : mutex(mutex_layer)
-    {
-    }
-
-    auto begin();
-    auto begin() const;
-    auto cbegin() const;
-
-    auto end();
-    auto end() const;
-    auto cend() const;
-
-    size_t size() const;
-    bool   empty() const;
-    void   clear();
-
-
-    using GateInfo = Threads::LocalGateInfo<&self_t::container,
-                                            &self_t::mutex>;
-
-    constexpr auto& getMutexLike() const { return mutex; }
-  };
-
-}  // namespace Threads::SafeStructs
-
-#include "ThreadSafeContainer_inl.h"
-
-#endif  // SafeStructs_ThreadSafeContainer_H
+}  // namespace Threads

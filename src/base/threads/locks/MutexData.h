@@ -39,6 +39,8 @@
 namespace Threads
 {
 
+  class MutexSignal;
+
   /**
    * The lock policy uses a MutexData to represent one mutex.
    *
@@ -60,7 +62,8 @@ namespace Threads
    */
   struct MutexData {
     YesItIsAMutex mutex;
-    const int     layer = 0;
+    const int     layer  = 0;
+    MutexSignal*  signal = nullptr;
 
     static constexpr int LOCKFREE = std::numeric_limits<int>::max();
 
@@ -69,6 +72,7 @@ namespace Threads
     MutexData(int layer) : layer(layer) {}
     MutexData(const MutexData&) = delete;
     MutexData& operator=(const MutexData&) = delete;
+    void report_exclusive_unlock() const;
   };
 
   template<typename T>

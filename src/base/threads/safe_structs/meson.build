@@ -1,9 +1,7 @@
-safe_containers_dep = dependency('threads')
+threads_src += files(
+)
 
-safe_containers_src = [
-]
-
-safe_containers_includes = [
+threads_includes += files(
   'common_records/WeakPtrRecord.h',
   'MultiIndexContainer.h',
   'MultiIndexContainer_inl.h',
@@ -15,19 +13,4 @@ safe_containers_includes = [
   'ThreadSafeStruct.h',
   'ThreadSafeStruct_inl.h',
   'ThreadSafeVector.h',
-]
-
-install_headers(safe_containers_includes,
-  preserve_path: true,
 )
-
-safe_containers_lib = library(
-  'safe_containers',
-  safe_containers_src,
-  install: true,
-  include_directories: inc,
-  implicit_include_directories: false,
-  dependencies: safe_containers_dep,
-)
-
-libs_upto_now += [safe_containers_lib]

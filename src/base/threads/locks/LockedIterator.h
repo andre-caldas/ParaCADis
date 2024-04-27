@@ -23,7 +23,7 @@
 #ifndef Threads_LockedIterator_H
 #define Threads_LockedIterator_H
 
-#include "LockPolicy.h"
+#include "reader_locks.h"
 
 #include <iterator>
 
@@ -85,6 +85,12 @@ namespace Threads
     {
       assert(false && "It is a bad idea to assign locks.");
       originalIterator = other.originalIterator;
+      return *this;
+    }
+
+    LockedIterator& operator=(ItType it)
+    {
+      originalIterator = it;
       return *this;
     }
 

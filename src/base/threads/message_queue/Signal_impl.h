@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
+ *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,61 +20,68 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef SafeStructs_ThreadSafeContainer_H
-#define SafeStructs_ThreadSafeContainer_H
+#ifndef MessageQueue_Signal_impl_H
+#define MessageQueue_Signal_impl_H
 
-#include <base/threads/locks/LockedIterator.h>
-#include <base/threads/locks/reader_locks.h>
 #include <base/threads/locks/writer_locks.h>
 
-namespace Threads::SafeStructs
+#include "SignalQueue.h"
+
+#include <concepts>
+
+namespace Threads
 {
 
-  template<typename ContainerType>
-  class ThreadSafeContainer
+  template<typename... Args>
+  void Signal<Args...>::emit_signal(Args... args)
   {
-  protected:
-    mutable MutexData mutex;
-    ContainerType     container;
-
-  public:
-    using self_t = ThreadSafeContainer;
-
-    typedef ContainerType                               unsafe_container_t;
-    typedef typename unsafe_container_t::iterator       container_iterator;
-    typedef typename unsafe_container_t::const_iterator container_const_iterator;
-
-    typedef LockedIterator<container_iterator>       iterator;
-    typedef LockedIterator<container_const_iterator> const_iterator;
-
-    ThreadSafeContainer() = default;
-
-    ThreadSafeContainer(int mutex_layer)
-        : mutex(mutex_layer)
+    WriterGate gate{callBacks};
+    for(auto it = callBacks.begin(); it != callBacks.end();)
     {
+      auto qlock = it->second.queue_weak.lock();
+      auto tolock = it->second.to_void_weak.lock();
+      if(qlock && tolock) {
+        qlock->push([cb = it->second.call_back, args...]{cb(args...);});
+        ++it;
+      } else {
+        it = gate->erase(it);
+      }
     }
-
-    auto begin();
-    auto begin() const;
-    auto cbegin() const;
-
-    auto end();
-    auto end() const;
-    auto cend() const;
-
-    size_t size() const;
-    bool   empty() const;
-    void   clear();
+  }
 
 
-    using GateInfo = Threads::LocalGateInfo<&self_t::container,
-                                            &self_t::mutex>;
+  template<typename... Args>
+  template<class T, std::derived_from<T> SignalFrom, class SignalTo>
+  int Signal<Args...>::connect(
+      const SharedPtr<SignalFrom>& from,
+      const SharedPtr<SignalQueue>& queue,
+      const SharedPtr<SignalTo>& to,
+      void (SignalTo::*member)(SharedPtr<T>, Args...))
+  {
+    auto lambda = [weak_from = from.getWeakPtr(),
+                   weak_to = to.getWeakPtr(), member]
+        (Args... args)
+    {
+      auto from = weak_from.lock();
+      if(!from) {return;}
+      auto to = weak_to.lock();
+      if(to){to->*member(from, args...);}
+    };
 
-    constexpr auto& getMutexLike() const { return mutex; }
-  };
+    WriterGate gate{callBacks};
+    auto key = ++id;
+    gate->emplace({key, {queue.getWeakPtr(), to.getWeakPtr(), std::move(lambda)}});
+    return key;
+  }
 
-}  // namespace Threads::SafeStructs
 
-#include "ThreadSafeContainer_inl.h"
+  template<typename... Args>
+  void Signal<Args...>::disconnect(int id)
+  {
+    WriterGate gate{callBacks};
+    gate->erase(id);
+  }
 
-#endif  // SafeStructs_ThreadSafeContainer_H
+}
+
+#endif

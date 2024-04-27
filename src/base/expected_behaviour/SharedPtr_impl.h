@@ -41,20 +41,21 @@ SharedPtr<T, NotBool>::SharedPtr(std::shared_ptr<T>&& shared)
 }
 
 template<typename T, typename NotBool>
-template<typename X>
-SharedPtr<T, NotBool>::SharedPtr(const SharedPtr<X>& shared, T X::* localPointer)
+template<class X, typename M> requires(!std::is_void_v<M>)
+SharedPtr<T, NotBool>::SharedPtr(const SharedPtr<X>& shared, M X::* localPointer)
     : std::shared_ptr<T>(shared, &(shared->*localPointer))
 {
 }
 
 template<typename T, typename NotBool>
-template<typename X>
-SharedPtr<T, NotBool>::SharedPtr(SharedPtr<X>&& shared, T X::* localPointer)
+template<class X, typename M> requires(!std::is_void_v<M>)
+SharedPtr<T, NotBool>::SharedPtr(SharedPtr<X>&& shared, M X::* localPointer)
     : std::shared_ptr<T>(std::move(shared), &(shared->*localPointer))
 {
 }
 
 template<typename T, typename NotBool>
+template<typename M, std::enable_if_t<!std::is_void_v<M>, bool>>
 T* SharedPtr<T, NotBool>::operator->() const
 {
   if (!*this) { throw std::bad_optional_access{}; }
@@ -62,7 +63,8 @@ T* SharedPtr<T, NotBool>::operator->() const
 }
 
 template<typename T, typename NotBool>
-T& SharedPtr<T, NotBool>::operator*() const
+template<typename M, std::enable_if_t<!std::is_void_v<M>, bool>>
+M& SharedPtr<T, NotBool>::operator*() const
 {
   if (!*this) { throw std::bad_optional_access{}; }
   return std::shared_ptr<T>::operator*();

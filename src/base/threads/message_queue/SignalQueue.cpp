@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
+ *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,61 +20,53 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef SafeStructs_ThreadSafeContainer_H
-#define SafeStructs_ThreadSafeContainer_H
+#include "SignalQueue.h"
 
-#include <base/threads/locks/LockedIterator.h>
-#include <base/threads/locks/reader_locks.h>
 #include <base/threads/locks/writer_locks.h>
 
-namespace Threads::SafeStructs
+#include <thread>
+
+namespace Threads
 {
 
-  template<typename ContainerType>
-  class ThreadSafeContainer
+  void SignalQueue::run_thread(const SharedPtr<SignalQueue>& self)
   {
-  protected:
-    mutable MutexData mutex;
-    ContainerType     container;
+    auto lambda = [self_weak = self.getWeakPtr(),
+                   message_count_weak = self->messageCount.getWeakPtr()] {
+      while(true) {
+        auto message_count = message_count_weak.lock();
+        if(!message_count) {
+          return;
+        }
+        message_count->acquire();
 
-  public:
-    using self_t = ThreadSafeContainer;
+        std::function<void()> call_back;
+        { // shared_ptr lock and mutex lock
+          auto self = self_weak.lock();
+          if(!self) {
+            return;
+          }
 
-    typedef ContainerType                               unsafe_container_t;
-    typedef typename unsafe_container_t::iterator       container_iterator;
-    typedef typename unsafe_container_t::const_iterator container_const_iterator;
+          WriterGate gate{self->callBacks};
+          assert(!gate->empty());
+          if(gate->empty()) {
+            continue;
+          }
+          call_back = std::move(gate->front());
+          gate->pop_front();
+        }
 
-    typedef LockedIterator<container_iterator>       iterator;
-    typedef LockedIterator<container_const_iterator> const_iterator;
+        call_back();
+      }
+    };
 
-    ThreadSafeContainer() = default;
+    std::thread{std::move(lambda)}.detach();
+  }
 
-    ThreadSafeContainer(int mutex_layer)
-        : mutex(mutex_layer)
-    {
-    }
+  void SignalQueue::push(function_t&& callback)
+  {
+    WriterGate gate{callBacks};
+    gate->emplace_back(std::move(callback));
+  }
 
-    auto begin();
-    auto begin() const;
-    auto cbegin() const;
-
-    auto end();
-    auto end() const;
-    auto cend() const;
-
-    size_t size() const;
-    bool   empty() const;
-    void   clear();
-
-
-    using GateInfo = Threads::LocalGateInfo<&self_t::container,
-                                            &self_t::mutex>;
-
-    constexpr auto& getMutexLike() const { return mutex; }
-  };
-
-}  // namespace Threads::SafeStructs
-
-#include "ThreadSafeContainer_inl.h"
-
-#endif  // SafeStructs_ThreadSafeContainer_H
+}

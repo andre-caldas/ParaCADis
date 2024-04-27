@@ -1,14 +1,13 @@
-locks_dep = dependency('threads')
-
-locks_src = [
+threads_src += files(
   'exceptions.cpp',
   'LockPolicy.cpp',
+  'MutexData.cpp',
   'reader_locks.cpp',
   'writer_locks.cpp',
   'YesItIsAMutex.cpp',
-]
+)
 
-locks_includes = [
+threads_includes += files(
   'exceptions.h',
   'gates.h',
   'LockedIterator.h',
@@ -23,20 +22,4 @@ locks_includes = [
   'writer_locks.h',
   'writer_locks_impl.h',
   'YesItIsAMutex.h',
-]
-
-install_headers(locks_includes,
-  preserve_path: true,
 )
-
-locks_lib = library(
-  'locks',
-  locks_src,
-  install: true,
-  include_directories: inc,
-  implicit_include_directories: false,
-  dependencies: locks_dep,
-  link_with: libs_upto_now,
-)
-
-libs_upto_now += [locks_lib]

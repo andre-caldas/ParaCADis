@@ -59,16 +59,18 @@ public:
   SharedPtr(SharedPtr&&) = default;
   SharedPtr(const std::shared_ptr<T>& shared);
   SharedPtr(std::shared_ptr<T>&& shared);
-  template<typename X>
-  SharedPtr(const SharedPtr<X>& shared, T X::* localPointer);
-  template<typename X>
-  SharedPtr(SharedPtr<X>&& shared, T X::* localPointer);
+  template<class X, typename M = T> requires(!std::is_void_v<M>)
+  SharedPtr(const SharedPtr<X>& shared, M X::* localPointer);
+  template<class X, typename M = T> requires(!std::is_void_v<M>)
+  SharedPtr(SharedPtr<X>&& shared, M X::* localPointer);
 
   SharedPtr& operator=(const SharedPtr&) = default;
   SharedPtr& operator=(SharedPtr&&) = default;
 
+  template<typename M = T, std::enable_if_t<!std::is_void_v<M>, bool> = true>
   T* operator->() const;
-  T& operator*() const;
+  template<typename M = T, std::enable_if_t<!std::is_void_v<M>, bool> = true>
+  M& operator*() const;
 
   // TODO: funny story...
   // I want, for convenience, automatic convertion to T&.
