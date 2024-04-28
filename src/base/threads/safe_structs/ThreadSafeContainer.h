@@ -48,11 +48,7 @@ namespace Threads::SafeStructs
     typedef LockedIterator<container_const_iterator> const_iterator;
 
     ThreadSafeContainer() = default;
-
-    ThreadSafeContainer(int mutex_layer)
-        : mutex(mutex_layer)
-    {
-    }
+    ThreadSafeContainer(int mutex_layer) : mutex(mutex_layer) {}
 
     auto begin();
     auto begin() const;

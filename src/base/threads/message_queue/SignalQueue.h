@@ -39,9 +39,10 @@ namespace Threads
   class SignalQueue
   {
     using function_t = std::function<void()>;
+    using queue_t = SafeStructs::ThreadSafeQueue<function_t>;
   public:
     SignalQueue()
-        : messageCount(std::make_shared<std::counting_semaphore<>>(0)) {}
+        : callBacks(std::make_shared<queue_t>(MutexData::LOCKFREE)) {}
 
     /**
      * Spawns a thread that continually waits for a signal
@@ -57,13 +58,11 @@ namespace Threads
     void push(function_t&& callback);
 
   private:
-    SafeStructs::ThreadSafeQueue<function_t> callBacks;
-
     /**
      * We use a SharedPtr here because we want to make it possible
      * for the SignalQueue be destroyed while we wait for new messages.
      */
-    SharedPtr<std::counting_semaphore<>> messageCount{0};
+    SharedPtr<queue_t> callBacks;
   };
 
 }

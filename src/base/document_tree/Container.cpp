@@ -77,7 +77,8 @@ void Container::addElement(SharedPtr<ExporterBase> element)
   if (gate->contains(element->getUuid())) {
     throw Exception::ElementAlreadyInContainer(*element, *this);
   }
-  gate->emplace(element->getUuid(), std::move(element));
+  gate->emplace(element->getUuid(), element);
+  add_non_container_sig.emit_signal(std::move(element));
 }
 
 void Container::addContainer(SharedPtr<Container> container)
@@ -86,7 +87,8 @@ void Container::addContainer(SharedPtr<Container> container)
   if (gate->contains(container->getUuid())) {
     throw Exception::ElementAlreadyInContainer(*container, *this);
   }
-  gate->emplace(container->getUuid(), std::move(container));
+  gate->emplace(container->getUuid(), container);
+  add_container_sig.emit_signal(std::move(container));
 }
 
 
@@ -110,7 +112,8 @@ SharedPtr<ExporterBase> Container::removeElement(uuid_type uuid)
   Threads::WriterGate gate{non_containers};
     auto nh = gate->extract(uuid);
     if (nh) {
-      return nh.mapped();
+      remove_non_container_sig.emit_signal(nh.mapped());
+      return std::move(nh.mapped());
     }
   }
   return removeContainer(uuid);
@@ -126,7 +129,8 @@ SharedPtr<Container> Container::removeContainer(uuid_type uuid)
   Threads::WriterGate gate{containers};
   auto nh = gate->extract(uuid);
   if (nh) {
-    return nh.mapped();
+    remove_container_sig.emit_signal(nh.mapped());
+    return std::move(nh.mapped());
   }
   throw Exception::ElementNotInContainer(uuid, *this);
 }
@@ -135,33 +139,37 @@ SharedPtr<Container> Container::removeContainer(uuid_type uuid)
 /*
  * Move element from one container to the other *atomically*.
  */
-void Container::moveElementTo(uuid_type uuid, Container& to)
+void Container::moveElementTo(uuid_type uuid, const SharedPtr<Container>& to)
 {
   { // lock context
-    Threads::WriterGate gate{non_containers, to.non_containers};
-    if(gate[to.non_containers].contains(uuid)) {
+    Threads::WriterGate gate{non_containers, to->non_containers};
+    if(gate[to->non_containers].contains(uuid)) {
       throw Exception::ElementAlreadyInContainer(uuid, to);
     }
 
     if(gate[non_containers].contains(uuid)) {
       auto e = gate[non_containers].extract(uuid);
-      gate[to.non_containers].insert(std::move(e));
+      auto e_shptr = e.mapped();
+      gate[to->non_containers].insert(std::move(e));
+      move_non_container_sig.emit_signal(std::move(e_shptr), to);
       return;
     }
   }
   moveContainerTo(uuid, to);
 }
 
-void Container::moveContainerTo(uuid_type uuid, Container& to)
+void Container::moveContainerTo(uuid_type uuid, const SharedPtr<Container>& to)
 {
-  Threads::WriterGate lock{containers, to.containers};
-  if(lock[to.containers].contains(uuid)) {
-    throw Exception::ElementAlreadyInContainer(uuid, to);
+  Threads::WriterGate lock{containers, to->containers};
+  if(lock[to->containers].contains(uuid)) {
+    throw Exception::ElementAlreadyInContainer(uuid, *to);
   }
 
   if(lock[containers].contains(uuid)) {
     auto e = lock[containers].extract(uuid);
-    lock[to.containers].insert(std::move(e));
+    auto e_shptr = e.mapped();
+    lock[to->containers].insert(std::move(e));
+    move_container_sig.emit_signal(std::move(e_shptr), to);
     return;
   }
   throw Exception::ElementNotInContainer(uuid, to);

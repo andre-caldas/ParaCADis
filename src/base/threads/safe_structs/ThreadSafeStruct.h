@@ -41,9 +41,6 @@ namespace Threads::SafeStructs
     mutable Threads::MutexData mutex;
     Struct                     theStruct;
 
-    std::thread::id activeThread;
-    std::thread     dedicatedThread;
-
   public:
     using self_t   = ThreadSafeStruct;
     using record_t = Struct;
@@ -63,14 +60,10 @@ namespace Threads::SafeStructs
     // But... do we want to?
 //    ThreadSafeStruct(const ThreadSafeStruct& other);
 
-    virtual ~ThreadSafeStruct();
+    virtual ~ThreadSafeStruct() = default;
 
     using GateInfo = Threads::LocalGateInfo<&self_t::theStruct,
                                             &self_t::mutex>;
-
-    void cancelThreads();
-
-    std::thread& getDedicatedThread();
 
   public:
     constexpr auto& getMutexLike() const { return mutex; }

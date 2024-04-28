@@ -32,31 +32,24 @@ namespace Threads
   void SignalQueue::run_thread(const SharedPtr<SignalQueue>& self)
   {
     auto lambda = [self_weak = self.getWeakPtr(),
-                   message_count_weak = self->messageCount.getWeakPtr()] {
+                   call_backs_weak = self->callBacks.getWeakPtr()] {
       while(true) {
-        auto message_count = message_count_weak.lock();
-        if(!message_count) {
+        auto call_backs = call_backs_weak.lock();
+        if(!call_backs) {
           return;
         }
-        message_count->acquire();
 
-        std::function<void()> call_back;
-        { // shared_ptr lock and mutex lock
-          auto self = self_weak.lock();
-          if(!self) {
-            return;
-          }
-
-          WriterGate gate{self->callBacks};
-          assert(!gate->empty());
-          if(gate->empty()) {
-            continue;
-          }
-          call_back = std::move(gate->front());
-          gate->pop_front();
-        }
-
+        auto call_back = call_backs->pull();
         call_back();
+
+        // We do not hold "self" while blocked in `pull()`.
+        // Because if we have two consumer threads,
+        // we do not them to thik "self" is still being used just because
+        // the other consumer thred has a SharedPtr.
+        auto self = self_weak.lock();
+        if(!self) {
+          return;
+        }
       }
     };
 
@@ -65,8 +58,7 @@ namespace Threads
 
   void SignalQueue::push(function_t&& callback)
   {
-    WriterGate gate{callBacks};
-    gate->emplace_back(std::move(callback));
+    callBacks->push(std::move(callback));
   }
 
 }

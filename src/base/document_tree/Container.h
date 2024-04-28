@@ -29,6 +29,7 @@
 #include <base/naming_scheme/Exporter.h>
 #include <base/naming_scheme/IExport.h>
 #include <base/threads/safe_structs/ThreadSafeMap.h>
+#include <base/threads/message_queue/Signal.h>
 
 #include <concepts>
 
@@ -76,8 +77,8 @@ namespace DocumentTree
      * remain just as if the moveElement() method was not called.
      */
     /// @{
-    void moveElementTo(uuid_type uuid, Container& to);
-    void moveContainerTo(uuid_type uuid, Container& to);
+    void moveElementTo(uuid_type uuid, const SharedPtr<Container>& to);
+    void moveContainerTo(uuid_type uuid, const SharedPtr<Container>& to);
     /// @}
 
     bool contains(const ExporterBase& element) const;
@@ -115,6 +116,24 @@ namespace DocumentTree
 
   public:
     constexpr auto& getMutexLike() const { return mutex; }
+
+    /*
+     * We do not need MutexSignal because we do not export the lists.
+     */
+#if 0
+    Threads::MutexSignal non_container_list_modified{   non_containers.getMutexLike()};
+    Threads::MutexSignal container_list_modified    {       containers.getMutexLike()};
+    Threads::MutexSignal coordinate_system_modified {coordinate_system.getMutexLike()};
+#endif
+
+    Threads::Signal<SharedPtr<Container>>                  add_container_sig;
+    Threads::Signal<SharedPtr<NamingScheme::ExporterBase>> add_non_container_sig;
+    Threads::Signal<SharedPtr<Container>>                  remove_container_sig;
+    Threads::Signal<SharedPtr<NamingScheme::ExporterBase>> remove_non_container_sig;
+    Threads::Signal<SharedPtr<Container>, SharedPtr<Container>>
+                                                           move_container_sig;
+    Threads::Signal<SharedPtr<NamingScheme::ExporterBase>, SharedPtr<Container>>
+                                                           move_non_container_sig;
   };
 
   static_assert(Threads::C_MutexHolder<Container>, "A container is a C_MutexHolder.");

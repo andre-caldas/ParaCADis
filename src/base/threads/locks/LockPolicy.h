@@ -95,12 +95,14 @@ namespace Threads
     LockPolicy(LockPolicy&&) = default;
 
     LockPolicy() = delete;
-    virtual ~LockPolicy();
 
     int minMutex() const;
     int maxMutex() const;
 
     const std::unordered_set<MutexData*>& getMutexes() const;
+
+  protected:
+    virtual ~LockPolicy();
 
   private:
     std::unordered_set<MutexData*> mutexes;

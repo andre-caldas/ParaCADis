@@ -57,11 +57,11 @@ namespace Threads
      * Connects the signal to a callback (to->*member)
      * through the given @a queue.
      */
-    template<class T, std::derived_from<T> SignalFrom, class SignalTo>
+    template<class SignalFrom, class SignalTo>
     int connect(const SharedPtr<SignalFrom>& from,
                 const SharedPtr<SignalQueue>& queue,
                 const SharedPtr<SignalTo>& to,
-                void (SignalTo::*member)(SharedPtr<T>, Args...));
+                void (SignalTo::*member)(SharedPtr<SignalFrom>, Args...));
 
     void disconnect(int id);
 
@@ -73,7 +73,7 @@ namespace Threads
       std::function<void(Args... args)> call_back;
     };
 
-    SafeStructs::ThreadSafeUnorderedMap<int, Data> callBacks;
+    SafeStructs::ThreadSafeUnorderedMap<int, Data> callBacks{MutexData::LOCKFREE-1};
   };
 
 }

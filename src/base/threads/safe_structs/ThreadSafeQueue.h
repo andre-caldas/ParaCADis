@@ -24,26 +24,59 @@
 #define SafeStructs_ThreadSafeQueue_H
 
 #include <base/threads/locks/gates.h>
+#include <base/threads/locks/writer_locks.h>
 
 #include <deque>
+#include <semaphore>
 
 namespace Threads::SafeStructs
 {
 
   /**
-   * @brief Wraps an std::queue, into a mutex protected structure.
+   * Wraps an std::queue, into a mutex protected structure.
+   *
+   * @attention This class uses semaphores and the ThreadSafeQueue::pull()
+   * call blocks waiting for available data. In particular,
+   * no locks can be held when ThreadSafeQueue::pull() is called.
+   *
+   * @attention There is no need to use gateways.
    */
   template<typename T>
   class ThreadSafeQueue
   {
   private:
     mutable MutexData mutex;
-    std::deque<T>     container;
+
+    std::counting_semaphore<> semaphore{0};
+    std::deque<T>             theDeque;
 
   public:
-    using self_t = ThreadSafeQueue;
-    using GateInfo = Threads::LocalGateInfo<&self_t::container,
-                                            &self_t::mutex>;
+    ThreadSafeQueue() = default;
+    ThreadSafeQueue(int mutex_layer) : mutex(mutex_layer) {}
+
+    bool empty() const { return theDeque.empty(); }
+
+    template<typename X>
+    void push(X&& item)
+    {
+      [[maybe_unused]]
+      ExclusiveLock l{mutex};
+      theDeque.emplace_back(std::forward<X>(item));
+      semaphore.release();
+    }
+
+    T pull()
+    {
+      assert(!LockPolicy::hasAnyLock()
+             && "This call blocks, you cannot hold locks when you call it.");
+      semaphore.acquire();
+
+      [[maybe_unused]]
+      ExclusiveLock l{mutex};
+      auto result = std::move(theDeque.front());
+      theDeque.pop_front();
+      return result;
+    }
 
     constexpr auto& getMutexLike() const { return mutex; }
   };
