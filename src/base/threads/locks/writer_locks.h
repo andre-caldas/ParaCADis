@@ -47,6 +47,8 @@ namespace Threads
     [[nodiscard]]
     ExclusiveLock(Mutex&... mutex);
 
+    ~ExclusiveLock();
+
   private:
     std::vector<std::unique_lock<YesItIsAMutex>> locks;
     void lock();

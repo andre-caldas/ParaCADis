@@ -22,6 +22,8 @@
 
 #include "writer_locks.h"
 
+#include <base/threads/message_queue/MutexSignal.h>
+
 namespace Threads
 {
 
@@ -61,6 +63,16 @@ namespace Threads
       }
     } while(current != first);
     assert(locks.size() == mutexes.size());
+  }
+
+  ExclusiveLock::~ExclusiveLock()
+  {
+    auto& mutexes = getMutexes();
+    for(auto mutex: mutexes) {
+      if(mutex->signal) {
+        mutex->signal->emit_signal();
+      }
+    }
   }
 
 }
