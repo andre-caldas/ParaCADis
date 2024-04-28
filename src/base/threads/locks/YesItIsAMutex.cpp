@@ -28,6 +28,7 @@
 namespace Threads
 {
 
+#if 0
   void YesItIsAMutex::lock()
   {
     if (try_lock()) { return; }
@@ -76,5 +77,6 @@ namespace Threads
     --shared_counter;
     if (shared_counter <= 0) { released.notify_one(); }
   }
+#endif
 
 }  // namespace Threads

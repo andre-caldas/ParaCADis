@@ -25,10 +25,13 @@
 
 #include <condition_variable>
 #include <mutex>
+#include <shared_mutex> // TODO: Remove-me.
 
 namespace Threads
 {
 
+using YesItIsAMutex = std::shared_mutex;
+#if 0
   /**
    * Like a shared_mutex. But it is not bound to a thread.
    */
@@ -61,6 +64,7 @@ namespace Threads
     std::condition_variable released;
     std::mutex              released_condition_lock;
   };
+#endif
 
 }  // namespace Threads
 
