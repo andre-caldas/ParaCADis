@@ -53,7 +53,7 @@ namespace SceneGraph
           workspace_name, Ogre::ColourValue( 0.6f, 0.0f, 0.6f ));
     }
     workspace = compositor_manager->addWorkspace(
-        sceneManager, window, camera, workspace_name, true);
+        sceneManager, window->getTexture(), camera, workspace_name, true);
   }
 
 
