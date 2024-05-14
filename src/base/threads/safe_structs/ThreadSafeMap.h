@@ -100,6 +100,9 @@ namespace Threads::SafeStructs
     using parent_t::ThreadSafeMapCommon;
   };
 
+  static_assert(std::ranges::range<ThreadSafeMap<int, float>>
+                && "ThreadSafeMap must be a range.");
+
   /**
    * @brief This wraps an std::map and provides a shared_mutex
    * to make the map readable by many only when the map structure
@@ -118,6 +121,9 @@ namespace Threads::SafeStructs
   public:
     using parent_t::ThreadSafeMapCommon;
   };
+
+  static_assert(std::ranges::range<ThreadSafeUnorderedMap<int, float>>
+                && "ThreadSafeUnorderedMap must be a range.");
 
 }  // namespace Threads::SafeStructs
 

@@ -32,6 +32,7 @@
 #include <base/threads/message_queue/Signal.h>
 
 #include <concepts>
+#include <ranges>
 
 namespace DocumentTree
 {
@@ -85,6 +86,12 @@ namespace DocumentTree
     bool contains(const Container& container) const;
     bool contains(std::string_view name) const;
     bool contains(uuid_type uuid) const;
+
+    auto containersView() const
+    {return std::ranges::subrange(containers); }
+    auto nonContainersView() const
+    { return std::ranges::subrange(non_containers); }
+
 
     SharedPtr<ExporterBase>
     resolve_shared(token_iterator& tokens, ExporterBase* = nullptr) override;

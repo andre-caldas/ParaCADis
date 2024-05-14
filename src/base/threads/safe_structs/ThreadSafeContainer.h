@@ -44,8 +44,12 @@ namespace Threads::SafeStructs
     typedef typename unsafe_container_t::iterator       container_iterator;
     typedef typename unsafe_container_t::const_iterator container_const_iterator;
 
-    typedef LockedIterator<container_iterator>       iterator;
-    typedef LockedIterator<container_const_iterator> const_iterator;
+    using iterator       = LockedIterator<container_iterator>;
+    using const_iterator = LockedIterator<container_const_iterator>;
+
+    using reference       = ContainerType::reference;
+    using const_reference = ContainerType::const_reference;
+    using value_type      = ContainerType::value_type;
 
     ThreadSafeContainer() = default;
     ThreadSafeContainer(int mutex_layer) : mutex(mutex_layer) {}

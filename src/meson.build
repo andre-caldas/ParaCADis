@@ -22,6 +22,7 @@ test_main_src = files('cpp_test.cpp')
 pybind_src = []
 
 subdir('base')
+subdir('scene_graph')
 subdir('python_bindings')
 
 paracadis_exec = executable('paracadis', 'paracadis.cpp',

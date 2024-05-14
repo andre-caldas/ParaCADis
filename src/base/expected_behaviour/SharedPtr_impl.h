@@ -95,4 +95,13 @@ const std::shared_ptr<T>& SharedPtr<T, NotBool>::sliced() const
   return *this;
 }
 
+template<typename T>
+template<typename S>
+WeakPtr<S> WeakPtr<T>::cast() const
+{
+  auto shared = lock();
+  if(!shared) { return {}; }
+  return shared.template cast<S>().getWeakPtr();
+}
+
 #endif  // ExpectedBehaviour_SharedPtr_impl_H

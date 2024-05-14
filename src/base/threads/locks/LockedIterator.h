@@ -25,7 +25,7 @@
 
 #include "reader_locks.h"
 
-#include <iterator>
+#include <concepts>
 
 namespace Threads
 {
@@ -49,15 +49,18 @@ namespace Threads
   class LockedIterator
   {
   public:
+    using difference_type = ItType::difference_type;
+    using value_type      = ItType::value_type;
+    using pointer         = ItType::pointer;
+    using reference       = ItType::reference;
+
     template<std::sentinel_for<ItType> Sentinel>
     using sentinel_t = LockedIteratorSentinel<ItType, Sentinel>;
     using original_iterator_t = ItType;
 
-    // I hope nobody uses this. Some algorithms may fail. Non-portable.
     LockedIterator() = default;
 
-    // Attention: do not lock mutex again!
-    LockedIterator(const LockedIterator& other) = delete;
+    LockedIterator(const LockedIterator& other) = default;
     LockedIterator(LockedIterator&&) = default;
 
     /**
@@ -73,20 +76,13 @@ namespace Threads
      * the iterator does not live longer than the real lock.
      */
     LockedIterator(SharedLock&& lock, ItType it)
-        : originalIterator(std::move(it)), lock(std::move(lock))
+        : originalIterator(std::move(it))
+        , lock(std::make_shared<SharedLock>(std::move(lock)))
     {
     }
 
-    // We need LockedIterator to be copy assignable to use algorithms.
-    // But we shall never use it. We do not change mutexes, only the iterator.
-    // So, this messes with LockPolicy.
-    // I hope nobody uses this. Some algorithms may fail. Non-portable.
-    LockedIterator& operator=(const LockedIterator& other)
-    {
-      assert(false && "It is a bad idea to assign locks.");
-      originalIterator = other.originalIterator;
-      return *this;
-    }
+    LockedIterator& operator=(const LockedIterator& other) = default;
+    LockedIterator& operator=(LockedIterator&& other) = default;
 
     LockedIterator& operator=(ItType it)
     {
@@ -105,6 +101,13 @@ namespace Threads
     constexpr bool operator==(const Sentinel& sentinel) const
     {
       return originalIterator == sentinel.end;
+    }
+
+    template<typename Sentinel>
+    friend constexpr bool operator==(
+        const Sentinel& sentinel, const LockedIterator& self)
+    {
+      return self == sentinel;
     }
 
     LockedIterator& operator++()
@@ -135,8 +138,21 @@ namespace Threads
 
   private:
     ItType originalIterator;
-    mutable SharedLock lock;
+
+    /// We use a shared_ptr because we need copy-constructible iterator.
+    std::shared_ptr<SharedLock> lock;
   };
+
+  using test_it = std::vector<int>::iterator;
+  static_assert(
+      std::sentinel_for<LockedIteratorSentinel<test_it, test_it>, LockedIterator<test_it>>
+                && "LockedIteratorSentinel must be a sentinel.");
+
+  static_assert(std::input_or_output_iterator<LockedIterator<test_it>>
+                && "LockedIterator must be an iterator.");
+
+  static_assert(std::weakly_incrementable<LockedIterator<test_it>>
+                && "LockedIterator must be (weakly) incrementable.");
 
 }  // namespace Threads
 

@@ -56,6 +56,33 @@ namespace Threads
       const SharedPtr<SignalFrom>& from,
       const SharedPtr<SignalQueue>& queue,
       const SharedPtr<SignalTo>& to,
+      void (SignalTo::*member)(Args...))
+  {
+    auto lambda = [weak_from = from.getWeakPtr(),
+                   weak_to = to.getWeakPtr(), member]
+        (Args... args)
+    {
+      auto from = weak_from.lock();
+      if(!from) {return;}
+      auto to = weak_to.lock();
+      if(!to){return;}
+      ((*to).*member)(args...);
+    };
+
+    WriterGate gate{callBacks};
+    auto key = ++id;
+    gate->emplace(key, Data{.queue_weak = queue.getWeakPtr(),
+                            .to_void_weak = to.template cast<void>().getWeakPtr(),
+                            .call_back = std::move(lambda)});
+    return key;
+  }
+
+  template<typename... Args>
+  template<class SignalFrom, class SignalTo>
+  int Signal<Args...>::connect(
+      const SharedPtr<SignalFrom>& from,
+      const SharedPtr<SignalQueue>& queue,
+      const SharedPtr<SignalTo>& to,
       void (SignalTo::*member)(SharedPtr<SignalFrom>, Args...))
   {
     auto lambda = [weak_from = from.getWeakPtr(),

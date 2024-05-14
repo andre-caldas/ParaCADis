@@ -56,6 +56,35 @@ namespace Threads
     /**
      * Connects the signal to a callback (to->*member)
      * through the given @a queue.
+     *
+     * @param from - SharedPtr to this instance.
+     * @param queue - SharedPtr to the message queue.
+     * @param to - SharedPtr to the signaled object.
+     * @param member - Callback member of SignalTo.
+     *
+     * @attention We hold corresponding WeakPtr.
+     * The signals are disconnected automatically
+     * when any of those WeakPtr become invalid.
+     */
+    template<class SignalFrom, class SignalTo>
+    int connect(const SharedPtr<SignalFrom>& from,
+                const SharedPtr<SignalQueue>& queue,
+                const SharedPtr<SignalTo>& to,
+                void (SignalTo::*member)(Args...));
+
+    /**
+     * Connects the signal to a callback (to->*member)
+     * through the given @a queue.
+     *
+     * @param from - SharedPtr to this instance.
+     * @param queue - SharedPtr to the message queue.
+     * @param to - SharedPtr to the signaled object.
+     * @param member - Callback member of SignalTo.
+     * It also gets a SharedPtr to this object.
+     *
+     * @attention We hold corresponding WeakPtr.
+     * The signals are disconnected automatically
+     * when any of those WeakPtr become invalid.
      */
     template<class SignalFrom, class SignalTo>
     int connect(const SharedPtr<SignalFrom>& from,
