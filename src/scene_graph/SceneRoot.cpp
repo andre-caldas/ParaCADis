@@ -28,6 +28,7 @@
 
 #include <OGRE/Compositor/OgreCompositorManager2.h>
 #include <OGRE/Compositor/OgreCompositorWorkspace.h>
+#include <OGRE/OgreCamera.h>
 #include <OGRE/OgreWindow.h>
 
 namespace SceneGraph
@@ -44,7 +45,13 @@ namespace SceneGraph
     sceneManager = ogreRoot->createSceneManager(
         Ogre::ST_GENERIC, 2, "ParaCADis SceneManager");
     rootSceneNode = sceneManager->getRootSceneNode();
+
     camera = sceneManager->createCamera("The Camera!");
+    camera->setAutoAspectRatio(true);
+    camera->setNearClipDistance(0.2f);
+    camera->setFarClipDistance(1000.0f);
+    camera->setPosition({0, 20, 15});
+    camera->lookAt({0, 0, 0});
 
     const char workspace_name[] = "ParaCADis workspace";
     auto* compositor_manager = ogreRoot->getCompositorManager2();
