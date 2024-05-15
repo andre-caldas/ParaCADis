@@ -44,7 +44,7 @@ namespace SceneGraph
                         const SharedPtr<container_t>& self_container)
   {
     auto scene_root = parent->sceneRootWeak.lock();
-    std::shared_ptr<ContainerNode> result{new ContainerNode(std::move(scene_root))};
+    std::shared_ptr<ContainerNode> result{new ContainerNode(scene_root, parent)};
     result->self = result;
     result->populate(self_container);
     return result;
@@ -55,8 +55,18 @@ namespace SceneGraph
       : sceneRootWeak(scene_root)
   {
     ogreNode = scene_root->sceneManager->createSceneNode(Ogre::SCENE_STATIC);
-    auto* parent = scene_root->sceneManager->getRootSceneNode();
-    parent->addChild(ogreNode);
+    auto* root_node = scene_root->sceneManager->getRootSceneNode();
+    root_node->addChild(ogreNode);
+  }
+
+  ContainerNode::ContainerNode(const SharedPtr<SceneRoot>& scene_root,
+                               const SharedPtr<ContainerNode>& parent)
+      : sceneRootWeak(scene_root)
+  {
+    assert(parent);
+    ogreNode = scene_root->sceneManager->createSceneNode(Ogre::SCENE_STATIC);
+    auto* parent_ogre_node = parent->ogreNode;
+    parent_ogre_node->addChild(ogreNode);
   }
 
   void ContainerNode::populate(const SharedPtr<container_t>& my_container)
@@ -67,11 +77,17 @@ namespace SceneGraph
     auto self_lock = self.lock();
     assert(self_lock);
     auto& queue = scene_root->getQueue();
+    assert(queue);
+    if(!queue) { return; }
 
+    std::vector<SharedPtr<container_t>> new_containers;
     { // Lock
+      // The containers in my_container will not change till the end of this block.
+      // Suposedly, no messagens relative to those containers will be queued.
       auto view_lock = my_container->containersView();
+      new_containers.reserve(view_lock.size());
       for(auto& [k,child]: view_lock) {
-        addContainer(child);
+        new_containers.push_back(child);
       }
 
       // It is very important that the signals are emited while
@@ -83,12 +99,24 @@ namespace SceneGraph
           my_container, queue, self_lock, &ContainerNode::removeContainer);
       my_container->move_container_sig.connect(
           my_container, queue, self_lock, &ContainerNode::moveContainer);
+
+      // Block the queue before releasing the lock.
+      queue->block(this);
     }
 
+    // This might take long (recursive!),
+    // so we do not hold any locks while processing it.
+    for(auto&& child: new_containers) {
+      addContainer(std::move(child));
+    }
+    queue->unblock(this);
+
+    std::vector<SharedPtr<NamingScheme::ExporterBase>> new_non_containers;
     { // Lock
       auto view_lock = my_container->nonContainersView();
-      for(auto& [k,nurbs]: view_lock) {
-        addNurbs(nurbs);
+      new_non_containers.reserve(view_lock.size());
+      for(auto& [k,leaf]: view_lock) {
+        new_non_containers.push_back(leaf);
       }
 
       // It is very important that the signals are emited while
@@ -100,12 +128,22 @@ namespace SceneGraph
           my_container, queue, self_lock, &ContainerNode::removeNurbs);
       my_container->move_non_container_sig.connect(
           my_container, queue, self_lock, &ContainerNode::moveNurbs);
+
+      // Block the queue before releasing the lock.
+      queue->block(this);
     }
+
+    // These might take some time, because it generates NURBS.
+    for(auto&& nurbs: new_non_containers) {
+      addNurbs(std::move(nurbs));
+    }
+    queue->unblock(this);
   }
 
   void ContainerNode::addContainer(SharedPtr<container_t> added_container)
   {
-    assert(false && "Implement!");
+    auto self_lock = self.lock();
+    ContainerNode::create(std::move(self_lock), std::move(added_container));
   }
 
   void ContainerNode::removeContainer(SharedPtr<container_t> removed_container)

@@ -243,9 +243,9 @@ SCENARIO("Signal dispatch and processing", "[simple]")
 
         THEN("messages should have been received in order")
         {
-          queue->push([processor]{processor->finish();});
-          queue->push([clone1]{clone1->finish();});
-          queue->push([clone2]{clone2->finish();});
+          queue->push([processor]{processor->finish();}, processor.get());
+          queue->push([clone1]{clone1->finish();}, clone1.get());
+          queue->push([clone2]{clone2->finish();}, clone2.get());
           expected->finish();
 
           processor->check_equal(*clone1);

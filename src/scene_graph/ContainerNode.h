@@ -65,12 +65,18 @@ namespace SceneGraph
 
   protected:
     ContainerNode(const SharedPtr<SceneRoot>& scene_root);
+    ContainerNode(const SharedPtr<SceneRoot>& scene_root,
+                  const SharedPtr<ContainerNode>& parent);
+
     void populate(const SharedPtr<container_t>& my_container);
 
   private:
     WeakPtr<SceneRoot>     sceneRootWeak;
     WeakPtr<ContainerNode> self;
     Ogre::SceneNode*       ogreNode = nullptr;
+
+    SharedPtr<ContainerNode>
+    create_no_populate(const SharedPtr<SceneRoot>& scene_root);
   };
 
 }

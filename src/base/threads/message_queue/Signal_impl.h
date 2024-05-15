@@ -41,7 +41,8 @@ namespace Threads
       auto qlock = it->second.queue_weak.lock();
       auto tolock = it->second.to_void_weak.lock();
       if(qlock && tolock) {
-        qlock->push([cb = it->second.call_back, args...]{cb(args...);});
+        auto lambda = [cb = it->second.call_back, args...]{cb(args...);};
+        qlock->push(std::move(lambda), tolock.get());
         ++it;
       } else {
         it = gate->erase(it);

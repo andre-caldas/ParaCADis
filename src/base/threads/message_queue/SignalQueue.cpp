@@ -32,15 +32,24 @@ namespace Threads
   void SignalQueue::run_thread(const SharedPtr<SignalQueue>& self)
   {
     auto lambda = [self_weak = self.getWeakPtr(),
-                   call_backs_weak = self->callBacks.getWeakPtr()] {
+                   callbacks_weak = self->callBacks.getWeakPtr(),
+                   blocked_weak = self->blockedCallBacks.getWeakPtr()] {
       while(true) {
-        auto call_backs = call_backs_weak.lock();
-        if(!call_backs) {
+        auto callbacks = callbacks_weak.lock();
+        if(!callbacks) {
+          return;
+        }
+        auto blocked = blocked_weak.lock();
+        if(!blocked) {
           return;
         }
 
-        auto call_back = call_backs->pull();
-        call_back();
+        auto record = callbacks->pull();
+        if(blocked->contains(record.id)) {
+          blocked->at(record.id).push_back(std::move(record.callback));
+        } else {
+          record.callback();
+        }
 
         // We do not hold "self" while blocked in `pull()`.
         // Because if we have two consumer threads,
@@ -56,9 +65,49 @@ namespace Threads
     std::thread{std::move(lambda)}.detach();
   }
 
-  void SignalQueue::push(function_t&& callback)
+  void SignalQueue::push(function_t&& callback, void* id)
   {
-    callBacks->push(std::move(callback));
+    callBacks->push(record_t{.id=id, .callback=std::move(callback)});
+  }
+
+  void SignalQueue::block(void* id)
+  {
+    /*
+     * Everything has to be executed in the queue thread.
+     * So, we simply push a blocking lambda to the queue.
+     */
+    assert(id != nullptr);
+    auto lambda = [id, blocked_weak = blockedCallBacks.getWeakPtr()] {
+      auto blocked = blocked_weak.lock();
+      if(!blocked) { return; }
+      assert(!blocked->contains(id) && "Already blocked!");
+      /*
+       * The mere existance of "id" in blockedCallBacks indicates that
+       * all callbacks associated to this "id" should no be executed.
+       * The have to be stored inside blocked->at(id).
+       */
+      blocked->try_emplace(id);
+    };
+    push(std::move(lambda), nullptr);
+  }
+
+  void SignalQueue::unblock(void* id)
+  {
+    /*
+     * Everything has to be executed in the queue thread.
+     * So, we simply push an unblocking lambda to the queue.
+     */
+    assert(id != nullptr);
+    auto lambda = [id, blocked_weak = blockedCallBacks.getWeakPtr()] {
+      auto blocked = blocked_weak.lock();
+      if(!blocked) { return; }
+      assert(blocked->contains(id) && "Not blocked!");
+      auto nh = blocked->extract(id);
+      for(auto& callback: nh.mapped()) {
+        callback();
+      }
+    };
+    push(std::move(lambda), nullptr);
   }
 
 }
