@@ -22,57 +22,8 @@
 
 #pragma once
 
-#include "ContainerNode.h"
+#include <nanobind/nanobind.h>
 
-#include <base/document_tree/Container.h>
-#include <base/document_tree/DocumentTree.h>
-#include <base/threads/message_queue/SignalQueue.h>
+namespace nb = nanobind;
 
-#include <memory>
-#include <OGRE/OgreRoot.h>
-
-namespace SceneGraph
-{
-
-  /**
-   * The SceneRoot is the OGRE side of the DocumentTree.
-   *
-   * A DocumentTree is associated to a SceneRoot.
-   * Every Container is associated to a ContainerNode and
-   * every geometry (Exporter) is associated to a NurbsNode.
-   */
-  class SceneRoot
-  {
-  public:
-    SceneRoot();
-
-    /**
-     * Initiates the bridge structure between the document and
-     * the OGRE scene graph.
-     */
-    static void populate(const SharedPtr<SceneRoot>& self,
-                         const SharedPtr<DocumentTree::DocumentTree>& document);
-
-    void runQueue();
-
-    Ogre::Root& getOgreRoot() { return *ogreRoot; }
-    const SharedPtr<Threads::SignalQueue>& getQueue() { return signalQueue; }
-
-  private:
-    WeakPtr<SceneRoot>              self;
-    SharedPtr<Threads::SignalQueue> signalQueue;
-
-    std::unique_ptr<Ogre::Root> ogreRoot;
-
-    SharedPtr<ContainerNode> rootContainer;
-
-
-  public:
-    Ogre::SceneManager*        sceneManager  = nullptr;
-    Ogre::SceneNode*           rootSceneNode = nullptr;
-    Ogre::Camera*              camera        = nullptr;
-    Ogre::Window*              window        = nullptr;
-    Ogre::CompositorWorkspace* workspace     = nullptr;
-  };
-
-}
+void init_scene(nb::module_& m);

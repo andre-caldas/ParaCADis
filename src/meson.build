@@ -22,11 +22,11 @@ py_deps = [
 
 test_main_src = files('cpp_test.cpp')
 
-pybind_src = []
+pybind_main_src = []
 
 subdir('base')
-subdir('scene_graph')
 subdir('python_bindings')
+subdir('scene_graph')
 
 paracadis_exec = executable('paracadis', 'paracadis.cpp',
   include_directories: inc,

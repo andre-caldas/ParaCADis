@@ -28,11 +28,11 @@ scene_graph_lib = library(
   install: true,
   include_directories: inc,
   implicit_include_directories: false,
-  link_with: libs_upto_now,
+  link_with: libs_base,
   dependencies: [deps, scene_graph_deps],
 )
 
 libs_upto_now += [scene_graph_lib]
 
-#subdir('python_bindings')
+subdir('python_bindings')
 #subdir('tests')

@@ -64,12 +64,11 @@ namespace SceneGraph
   }
 
 
-  void SceneRoot::populate(const SharedPtr<SceneRoot>& _self,
+  void SceneRoot::populate(const SharedPtr<SceneRoot>& self,
                            const SharedPtr<DocumentTree::DocumentTree>& document)
   {
-    assert(this == _self.get());
-    self = _self;
-    rootContainer = ContainerNode::create_document(_self, document);
+    self->self = self;
+    self->rootContainer = ContainerNode::create_document(self, document);
   }
 
   void SceneRoot::runQueue()

@@ -23,3 +23,5 @@ subdir('naming_scheme')
 subdir('geometric_primitives')
 subdir('mesh_provider')
 subdir('document_tree')
+
+libs_base = libs_upto_now

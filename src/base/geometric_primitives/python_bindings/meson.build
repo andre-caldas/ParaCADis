@@ -1,3 +1,3 @@
-pybind_src += files(
+pybind_main_src += files(
   'module.cpp',
 )

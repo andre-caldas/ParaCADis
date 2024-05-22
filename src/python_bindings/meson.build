@@ -1,10 +1,10 @@
-pybind_src += files(
+pybind_main_src += files(
   'module.cpp',
 )
 
 paracadis_py_lib = py_ins.extension_module(
   'paracadis',
-  pybind_src,
+  pybind_main_src,
   install: true,
   include_directories: inc,
   implicit_include_directories: false,
