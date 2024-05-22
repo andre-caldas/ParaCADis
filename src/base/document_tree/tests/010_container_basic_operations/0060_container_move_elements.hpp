@@ -28,7 +28,7 @@ SCENARIO("Moving elements between containers", "[simple]")
 {
   GIVEN("two containers 'a' and 'b' with a bunch of elements inside")
   {
-    Real radius{5};
+    Real radius2{25};
     auto a        = SharedPtr<Container>::make_shared();
     auto b        = SharedPtr<Container>::make_shared();
 
@@ -44,7 +44,7 @@ SCENARIO("Moving elements between containers", "[simple]")
     auto linew    = line.getWeakPtr();
     auto lineuuid = line->getUuid();
 
-    auto circle   = SharedPtr<CirclePointRadiusNormal>::make_shared(*p, radius, *v);
+    auto circle   = SharedPtr<CirclePointRadius2Normal>::make_shared(*p, radius2, *v);
     auto circlew  = circle.getWeakPtr();
     auto ciruuid  = circle->getUuid();
 

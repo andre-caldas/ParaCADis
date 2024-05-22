@@ -36,3 +36,5 @@ typedef K::Point_3  Point;
 typedef K::Vector_3 Vector;
 typedef K::Point_2  Point2;
 typedef K::Vector_2 Vector2;
+
+#define VectorToPoint(v) Point(CGAL::ORIGIN + v)

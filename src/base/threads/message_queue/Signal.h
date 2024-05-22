@@ -48,6 +48,18 @@ namespace Threads
   class Signal
   {
   public:
+    Signal() = default;
+
+    /**
+     * @attention
+     * When copying or moving anything with signals,
+     * the signals and connections will simply be lost.
+     */
+    /// @{
+    Signal(const Signal&) : Signal() {}
+    Signal(Signal&&) : Signal() {}
+    /// @}
+
     /**
      * Sends the signal to all registered callbacks.
      */

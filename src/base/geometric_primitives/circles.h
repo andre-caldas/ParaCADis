@@ -32,32 +32,32 @@
 /**
  * DataStruct for CircleRadius.
  */
-struct CirclePointRadiusNormalData {
+struct CirclePointRadius2NormalData {
   DeferenceablePoint  center;
   DeferenceableVector normal;
-  Real                radius;
+  Real                radius2;
 };
 
 /**
  * A counter-clockwise oriented circle, thumbs up (right-hand).
  */
-class CirclePointRadiusNormal
-    : public NamingScheme::Exporter<CirclePointRadiusNormalData>
-    , public NamingScheme::IExportStruct<DeferenceablePoint, CirclePointRadiusNormalData,
-                                {&CirclePointRadiusNormalData::center, "center"},
-                                {&CirclePointRadiusNormalData::center, "c"}>
-    , public NamingScheme::IExportStruct<DeferenceableVector, CirclePointRadiusNormalData,
-                                {&CirclePointRadiusNormalData::normal, "normal"},
-                                {&CirclePointRadiusNormalData::normal, "n"}>
-    , public NamingScheme::IExportStruct<Real, CirclePointRadiusNormalData,
-                                {&CirclePointRadiusNormalData::radius, "radius"},
-                                {&CirclePointRadiusNormalData::radius, "r2"}>
+class CirclePointRadius2Normal
+    : public NamingScheme::Exporter<CirclePointRadius2NormalData>
+    , public NamingScheme::IExportStruct<DeferenceablePoint, CirclePointRadius2NormalData,
+                                {&CirclePointRadius2NormalData::center, "center"},
+                                {&CirclePointRadius2NormalData::center, "c"}>
+    , public NamingScheme::IExportStruct<DeferenceableVector, CirclePointRadius2NormalData,
+                                {&CirclePointRadius2NormalData::normal, "normal"},
+                                {&CirclePointRadius2NormalData::normal, "n"}>
+    , public NamingScheme::IExportStruct<Real, CirclePointRadius2NormalData,
+                                {&CirclePointRadius2NormalData::radius2, "radius2"},
+                                {&CirclePointRadius2NormalData::radius2, "r2"}>
     , public NamingScheme::Chainables<DeferenceablePoint, DeferenceableVector>
 {
 public:
-  CirclePointRadiusNormal(Point center, Real radius, Vector normal = {1,0,0});
+  CirclePointRadius2Normal(Point center, Real radius2, Vector normal = {1,0,0});
 
-  std::unique_ptr<CirclePointRadiusNormal> deepCopy() const;
+  std::unique_ptr<CirclePointRadius2Normal> deepCopy() const;
   std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
   { return deepCopy(); }
 };

@@ -22,15 +22,15 @@
 
 #include "circles.h"
 
-CirclePointRadiusNormal::CirclePointRadiusNormal(Point center, Real radius, Vector normal)
-    : Exporter{{std::move(center), std::move(normal), std::move(radius)}}
+CirclePointRadius2Normal::CirclePointRadius2Normal(Point center, Real radius2, Vector normal)
+    : Exporter{{std::move(center), std::move(normal), std::move(radius2)}}
 {
 }
 
-std::unique_ptr<CirclePointRadiusNormal> CirclePointRadiusNormal::deepCopy() const
+std::unique_ptr<CirclePointRadius2Normal> CirclePointRadius2Normal::deepCopy() const
 {
   Threads::ReaderGate gate{*this};
-  return std::make_unique<CirclePointRadiusNormal>(gate->center, gate->radius, gate->normal);
+  return std::make_unique<CirclePointRadius2Normal>(gate->center, gate->radius2, gate->normal);
 }
 
 
@@ -57,8 +57,8 @@ std::unique_ptr<Circle3Points> Circle3Points::deepCopy() const
 
 using namespace NamingScheme;
 
-template class IExport<CirclePointRadiusNormal>;
+template class IExport<CirclePointRadius2Normal>;
 template class IExport<Circle3Points>;
 
-template class NameSearch<CirclePointRadiusNormal>;
+template class NameSearch<CirclePointRadius2Normal>;
 template class NameSearch<Circle3Points>;

@@ -123,19 +123,19 @@ namespace SceneGraph
       // the emiter still holds the lock. Otherwise, we might
       // miss some signal between populating and connecting.
       my_container->add_non_container_sig.connect(
-          my_container, queue, self_lock, &ContainerNode::addNurbs);
+          my_container, queue, self_lock, &ContainerNode::addMesh);
       my_container->remove_non_container_sig.connect(
-          my_container, queue, self_lock, &ContainerNode::removeNurbs);
+          my_container, queue, self_lock, &ContainerNode::removeMesh);
       my_container->move_non_container_sig.connect(
-          my_container, queue, self_lock, &ContainerNode::moveNurbs);
+          my_container, queue, self_lock, &ContainerNode::moveMesh);
 
       // Block the queue before releasing the lock.
       queue->block(this);
     }
 
     // These might take some time, because it generates NURBS.
-    for(auto&& nurbs: new_non_containers) {
-      addNurbs(std::move(nurbs));
+    for(auto&& mesh: new_non_containers) {
+      addMesh(std::move(mesh));
     }
     queue->unblock(this);
   }
@@ -157,17 +157,17 @@ namespace SceneGraph
     assert(false && "Implement!");
   }
 
-  void ContainerNode::addNurbs(SharedPtr<exporter_t> nurbs)
+  void ContainerNode::addMesh(SharedPtr<exporter_t> mesh)
   {
     assert(false && "Implement!");
   }
 
-  void ContainerNode::removeNurbs(SharedPtr<exporter_t> nurbs)
+  void ContainerNode::removeMesh(SharedPtr<exporter_t> mesh)
   {
     assert(false && "Implement!");
   }
 
-  void ContainerNode::moveNurbs(SharedPtr<exporter_t> nurbs,
+  void ContainerNode::moveMesh(SharedPtr<exporter_t> mesh,
                                 SharedPtr<container_t> moved_to)
   {
     assert(false && "Implement!");

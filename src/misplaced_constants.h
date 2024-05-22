@@ -20,18 +20,16 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "MutexSignal.h"
+/**
+ * @file Constants that should be elsewhere.
+ *
+ * The constants here should be:
+ * 1. Non-existent at all.
+ * 2. In a config file.
+ * 3. Be computed at runtime somehow.
+ * 4. Elsewhere.
+ */
 
-#include <base/threads/locks/LockPolicy.h>
-#include <base/threads/locks/MutexData.h>
+#pragma once
 
-namespace Threads
-{
-
-  MutexSignal::MutexSignal(MutexData& mutex)
-  {
-    assert(!mutex.signal && "Mutex already associated to a signal.");
-    mutex.signal = this;
-  }
-
-}
+#define CONFIG_WORLD_DIAMETER 1000000

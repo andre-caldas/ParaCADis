@@ -29,12 +29,12 @@ SCENARIO("Populate a with simple objects", "[simple]")
 {
   GIVEN("a Container and some geometric objects")
   {
-    Real radius{5};
+    Real radius2{25};
     auto a       = SharedPtr<Container>::make_shared();
     auto p       = SharedPtr<DeferenceablePoint>::make_shared(1, 2, 3);
     auto v       = SharedPtr<DeferenceableVector>::make_shared(4, 5, 6);
     auto line    = SharedPtr<LinePointDirection>::make_shared(*p, *v);
-    auto circle  = SharedPtr<CirclePointRadiusNormal>::make_shared(*p, radius, *v);
+    auto circle  = SharedPtr<CirclePointRadius2Normal>::make_shared(*p, radius2, *v);
     auto outside = SharedPtr<DeferenceablePoint>::make_shared(-1, -1, -1);
 
     WHEN("we add the geometric objects to the container")

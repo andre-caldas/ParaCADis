@@ -29,6 +29,7 @@
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/threads/locks/LockPolicy.h>
 #include <base/threads/locks/MutexData.h>
+#include <base/threads/message_queue/MutexSignal.h>
 #include <base/threads/safe_structs/ThreadSafeStruct.h>
 
 #include <string>
@@ -66,10 +67,19 @@ namespace NamingScheme
      * Descendants of ExporterBase must implement a deepCopyExporter() method.
      *
      * @attention The policy is:
-     * 1. Implement a deepCopyExporter().
-     * 2. Implement a deepCopy() specific for the derived type.
+     * 1. Implement a deepCopy() specific for the derived type.
+     * 2. Implement a deepCopyExporter() to return the result of deepCopy().
      */
     virtual std::unique_ptr<ExporterBase> deepCopyExporter() const = 0;
+
+    /**
+     * The signal that indicates some change has happened.
+     *
+     * Every change shall be done with an ExclusiveLock.
+     * The returned signal must be associated with every mutex.
+     * In practice, what is really signaled is the release of the exclusive lock.
+     */
+    virtual Threads::Signal<>& getChangedSignal() const = 0;
 
     /**
      * String for reports and diagnostics.
@@ -131,6 +141,9 @@ namespace NamingScheme
     {
     }
 
+    Threads::Signal<>& getChangedSignal() const override
+    { return modified_sig; }
+
     /**
      * Must satisfy `Threads::C_MutexHolder`.
      */
@@ -138,6 +151,7 @@ namespace NamingScheme
 
   private:
     safe_struct_t safeData;
+    mutable Threads::MutexSignal modified_sig{getMutexLike()};
 
   public:
     using GateInfo = Threads::LocalBridgeInfo<&Exporter::safeData>;

@@ -126,14 +126,14 @@ SCENARIO("Signal dispatch and processing", "[simple]")
 {
   GIVEN("a container and some objects inside it")
   {
-    Real radius{5};
+    Real radius2{25};
     auto a        = SharedPtr<Container>::make_shared();
     auto b        = SharedPtr<Container>::make_shared();
 
     auto p        = SharedPtr<DeferenceablePoint>::make_shared(1, 2, 3);
     auto v        = SharedPtr<DeferenceableVector>::make_shared(4, 5, 6);
     auto line     = SharedPtr<LinePointDirection>::make_shared(*p, *v);
-    auto circle   = SharedPtr<CirclePointRadiusNormal>::make_shared(*p, radius, *v);
+    auto circle   = SharedPtr<CirclePointRadius2Normal>::make_shared(*p, radius2, *v);
 
     WHEN("we setup signals and a queue")
     {

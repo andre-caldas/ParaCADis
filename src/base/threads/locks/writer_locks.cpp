@@ -69,8 +69,8 @@ namespace Threads
   {
     auto& mutexes = getMutexes();
     for(auto mutex: mutexes) {
-      if(mutex->signal) {
-        mutex->signal->emit_signal();
+      for(auto signal: mutex->active_signals) {
+        signal->emit_signal();
       }
     }
   }

@@ -1,6 +1,9 @@
 inc = include_directories('.')
 
+add_project_arguments('-DCGAL_HAS_THREADS', language : 'cpp')
+
 deps = [
+  dependency('CGAL'),
   dependency('gmpxx'),
   dependency('mpfr'),
 ]

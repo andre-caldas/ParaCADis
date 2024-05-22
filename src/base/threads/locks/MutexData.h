@@ -63,7 +63,7 @@ namespace Threads
   struct MutexData {
     YesItIsAMutex mutex;
     const int     layer  = 0;
-    MutexSignal*  signal = nullptr;
+    std::unordered_set<MutexSignal*> active_signals;
 
     static constexpr int LOCKFREE = std::numeric_limits<int>::max();
 

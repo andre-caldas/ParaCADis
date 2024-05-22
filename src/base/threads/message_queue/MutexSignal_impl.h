@@ -20,28 +20,22 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef MessageQueue_MutexSignal_H
-#define MessageQueue_MutexSignal_H
+#pragma once
 
-#include "Signal.h"
+#include "MutexSignal.h"
 
+#include <base/threads/locks/LockPolicy.h>
 #include <base/threads/locks/MutexData.h>
 
 namespace Threads
 {
 
-  /**
-   * Sends a signal everytime an exclusively locked mutex is released.
-   */
-  class MutexSignal : public Signal<>
+  template<C_MutexGatherOrData... M>
+  MutexSignal::MutexSignal(M&... mutexes)
   {
-  public:
-    template<C_MutexGatherOrData... M>
-    MutexSignal(M&... mutexes);
-  };
+    for(auto mutex: getPlainMutexes(mutexes...)) {
+      mutex->active_signals.insert(this);
+    }
+  }
 
 }
-
-#include "MutexSignal_impl.h"
-
-#endif

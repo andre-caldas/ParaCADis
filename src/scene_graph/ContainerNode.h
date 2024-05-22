@@ -58,9 +58,9 @@ namespace SceneGraph
     void moveContainer(SharedPtr<container_t> moved_container,
                        SharedPtr<container_t> moved_to);
 
-    void addNurbs(SharedPtr<exporter_t> nurbs);
-    void removeNurbs(SharedPtr<exporter_t> nurbs);
-    void moveNurbs(SharedPtr<exporter_t> nurbs,
+    void addMesh(SharedPtr<exporter_t> mesh);
+    void removeMesh(SharedPtr<exporter_t> mesh);
+    void moveMesh(SharedPtr<exporter_t> mesh,
                    SharedPtr<container_t> moved_to);
 
   protected:

@@ -32,10 +32,12 @@ namespace Threads
   {
     assert(LockPolicy::isLockedExclusively(*this)
            && "The signal must be sent while still holding an exclusive lock.");
-    if(!signal) { return; }
-    // Since we have an exclusive lock,
-    // we assume the signal pointer is valid.
-    signal->emit_signal();
+    if(active_signals.empty()) { return; }
+    for(auto signal: active_signals) {
+      // Since we have an exclusive lock,
+      // we assume the signal pointer is valid.
+      signal->emit_signal();
+    }
   }
 
 }  // namespace Threads

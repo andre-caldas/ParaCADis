@@ -154,22 +154,22 @@ void init_geometric_primitives(nb::module_& parent_module,
 
 
   /*
-   * CirclePointRadiusNormal.
+   * CirclePointRadius2Normal.
    */
-  nb::class_<CirclePointRadiusNormal>(
-      m, "CirclePointRadiusNormal", exporter_base,
+  nb::class_<CirclePointRadius2Normal>(
+      m, "CirclePointRadius2Normal", exporter_base,
       "An oriented circle specified by a center point,"
-      " the radius and a normal vector."
+      " the squared radius and a normal vector."
       " The circle orientation is determined by the right-hand rule"
       " applied to the normal vector"
       " (a right-hand holding the normal vector is such that the fingers"
       " point to the circle orientation).")
       .def(nb::init<Point, Real, Vector>(),
-           "center"_a, "radius"_a, "normal"_a,
-           "Creates the circle cetered at 'center', with radius 'radius'"
+           "center"_a, "radius2"_a, "normal"_a,
+           "Creates the circle cetered at 'center', with squared radius 'radius2'"
            " and orientation given the the 'normal' vector.")
       .def("__repr__",
-           [](const CirclePointRadiusNormal&)
+           [](const CirclePointRadius2Normal&)
            { return "<CIRCLEPOINTRADIUSNORMAL... (put info here)>"; });
 
   /*

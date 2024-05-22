@@ -28,7 +28,7 @@ SCENARIO("Removing elements from a container", "[simple]")
 {
   GIVEN("a container and some objects inside it")
   {
-    Real radius{5};
+    Real radius2{25};
     auto a        = SharedPtr<Container>::make_shared();
 
     auto p        = SharedPtr<DeferenceablePoint>::make_shared(1, 2, 3);
@@ -41,7 +41,7 @@ SCENARIO("Removing elements from a container", "[simple]")
 
     auto line     = SharedPtr<LinePointDirection>::make_shared(*p, *v);
     auto linew    = line.getWeakPtr();
-    auto circle   = SharedPtr<CirclePointRadiusNormal>::make_shared(*p, radius, *v);
+    auto circle   = SharedPtr<CirclePointRadius2Normal>::make_shared(*p, radius2, *v);
     auto circlew  = circle.getWeakPtr();
     auto outside  = SharedPtr<DeferenceablePoint>::make_shared(-1, -1, -1);
     auto outsidew = outside.getWeakPtr();
@@ -84,7 +84,7 @@ SCENARIO("Removing elements from a container", "[simple]")
 
   GIVEN("a nested container with some objects inside it")
   {
-    Real radius{5};
+    Real radius2{25};
     auto parent   = SharedPtr<Container>::make_shared();
 
     auto xboth    = SharedPtr<DeferenceablePoint>::make_shared(7, 8, 9);
@@ -105,7 +105,7 @@ SCENARIO("Removing elements from a container", "[simple]")
 
     auto line     = SharedPtr<LinePointDirection>::make_shared(*p, *v);
     auto linew    = line.getWeakPtr();
-    auto circle   = SharedPtr<CirclePointRadiusNormal>::make_shared(*p, radius, *v);
+    auto circle   = SharedPtr<CirclePointRadius2Normal>::make_shared(*p, radius2, *v);
     auto circlew  = circle.getWeakPtr();
     auto outside  = SharedPtr<DeferenceablePoint>::make_shared(-1, -1, -1);
     auto outsidew = outside.getWeakPtr();

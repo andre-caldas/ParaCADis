@@ -26,7 +26,7 @@ SCENARIO("Accessing a container element using a path", "[simple]")
 {
   GIVEN("a container and some objects")
   {
-    Real radius{5};
+    Real radius2{25};
     Real px{1};
     Real py{2};
     Real pz{3};
@@ -45,7 +45,7 @@ SCENARIO("Accessing a container element using a path", "[simple]")
 
     auto l     = SharedPtr<LinePointDirection>::make_shared(*p, *v);
     auto lw    = l.getWeakPtr();
-    auto c     = SharedPtr<CirclePointRadiusNormal>::make_shared(*p, radius, *v);
+    auto c     = SharedPtr<CirclePointRadius2Normal>::make_shared(*p, radius2, *v);
     auto cw    = c.getWeakPtr();
 
     WHEN("we add them to the container")
@@ -75,7 +75,7 @@ SCENARIO("Accessing a container element using a path", "[simple]")
         NamingScheme::ReferenceTo<DeferenceablePoint>      p_ref{a, pname};
         NamingScheme::ReferenceTo<DeferenceableVector>     v_ref{a, vname};
         NamingScheme::ReferenceTo<LinePointDirection>      l_ref{a, lname};
-        NamingScheme::ReferenceTo<CirclePointRadiusNormal> c_ref{a, cname};
+        NamingScheme::ReferenceTo<CirclePointRadius2Normal> c_ref{a, cname};
 
         THEN("we get a working reference")
         {
@@ -104,7 +104,7 @@ SCENARIO("Accessing a container element using a path", "[simple]")
 
             NamingScheme::ReferenceTo<Real> ccx_ref{a, cname, "center", "x"};
             NamingScheme::ReferenceTo<Real> cnx_ref{a, cname, "normal", "x"};
-            NamingScheme::ReferenceTo<Real>  cr_ref{a, cname, "radius"};
+            NamingScheme::ReferenceTo<Real>  cr_ref{a, cname, "radius2"};
             NamingScheme::ReferenceTo<DeferenceablePoint>
                                            cbad_ref{a, lname, "center", "x"};
 
@@ -125,7 +125,7 @@ SCENARIO("Accessing a container element using a path", "[simple]")
 
               REQUIRE(px == *(ReaderGateKeeper{ccx_ref.resolve()}));
               REQUIRE(vx == *(ReaderGateKeeper{cnx_ref.resolve()}));
-              REQUIRE(radius == *(ReaderGateKeeper{cr_ref.resolve()}));
+              REQUIRE(radius2 == *(ReaderGateKeeper{cr_ref.resolve()}));
             }
 
             THEN("bad references evaluate to false")

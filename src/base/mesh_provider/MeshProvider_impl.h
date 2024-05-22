@@ -22,57 +22,34 @@
 
 #pragma once
 
-#include <base/document_tree/Container.h>
+#include "MeshProvider.h"
 
-#include <gismo/gsNurbs/gsNurbs.h>
-#include <gismo/gsMesh2/...>
-
-#include <memory>
-
-namespace SceneGraph
+namespace Mesh
 {
-
-  /**
-   * Vurtual base to implement a bridge between ParaCADis geometric objects
-   * and the SceneGraph tree leafs.
-   */
-  class NurbsNode
+  template<typename MeshType, typename ReferenceableGeometry>
+  MeshProviderT<MeshType, ReferenceableGeometry>::MeshProviderT(
+      SharedPtr<ReferenceableGeometry> geometry)
+      : geometry_weak(geometry)
   {
-  protected:
-    virtual ~NurbsNode() = default;
+    geometry->getChangedSignal().connect(recalculate);
+  }
 
-  private:
-    std::unique_ptr<gsMesh> mesh;
-  };
-
-
-  /**
-   * Implements a bridge between ParaCADis 1D geometric objects
-   * and the SceneGraph tree leafs.
-   */
-  class NurbsCurveNode : public NurbsNode
+  template<typename MeshType, typename ReferenceableGeometry>
+  SharedPtr<const MeshType>
+  MeshProviderT<MeshType, ReferenceableGeometry>::getMesh()
   {
-    using nurbs_t = gismo::gsNurbs<float>;
-  public:
-    NurbsCurvesNode(nurbs_t nurbs) : nurbs(std::move(nurbs)) {}
+    if(!mesh) {
+      recalculate();
+    }
+    assert(mesh && "Virtual method recalculate() needs to generate a valid mesh.");
+    return mesh;
+  }
 
-  private:
-    nurbs_t nurbs;
-  };
-
-
-  /**
-   * Implements a bridge between 2D ParaCADis geometric objects
-   * and the SceneGraph tree leafs.
-   */
-  class NurbsSurfaceNode : public NurbsNode
+  template<typename MeshType, typename ReferenceableGeometry>
+  void MeshProviderT<MeshType, ReferenceableGeometry>::setMesh(
+      SharedPtr<const MeshType> value)
   {
-    using nurbs_t = gismo::gsTensorNurbs<2, float>;
-  public:
-    NurbsSurfaceNode(nurbs_t nurbs) : nurbs(std::move(nurbs)) {}
-
-  private:
-    nurbs_t nurbs;
-  };
-
+    assert(value && "Cannot set mesh to invalid pointer.");
+    mesh = value;
+  }
 }

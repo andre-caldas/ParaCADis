@@ -20,28 +20,24 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef MessageQueue_MutexSignal_H
-#define MessageQueue_MutexSignal_H
+#pragma once
 
-#include "Signal.h"
+#include <base/geometric_primitives/types.h>
 
-#include <base/threads/locks/MutexData.h>
+#include <vector>
 
-namespace Threads
+namespace Mesh
 {
 
-  /**
-   * Sends a signal everytime an exclusively locked mutex is released.
-   */
-  class MutexSignal : public Signal<>
+  class LineMesh : private std::vector<Point>
   {
   public:
-    template<C_MutexGatherOrData... M>
-    MutexSignal(M&... mutexes);
+    template<typename... P>
+    LineMesh(const P&... points) : std::vector<Point>::vector{points...} {}
+
+    using std::vector<Point>::reserve;
+    using std::vector<Point>::push_back;
+    using std::vector<Point>::front;
   };
 
 }
-
-#include "MutexSignal_impl.h"
-
-#endif

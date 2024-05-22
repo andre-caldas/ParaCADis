@@ -30,6 +30,7 @@
 #include <base/naming_scheme/IExport.h>
 #include <base/threads/safe_structs/ThreadSafeMap.h>
 #include <base/threads/message_queue/Signal.h>
+#include <base/threads/message_queue/MutexSignal.h>
 
 #include <concepts>
 #include <ranges>
@@ -115,23 +116,20 @@ namespace DocumentTree
      * Use `mutex` instead.
      * @see MutexesWithPivot.
      */
-    mutable Threads::GatherMutexData<
-        Threads::MutexData, Threads::MutexData, Threads::MutexData>
+    mutable Threads::GatherMutexData<Threads::MutexData,
+                                     Threads::MutexData,
+                                     Threads::MutexData>
         mutex{non_containers.getMutexLike(),
               containers.getMutexLike(),
               coordinate_system.getMutexLike()};
 
+    mutable Threads::MutexSignal modified_sig{mutex};
+
   public:
     constexpr auto& getMutexLike() const { return mutex; }
 
-    /*
-     * We do not need MutexSignal because we do not export the lists.
-     */
-#if 0
-    Threads::MutexSignal non_container_list_modified{   non_containers.getMutexLike()};
-    Threads::MutexSignal container_list_modified    {       containers.getMutexLike()};
-    Threads::MutexSignal coordinate_system_modified {coordinate_system.getMutexLike()};
-#endif
+    Threads::Signal<>& getChangedSignal() const override
+    { return modified_sig; }
 
     Threads::Signal<SharedPtr<Container>>                  add_container_sig;
     Threads::Signal<SharedPtr<NamingScheme::ExporterBase>> add_non_container_sig;

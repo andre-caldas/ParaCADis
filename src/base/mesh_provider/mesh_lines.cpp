@@ -20,28 +20,56 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef MessageQueue_MutexSignal_H
-#define MessageQueue_MutexSignal_H
+#include "mesh_lines.h"
+#include "LineMesh.h"
 
-#include "Signal.h"
+#include <misplaced_constants.h>
 
-#include <base/threads/locks/MutexData.h>
+#include <base/expected_behaviour/SharedPtr.h>
+#include <base/geometric_primitives/types.h>
+#include <base/threads/locks/writer_locks.h>
 
-namespace Threads
+#include <cmath>
+
+namespace Mesh
 {
 
-  /**
-   * Sends a signal everytime an exclusively locked mutex is released.
-   */
-  class MutexSignal : public Signal<>
+  namespace {
+    SharedPtr<LineMesh> getLine(const Point& a, const Point& b)
+    {
+      auto v = b - a;
+      v *= CONFIG_WORLD_DIAMETER * CGAL::sqrt(CGAL::squared_length(v));
+      Point far_a = b - v;
+      Point far_b = a + v;
+
+      return std::make_shared<LineMesh>(far_a, a, b, far_b);
+    }
+  }
+
+  void MeshLine2Points::_recalculate()
   {
-  public:
-    template<C_MutexGatherOrData... M>
-    MutexSignal(M&... mutexes);
-  };
+    auto geometry = geometry_weak.lock();
+    if(!geometry) { return; }
+    Threads::WriterGate gate{*geometry};
+    Point a = gate->start;
+    Point b = gate->end;
+    // TODO: gate.release() is important to release lock before
+    // doing heavy operations.
+//    gate.release();
+    setMesh(getLine(a, b));
+  }
+
+  void MeshLinePointDirection::_recalculate()
+  {
+    auto geometry = geometry_weak.lock();
+    if(!geometry) { return; }
+    Threads::WriterGate gate{*geometry};
+    Point a = gate->start;
+    Point b = a + Vector(gate->direction);
+    // TODO: gate.release() is important to release lock before
+    // doing heavy operations.
+//    gate.release();
+    setMesh(getLine(a, b));
+  }
 
 }
-
-#include "MutexSignal_impl.h"
-
-#endif

@@ -20,28 +20,58 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef MessageQueue_MutexSignal_H
-#define MessageQueue_MutexSignal_H
+#pragma once
 
-#include "Signal.h"
+#include <base/expected_behaviour/SharedPtr.h>
+#include <base/geometric_primitives/types.h>
+#include <base/threads/message_queue/Signal.h>
 
-#include <base/threads/locks/MutexData.h>
+#include <CGAL/Surface_mesh.h>
 
-namespace Threads
+#include <memory>
+#include <atomic>
+
+namespace Mesh
 {
-
-  /**
-   * Sends a signal everytime an exclusively locked mutex is released.
-   */
-  class MutexSignal : public Signal<>
+  class MeshProvider
   {
   public:
-    template<C_MutexGatherOrData... M>
-    MutexSignal(M&... mutexes);
+    virtual ~MeshProvider() = default;
+
+    // To be used as a signal slot.
+    void recalculate() { _recalculate(); changed_sig.emit_signal(); }
+
+    mutable Threads::Signal<> changed_sig;
+
+  protected:
+    virtual void _recalculate() = 0;
   };
 
+  template<typename MeshType, typename ReferenceableGeometry>
+  class MeshProviderT : public MeshProvider
+  {
+  public:
+    MeshProviderT(SharedPtr<ReferenceableGeometry> geometry);
+    SharedPtr<const MeshType> getMesh();
+
+  protected:
+    void setMesh(SharedPtr<const MeshType> value);
+
+    WeakPtr<ReferenceableGeometry> geometry_weak;
+    std::atomic<std::shared_ptr<const MeshType>> mesh;
+  };
+
+
+  class LineMesh;
+  using SurfaceMesh = CGAL::Surface_mesh<Point>;
+
+  template<typename ReferenceableGeometry>
+  using MeshProviderCurve
+      = MeshProviderT<LineMesh, ReferenceableGeometry>;
+
+  template<typename ReferenceableGeometry>
+  using MeshProviderSurface
+      = MeshProviderT<SurfaceMesh, ReferenceableGeometry>;
 }
 
-#include "MutexSignal_impl.h"
-
-#endif
+#include "MeshProvider_impl.h"

@@ -20,28 +20,26 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef MessageQueue_MutexSignal_H
-#define MessageQueue_MutexSignal_H
+#pragma once
 
-#include "Signal.h"
+#include "MeshProvider.h"
 
-#include <base/threads/locks/MutexData.h>
+#include <base/geometric_primitives/circles.h>
 
-namespace Threads
+namespace Mesh
 {
-
-  /**
-   * Sends a signal everytime an exclusively locked mutex is released.
-   */
-  class MutexSignal : public Signal<>
+  class MeshCirclePointRadius2Normal
+      : public MeshProviderCurve<CirclePointRadius2Normal>
   {
   public:
-    template<C_MutexGatherOrData... M>
-    MutexSignal(M&... mutexes);
+    void _recalculate() override;
   };
 
+
+  class MeshCircle3Points
+      : public MeshProviderCurve<Circle3Points>
+  {
+  public:
+    void _recalculate() override;
+  };
 }
-
-#include "MutexSignal_impl.h"
-
-#endif
