@@ -31,7 +31,7 @@
 
 namespace nb = nanobind;
 using namespace nb::literals;
-using namespace DocumentTree;
+using namespace Document;
 using namespace SceneGraph;
 
 namespace {
@@ -50,7 +50,10 @@ void init_scene(nb::module_& m)
       "A scene graph with a message queue that keeps it updated.")
       .def(nb::new_(&new_scene),
            "Creates an empty scene.")
-      .def("populate", &SceneRoot::populate, "document"_a,
+      .def("populate",
+           [](const SharedPtr<SceneRoot>& self, const SharedPtr<DocumentTree>& doc)
+           {self->populate(self, doc);},
+           "document"_a,
            "Populates the scene with the contents of 'document'.")
       .def("__repr__",
            [](const SceneRoot& s){ return "<SCENE... (put info here)>"; });

@@ -23,7 +23,7 @@
 #include <base/document_tree/Container.h>
 #include <base/naming_scheme/ReferenceToObject.h>
 
-using namespace DocumentTree;
+using namespace Document;
 using namespace Threads;
 
 #include "0010_simple_access.hpp"

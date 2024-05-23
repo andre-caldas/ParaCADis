@@ -26,7 +26,7 @@
 
 #include <base/threads/safe_structs/ThreadSafeMap.h>
 
-using namespace DocumentTree;
+using namespace Document;
 
 std::unique_ptr<Container> Container::deepCopy() const
 {

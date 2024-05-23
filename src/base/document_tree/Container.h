@@ -35,7 +35,7 @@
 #include <concepts>
 #include <ranges>
 
-namespace DocumentTree
+namespace Document
 {
 
   class Container
@@ -143,6 +143,6 @@ namespace DocumentTree
 
   static_assert(Threads::C_MutexHolder<Container>, "A container is a C_MutexHolder.");
 
-}  // namespace DocumentTree
+}  // namespace Document
 
 #endif

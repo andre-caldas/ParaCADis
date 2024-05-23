@@ -24,7 +24,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-using namespace DocumentTree;
+using namespace Document;
 
 SCENARIO("DEEP COPY", "[simple]")
 {

@@ -82,7 +82,7 @@ namespace SceneGraph
 
 
   void SceneRoot::populate(const SharedPtr<SceneRoot>& self,
-                           const SharedPtr<DocumentTree::DocumentTree>& document)
+                           const SharedPtr<Document::DocumentTree>& document)
   {
     self->self = self;
     self->rootContainer = ContainerNode::create_document(self, document);

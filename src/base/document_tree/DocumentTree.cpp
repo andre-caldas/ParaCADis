@@ -22,7 +22,7 @@
 
 #include "DocumentTree.h"
 
-namespace DocumentTree
+namespace Document
 {
 
   std::string DocumentTree::toString() const

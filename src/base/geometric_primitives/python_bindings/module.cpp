@@ -25,6 +25,7 @@
 
 #include <nanobind/nanobind.h>
 #include <nanobind/operators.h>
+#include <nanobind/stl/vector.h>
 
 #include "module.h"
 
@@ -36,6 +37,17 @@
 
 namespace nb = nanobind;
 using namespace nb::literals;
+
+namespace {
+  template<typename T, typename X = double>
+  void new_from_vector(T* t, const std::vector<X>& v) {
+    new(t) T(
+        Real((v.size() > 0)?v[0]:X(0)),
+        Real((v.size() > 1)?v[1]:X(0)),
+        Real((v.size() > 2)?v[2]:X(0))
+    );
+  }
+}
 
 void init_geometric_primitives(nb::module_& parent_module,
                                nb::module_& naming_scheme)
@@ -72,10 +84,12 @@ void init_geometric_primitives(nb::module_& parent_module,
       "A vector.")
       .def(nb::init<>(), "Zero vector")
       .def(nb::init<Real, Real, Real>(), "x"_a, "y"_a, "z"_a)
+      .def("__init__", &new_from_vector<Vector>)
       .def(nb::self + nb::self)
       .def(nb::self - nb::self)
       .def("__repr__",
            [](const Vector&){ return "<VECTOR... (put info here)>"; });
+  nb::implicitly_convertible<std::vector<double>, Vector>();
 
   /*
    * DeferenceableVector.
@@ -99,9 +113,10 @@ void init_geometric_primitives(nb::module_& parent_module,
       "A point.")
       .def(nb::init<>(), "Origin")
       .def(nb::init<Real, Real, Real>(), "x"_a, "y"_a, "z"_a)
+      .def("__init__", &new_from_vector<Point>)
       .def("__repr__",
            [](const Point&){ return "<POINT... (put info here)>"; });
-
+  nb::implicitly_convertible<std::vector<double>, Point>();
   /*
    * DeferenceablePoint.
    */

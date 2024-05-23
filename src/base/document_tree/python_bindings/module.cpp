@@ -25,12 +25,13 @@
 #include "module.h"
 
 #include <base/document_tree/Container.h>
+#include <base/document_tree/DocumentTree.h>
 #include <base/naming_scheme/PathToken.h>
 #include <python_bindings/SharedPtr_type_caster.h>
 
 namespace nb = nanobind;
 using namespace nb::literals;
-using namespace DocumentTree;
+using namespace Document;
 using namespace NamingScheme;
 
 void init_document_tree(nb::module_& parent_module)
@@ -60,4 +61,13 @@ void init_document_tree(nb::module_& parent_module)
 #endif
       .def("__repr__",
            [](const Container& c){ return "<CONTAINER... (put info here)>"; });
+
+
+  nb::class_<DocumentTree, Container>(
+      m, "Document",
+      "A container to hold a full document.")
+      .def(nb::init<>(),
+           "Creates an empty document.")
+      .def("__repr__",
+           [](const DocumentTree& d){ return "<DOCUMENT... (put info here)>"; });
 }

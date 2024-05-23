@@ -32,11 +32,11 @@ namespace NamingScheme
   class ExporterBase;
 }
 
-namespace DocumentTree {
+namespace Document {
   class Container;
 }
 
-namespace DocumentTree::Exception
+namespace Document::Exception
 {
 
   class ElementAlreadyInContainer : public ::Exception::RunTimeError
@@ -57,6 +57,6 @@ namespace DocumentTree::Exception
         const NamingScheme::ExporterBase& element, const Container& container);
   };
 
-}  // namespace DocumentTree
+}  // namespace Document
 
 #endif

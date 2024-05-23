@@ -31,8 +31,8 @@
 namespace SceneGraph
 {
 
-  using container_t = DocumentTree::Container;
-  using document_t = DocumentTree::DocumentTree;
+  using container_t = Document::Container;
+  using document_t = Document::DocumentTree;
   using exporter_t = NamingScheme::ExporterBase;
 
   class SceneRoot;

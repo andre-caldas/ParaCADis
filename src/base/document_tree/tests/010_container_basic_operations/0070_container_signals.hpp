@@ -32,7 +32,7 @@
 #include <string>
 #include <vector>
 
-using namespace DocumentTree;
+using namespace Document;
 using namespace NamingScheme;
 using namespace Threads;
 using namespace Threads::SafeStructs;

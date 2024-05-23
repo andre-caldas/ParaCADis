@@ -28,17 +28,20 @@
 
 using namespace NamingScheme;
 
-void TimedWeakChainWithTransforms::prepare(token_iterator& tokens)
-{
-  exporters.reserve(tokens.size());
-  transforms.reserve(tokens.size());
-}
-
-const SharedPtr<ExporterBase>& TimedWeakChainWithTransforms::topExporter() const
+namespace Document
 {
 
-}
+  void TimedWeakChainWithTransforms::prepare(token_iterator& tokens)
+  {
+    exporters.reserve(tokens.size());
+    transforms.reserve(tokens.size());
+  }
 
-void TimedWeakChainWithTransforms::pushExporter(SharedPtr<ExporterBase>&& exporter)
-{
+  const SharedPtr<ExporterBase>& TimedWeakChainWithTransforms::topExporter() const
+  {
+  }
+
+  void TimedWeakChainWithTransforms::pushExporter(SharedPtr<ExporterBase>&& exporter)
+  {
+  }
 }

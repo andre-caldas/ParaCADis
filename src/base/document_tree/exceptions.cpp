@@ -29,8 +29,8 @@
 #include <format>
 
 using namespace ::Exception;
-using namespace DocumentTree;
-using namespace DocumentTree::Exception;
+using namespace Document;
+using namespace Document::Exception;
 using namespace NamingScheme;
 
 ElementAlreadyInContainer::ElementAlreadyInContainer(

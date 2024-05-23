@@ -51,7 +51,7 @@ namespace SceneGraph
      * the OGRE scene graph.
      */
     static void populate(const SharedPtr<SceneRoot>& self,
-                         const SharedPtr<DocumentTree::DocumentTree>& document);
+                         const SharedPtr<Document::DocumentTree>& document);
 
     void runQueue();
 

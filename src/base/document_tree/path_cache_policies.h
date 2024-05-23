@@ -28,7 +28,7 @@
 
 #include <vector>
 
-namespace DocumentTree
+namespace Document
 {
 
   class TimedWeakChainWithTransforms : public TimedWeakChain

@@ -25,7 +25,7 @@
 
 #include "Container.h"
 
-namespace DocumentTree
+namespace Document
 {
 
   class DocumentTree : public Container
