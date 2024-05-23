@@ -20,6 +20,8 @@
  *                                                                          *
  ***************************************************************************/
 
+#include "config.h"
+
 #include "SceneRoot.h"
 
 #include "ContainerNode.h"
@@ -31,19 +33,34 @@
 #include <OGRE/OgreCamera.h>
 #include <OGRE/OgreWindow.h>
 
+#include <iostream>
 namespace SceneGraph
 {
 
   SceneRoot::SceneRoot()
       : signalQueue(std::make_shared<Threads::SignalQueue>())
-      , ogreRoot(std::make_unique<Ogre::Root>())
   {
+    ogreRoot = std::make_unique<Ogre::Root>(
+        nullptr, OGRE_DEFAULT_PLUGIN_CFG);
+
+    Ogre::RenderSystem* renderSystem =
+        ogreRoot->getRenderSystemByName("OpenGL 3+ Rendering Subsystem");
+    if (!renderSystem)
+    {
+      throw std::runtime_error("Render system not found!");
+    }
+    renderSystem->setConfigOption("Full Screen", "No");
+    renderSystem->setConfigOption("Video Mode", "1280 x 720");
+    renderSystem->setConfigOption("sRGB Gamma Conversion", "Yes");
+    ogreRoot->setRenderSystem(renderSystem);
+
     const char window_title[] = "ParaCADis window";
     ogreRoot->initialise(false, window_title);
     window = ogreRoot->createRenderWindow(window_title, 1024, 786, false);
 
     sceneManager = ogreRoot->createSceneManager(
         Ogre::ST_GENERIC, 2, "ParaCADis SceneManager");
+
     rootSceneNode = sceneManager->getRootSceneNode();
 
     camera = sceneManager->createCamera("The Camera!");
