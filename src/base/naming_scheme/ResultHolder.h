@@ -91,13 +91,13 @@ namespace NamingScheme
     template<typename S>
       requires Threads::C_MutexHolder<T>
     ResultHolder(ResultHolder<S> parent, T* ptr)
-        : ResultHolder(std::shared_ptr<T>{parent.data.sliced(), ptr})
+        : ResultHolder(SharedPtr{parent.data, ptr})
     { assert(parent.data); }
 
     template<typename S>
       requires (!Threads::C_MutexHolder<T>)
     ResultHolder(ResultHolder<S> parent, T* ptr)
-        : ResultHolder(std::shared_ptr<T>{parent.data.sliced(), ptr}, parent.mutex)
+        : ResultHolder(SharedPtr{parent.data, ptr}, parent.mutex)
     { assert(parent.data); }
 
     template<typename S>

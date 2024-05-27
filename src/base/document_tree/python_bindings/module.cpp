@@ -34,8 +34,7 @@ using namespace py::literals;
 using namespace Document;
 using namespace NamingScheme;
 
-void init_document_tree(py::module_& parent_module,
-                        py::module_& naming_scheme)
+void init_document_tree(py::module_& parent_module)
 {
   auto m = parent_module.def_submodule("document");
   m.doc() = "Manages the nodes in a ParaCADis document structure.";

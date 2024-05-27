@@ -50,8 +50,7 @@ namespace {
   }
 }
 
-void init_geometric_primitives(py::module_& parent_module,
-                               py::module_& naming_scheme)
+void init_geometric_primitives(py::module_& parent_module)
 {
   auto m = parent_module.def_submodule("geometric_primitives");
   m.doc() = "Basic geometric objects used in ParaCADis.";

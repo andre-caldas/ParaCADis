@@ -32,7 +32,7 @@
 PYBIND11_MODULE(paracadis, m) {
   m.doc() = "ParaCADis python interface library.";
 
-  auto n = init_naming_scheme(m);
-  init_geometric_primitives(m, n);
-  init_document_tree(m, n);
+  init_naming_scheme(m);
+  init_geometric_primitives(m);
+  init_document_tree(m);
 }

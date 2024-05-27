@@ -26,5 +26,4 @@
 
 namespace py = pybind11;
 
-void init_document_tree(py::module_& parent_module,
-                        py::module_& naming_scheme);
+void init_document_tree(py::module_& parent_module);

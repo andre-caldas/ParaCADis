@@ -70,7 +70,7 @@ public:
   SharedPtr(SharedPtr<X>&& shared, M X::* localPointer);
   template<typename X>
   SharedPtr(const SharedPtr<X>& r, T* p)
-      : std::shared_ptr<T>(r, p) {}
+      : std::shared_ptr<T>(r.sliced(), p) {}
 
   using std::shared_ptr<T>::operator bool;
   using std::shared_ptr<T>::operator=;
@@ -109,6 +109,7 @@ public:
   WeakPtr<T> getWeakPtr() const;
 
   const std::shared_ptr<T>& sliced() const;
+  const std::shared_ptr<T>& sliced_nothrow() const {return *this;}
 
   operator SharedPtr<const T>() const { return {sliced()}; }
   template<typename S>
