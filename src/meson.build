@@ -17,7 +17,7 @@ py_mod = import('python')
 py_ins = py_mod.find_installation(pure: false)
 py_deps = [
   py_ins.dependency(),
-  dependency('nanobind'),
+  dependency('pybind11'),
 ]
 
 test_main_src = files('cpp_test.cpp')

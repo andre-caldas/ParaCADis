@@ -22,8 +22,8 @@
 
 #pragma once
 
-#include <nanobind/nanobind.h>
+#include <pybind11/pybind11.h>
 
-namespace nb = nanobind;
+namespace py = pybind11;
 
-void init_scene(nb::module_& m);
+void init_scene(py::module_& m);

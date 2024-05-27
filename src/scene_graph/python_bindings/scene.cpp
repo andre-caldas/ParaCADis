@@ -20,17 +20,17 @@
  *                                                                          *
  ***************************************************************************/
 
-#include <nanobind/nanobind.h>
+#include <pybind11/pybind11.h>
 
 #include "scene.h"
 
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/document_tree/DocumentTree.h>
-#include <python_bindings/SharedPtr_type_caster.h>
+#include <python_bindings/types.h>
 #include <scene_graph/SceneRoot.h>
 
-namespace nb = nanobind;
-using namespace nb::literals;
+namespace py = pybind11;
+using namespace py::literals;
 using namespace Document;
 using namespace SceneGraph;
 
@@ -43,12 +43,12 @@ namespace {
   }
 }
 
-void init_scene(nb::module_& m)
+void init_scene(py::module_& m)
 {
-  nb::class_<SceneRoot>(
+  py::class_<SceneRoot, SharedPtr<SceneRoot>>(
       m, "Scene",
       "A scene graph with a message queue that keeps it updated.")
-      .def(nb::new_(&new_scene),
+      .def(py::init(&new_scene),
            "Creates an empty scene.")
       .def("populate",
            [](const SharedPtr<SceneRoot>& self, const SharedPtr<DocumentTree>& doc)

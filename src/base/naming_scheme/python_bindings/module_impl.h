@@ -20,30 +20,27 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef NamingScheme_PY_module_impl_h
-#define NamingScheme_PY_module_impl_h
+#pragma once
 
-#include <nanobind/nanobind.h>
+#include <pybind11/pybind11.h>
 
 #include "module.h"
 
 #include <base/naming_scheme/PathToken.h>
 
-namespace nb = nanobind;
+namespace py = pybind11;
 
 template<typename T>
-nb::class_<NamingScheme::ReferenceTo<T>>
-bind_reference_to(nb::module_& m, std::string type_name)
+py::class_<NamingScheme::ReferenceTo<T>, SharedPtr<NamingScheme::ReferenceTo<T>>>
+bind_reference_to(py::module_& m, std::string type_name)
 {
   // TODO: use string_view concatenation in c++26. :-)
-  nb::class_<NamingScheme::ReferenceTo<T>> result{m, "ReferenceTo" + type_name};
+  py::class_<NamingScheme::ReferenceTo<T>, SharedPtr<NamingScheme::ReferenceTo<T>>> result{m, "ReferenceTo" + type_name};
   result
-      //.def(nb::init<>())
+      //.def(py::init<>())
       .def("resolve", &ReferenceTo<T>::resolve)
       .def("__repr__",
            [](const NamingScheme::ReferenceTo<T>& ref)
            { return "<REFERENCETO... (put info here)>"; });
   return result;
 }
-
-#endif

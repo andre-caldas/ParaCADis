@@ -25,6 +25,7 @@
 #include "SceneRoot.h"
 
 #include <cassert>
+#include <iostream>
 
 namespace SceneGraph
 {
@@ -76,6 +77,7 @@ namespace SceneGraph
 
     auto self_lock = self.lock();
     assert(self_lock);
+    assert(self_lock.get() == this && "Pointer 'self' must be myself!");
     auto& queue = scene_root->getQueue();
     assert(queue);
     if(!queue) { return; }
@@ -148,13 +150,13 @@ namespace SceneGraph
 
   void ContainerNode::removeContainer(SharedPtr<container_t> removed_container)
   {
-    assert(false && "Implement!");
+    assert(false && "Implement removeContainer!");
   }
 
   void ContainerNode::moveContainer(SharedPtr<container_t> moved_container,
                                     SharedPtr<container_t> moved_to)
   {
-    assert(false && "Implement!");
+    assert(false && "Implement moveContainer!");
   }
 
   void ContainerNode::addMesh(SharedPtr<exporter_t> mesh)
@@ -164,12 +166,12 @@ namespace SceneGraph
 
   void ContainerNode::removeMesh(SharedPtr<exporter_t> mesh)
   {
-    assert(false && "Implement!");
+    assert(false && "Implement removeMesh!");
   }
 
   void ContainerNode::moveMesh(SharedPtr<exporter_t> mesh,
                                 SharedPtr<container_t> moved_to)
   {
-    assert(false && "Implement!");
+    assert(false && "Implement moveMesh!");
   }
 }

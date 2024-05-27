@@ -20,17 +20,19 @@
  *                                                                          *
  ***************************************************************************/
 
-#include <nanobind/nanobind.h>
+#include "types.h"
+
+#include <pybind11/pybind11.h>
 
 #include <base/document_tree/python_bindings/module.h>
-#include <base/expected_behaviour/SharedPtr.h>
 #include <base/geometric_primitives/python_bindings/module.h>
 #include <base/naming_scheme/python_bindings/module.h>
+#include <base/expected_behaviour/SharedPtr.h>
 
-NB_MODULE(paracadis, m) {
+PYBIND11_MODULE(paracadis, m) {
   m.doc() = "ParaCADis python interface library.";
 
   auto n = init_naming_scheme(m);
   init_geometric_primitives(m, n);
-  init_document_tree(m);
+  init_document_tree(m, n);
 }

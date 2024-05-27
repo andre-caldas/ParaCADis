@@ -20,39 +20,45 @@
  *                                                                          *
  ***************************************************************************/
 
-#include <nanobind/nanobind.h>
+#include <pybind11/pybind11.h>
 
 #include "module.h"
 
 #include <base/document_tree/Container.h>
 #include <base/document_tree/DocumentTree.h>
 #include <base/naming_scheme/PathToken.h>
-#include <python_bindings/SharedPtr_type_caster.h>
+#include <python_bindings/types.h>
 
-namespace nb = nanobind;
-using namespace nb::literals;
+namespace py = pybind11;
+using namespace py::literals;
 using namespace Document;
 using namespace NamingScheme;
 
-void init_document_tree(nb::module_& parent_module)
+void init_document_tree(py::module_& parent_module,
+                        py::module_& naming_scheme)
 {
   auto m = parent_module.def_submodule("document");
   m.doc() = "Manages the nodes in a ParaCADis document structure.";
-  nb::class_<Container>(
-      m, "Container",
+
+  py::class_<Container, ExporterBase, SharedPtr<Container>>(
+      m, "Container", py::multiple_inheritance(),
       "A container with coordinate system to hold other objects or containers.")
-      .def(nb::init<>(),
+      .def(py::init<>(),
            "Creates an empty container.")
 #if 0
       .def("contains",
-           nb::overload_cast<Uuid::uuid_type>(&Container::contains), "uuid"_a,
+           py::overload_cast<Uuid::uuid_type>(&Container::contains), "uuid"_a,
            "Verifies if the container holds or not the corresponding element.")
       .def("get_element",
-           nb::overload_cast<Uuid::uuid_type>(&Container::contains), "uuid"_a,
+           py::overload_cast<Uuid::uuid_type>(&Container::contains), "uuid"_a,
            "Retrives the corresponding element.")
 #endif
+      .def("add_container", &Container::addContainer, "container"_a,
+           "Adds a nested container.")
       .def("add_element", &Container::addElement, "element"_a,
            "Adds an element to the container.")
+.def("add_element", [](const Container& self, std::shared_ptr<ExporterBase>){}, "element"_a,
+     "Adds an element to the container.")
 #if 0
       .def("remove_element", &Container::removeElement, xxxxx,
            "Removes the corresponding element from the container.")
@@ -63,10 +69,10 @@ void init_document_tree(nb::module_& parent_module)
            [](const Container& c){ return "<CONTAINER... (put info here)>"; });
 
 
-  nb::class_<DocumentTree, Container>(
-      m, "Document",
+  py::class_<DocumentTree, Container, SharedPtr<DocumentTree>>(
+      m, "Document", py::multiple_inheritance(),
       "A container to hold a full document.")
-      .def(nb::init<>(),
+      .def(py::init<>(),
            "Creates an empty document.")
       .def("__repr__",
            [](const DocumentTree& d){ return "<DOCUMENT... (put info here)>"; });

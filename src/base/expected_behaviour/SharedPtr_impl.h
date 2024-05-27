@@ -85,7 +85,7 @@ SharedPtr<T, NotBool>::operator NotBool&() const
 template<typename T, typename NotBool>
 WeakPtr<T> SharedPtr<T, NotBool>::getWeakPtr() const
 {
-  return WeakPtr<T>((const std::shared_ptr<T>&)(*this));
+  return WeakPtr<T>(sliced());
 }
 
 template<typename T, typename NotBool>

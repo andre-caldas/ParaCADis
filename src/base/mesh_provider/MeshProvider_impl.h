@@ -50,6 +50,6 @@ namespace Mesh
       SharedPtr<const MeshType> value)
   {
     assert(value && "Cannot set mesh to invalid pointer.");
-    mesh = value;
+    mesh = value.sliced();
   }
 }

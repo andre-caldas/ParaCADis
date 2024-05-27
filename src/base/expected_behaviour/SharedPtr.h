@@ -27,6 +27,11 @@
 #include <type_traits>
 #include <utility>
 
+namespace pybind11 {
+  template <typename type_, typename... options>
+  class class_;
+}
+
 template<typename T>
 class WeakPtr;
 
@@ -50,7 +55,7 @@ class WeakPtr;
  */
 template<typename T,
          typename NotBool = std::conditional_t<std::is_class_v<T>, T, int>>
-class SharedPtr : public std::shared_ptr<T>
+class SharedPtr : private std::shared_ptr<T>
 {
 public:
   using value_type = T;
@@ -63,6 +68,15 @@ public:
   SharedPtr(const SharedPtr<X>& shared, M X::* localPointer);
   template<class X, typename M = T> requires(!std::is_void_v<M>)
   SharedPtr(SharedPtr<X>&& shared, M X::* localPointer);
+  template<typename X>
+  SharedPtr(const SharedPtr<X>& r, T* p)
+      : std::shared_ptr<T>(r, p) {}
+
+  using std::shared_ptr<T>::operator bool;
+  using std::shared_ptr<T>::operator=;
+  using std::shared_ptr<T>::get;
+  using std::shared_ptr<T>::reset;
+  using std::shared_ptr<T>::swap;
 
   SharedPtr& operator=(const SharedPtr&) = default;
   SharedPtr& operator=(SharedPtr&&) = default;
@@ -103,6 +117,11 @@ public:
 
   template<typename S>
   SharedPtr<S> cast() const { return std::dynamic_pointer_cast<S>(sliced()); }
+
+private:
+  SharedPtr(T* ptr) : std::shared_ptr<T>(ptr) {}
+  template <typename type_, typename... options>
+  friend class pybind11::class_;
 };
 
 

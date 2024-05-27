@@ -20,23 +20,21 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef NamingScheme_PY_module_h
-#define NamingScheme_PY_module_h
+#pragma once
 
-#include <nanobind/nanobind.h>
+#include <pybind11/pybind11.h>
 
+#include <base/expected_behaviour/SharedPtr.h>
 #include <base/naming_scheme/ReferenceToObject.h>
 
-namespace nb = nanobind;
+#include <python_bindings/types.h>
 
-NB_MAKE_OPAQUE(Uuid::uuid_type);
+namespace py = pybind11;
 
-nb::module_ init_naming_scheme(nb::module_& parent_module);
+py::module_ init_naming_scheme(py::module_& parent_module);
 
 template<typename T>
-nb::class_<NamingScheme::ReferenceTo<T>>
-bind_reference_to(nb::module_& m, std::string type_name);
+py::class_<NamingScheme::ReferenceTo<T>, SharedPtr<NamingScheme::ReferenceTo<T>>>
+bind_reference_to(py::module_& m, std::string type_name);
 
 #include"module_impl.h"
-
-#endif

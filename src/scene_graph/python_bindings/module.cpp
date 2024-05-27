@@ -20,15 +20,15 @@
  *                                                                          *
  ***************************************************************************/
 
-#include <nanobind/nanobind.h>
+#include <pybind11/pybind11.h>
 
 #include "scene.h"
 
-namespace nb = nanobind;
+namespace py = pybind11;
 
-NB_MODULE(paracadis_scene_graph, m) {
+PYBIND11_MODULE(paracadis_scene_graph, m) {
   m.doc() = "Python interface to display ParaCADis in 3D.";
 
-  nb::module_::import_("paracadis");
+  py::module_::import("paracadis");
   init_scene(m);
 }

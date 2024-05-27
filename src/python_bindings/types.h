@@ -20,40 +20,12 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef PY_SHARED_PTR_TYPE_CASTER_H
-#define PY_SHARED_PTR_TYPE_CASTER_H
+#pragma once
 
-#include <nanobind/stl/shared_ptr.h>
+#include <pybind11/pybind11.h>
+
 #include <base/expected_behaviour/SharedPtr.h>
+#include <base/naming_scheme/Uuid.h>
 
-NAMESPACE_BEGIN(NB_NAMESPACE)
-NAMESPACE_BEGIN(detail)
-
-template <typename T>
-struct type_caster<SharedPtr<T>>
-    : type_caster<std::shared_ptr<T>>
-{
-  NB_TYPE_CASTER(SharedPtr<T>, type_caster<std::shared_ptr<T>>::Caster::Name)
-
-  bool from_python(handle src, uint8_t flags, cleanup_list *cleanup) noexcept
-  {
-    if(!type_caster<std::shared_ptr<T>>::from_python(src, flags, cleanup))
-    {
-      return false;
-    }
-    // Can we use std::move()? Or ::value is accessed by other people?
-    value = std::move(type_caster<std::shared_ptr<T>>::value);
-    return true;
-  }
-
-  static handle from_cpp(
-      const Value &value, rv_policy p, cleanup_list *cleanup) noexcept
-  {
-    return type_caster<std::shared_ptr<T>>::from_cpp(value.sliced(), p, cleanup);
-  }
-};
-
-NAMESPACE_END(detail)
-NAMESPACE_END(NB_NAMESPACE)
-
-#endif
+PYBIND11_DECLARE_HOLDER_TYPE(T, PYBIND11_TYPE(SharedPtr<T,T>));
+PYBIND11_MAKE_OPAQUE(NamingScheme::Uuid::uuid_type);

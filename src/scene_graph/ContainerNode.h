@@ -74,9 +74,6 @@ namespace SceneGraph
     WeakPtr<SceneRoot>     sceneRootWeak;
     WeakPtr<ContainerNode> self;
     Ogre::SceneNode*       ogreNode = nullptr;
-
-    SharedPtr<ContainerNode>
-    create_no_populate(const SharedPtr<SceneRoot>& scene_root);
   };
 
 }

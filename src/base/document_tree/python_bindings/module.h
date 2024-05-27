@@ -20,13 +20,11 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef DocumentTree_PY_module_h
-#define DocumentTree_PY_module_h
+#pragma once
 
-#include <nanobind/nanobind.h>
+#include <pybind11/pybind11.h>
 
-namespace nb = nanobind;
+namespace py = pybind11;
 
-void init_document_tree(nb::module_& parent_module);
-
-#endif
+void init_document_tree(py::module_& parent_module,
+                        py::module_& naming_scheme);
