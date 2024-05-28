@@ -48,15 +48,15 @@ void init_geometric_primitives_spheres(py::module_& module)
            { return "<SPHERECENTERRADIUS2... (put info here)>"; });
 
 
-  py::class_<SphereCenterAndSurfacePoint, ExporterBase,
-             SharedPtr<SphereCenterAndSurfacePoint>>(
-      module, "SphereCenterAndSurfacePoint", py::multiple_inheritance(),
+  py::class_<SphereCenterSurfacePoint, ExporterBase,
+             SharedPtr<SphereCenterSurfacePoint>>(
+      module, "SphereCenterSurfacePoint", py::multiple_inheritance(),
       "A sphere determined by its center and one surface point.")
       .def(py::init<Point, Point>(),
            "center"_a, "surface_point"_a,
            "The sphere is determined by its 'center'"
            " and a 'surface_point'.")
       .def("__repr__",
-           [](const SphereCenterAndSurfacePoint&)
-           { return "<SPHEREANDSURFACEPOINT... (put info here)>"; });
+           [](const SphereCenterSurfacePoint&)
+           { return "<SPHERESURFACEPOINT... (put info here)>"; });
 }

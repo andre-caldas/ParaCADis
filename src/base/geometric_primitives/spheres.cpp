@@ -34,16 +34,16 @@ std::unique_ptr<SphereCenterRadius2> SphereCenterRadius2::deepCopy() const
 }
 
 
-SphereCenterAndSurfacePoint::SphereCenterAndSurfacePoint
+SphereCenterSurfacePoint::SphereCenterSurfacePoint
     (Point center, Point surface_point)
     : Exporter{{std::move(center), std::move(surface_point)}}
 {
 }
 
-std::unique_ptr<SphereCenterAndSurfacePoint> SphereCenterAndSurfacePoint::deepCopy() const
+std::unique_ptr<SphereCenterSurfacePoint> SphereCenterSurfacePoint::deepCopy() const
 {
   Threads::ReaderGate gate{*this};
-  return std::make_unique<SphereCenterAndSurfacePoint>(gate->center, gate->surface_point);
+  return std::make_unique<SphereCenterSurfacePoint>(gate->center, gate->surface_point);
 }
 
 
@@ -59,7 +59,7 @@ std::unique_ptr<SphereCenterAndSurfacePoint> SphereCenterAndSurfacePoint::deepCo
 using namespace NamingScheme;
 
 template class IExport<SphereCenterRadius2>;
-template class IExport<SphereCenterAndSurfacePoint>;
+template class IExport<SphereCenterSurfacePoint>;
 
 template class NameSearch<SphereCenterRadius2>;
-template class NameSearch<SphereCenterAndSurfacePoint>;
+template class NameSearch<SphereCenterSurfacePoint>;

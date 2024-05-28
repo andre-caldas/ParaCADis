@@ -59,9 +59,9 @@ public:
 
 
 /**
- * DataStruct for SphereCenterAndSurfacePoint.
+ * DataStruct for SphereCenterSurfacePoint.
  */
-struct SphereCenterAndSurfacePointData {
+struct SphereCenterSurfacePointData {
   DeferenceablePoint center;
   DeferenceablePoint surface_point;
 };
@@ -69,20 +69,20 @@ struct SphereCenterAndSurfacePointData {
 /**
  * A sphere determined by its center and a point on its surface.
  */
-class SphereCenterAndSurfacePoint
-    : public NamingScheme::Exporter<SphereCenterAndSurfacePointData>
-    , public NamingScheme::IExportStruct<DeferenceablePoint, SphereCenterAndSurfacePointData,
-                                {&SphereCenterAndSurfacePointData::center, "center"},
-                                {&SphereCenterAndSurfacePointData::center, "c"}>
-    , public NamingScheme::IExportStruct<DeferenceablePoint, SphereCenterAndSurfacePointData,
-                                {&SphereCenterAndSurfacePointData::surface_point, "surface_point"},
-                                {&SphereCenterAndSurfacePointData::surface_point, "p"}>
+class SphereCenterSurfacePoint
+    : public NamingScheme::Exporter<SphereCenterSurfacePointData>
+    , public NamingScheme::IExportStruct<DeferenceablePoint, SphereCenterSurfacePointData,
+                                {&SphereCenterSurfacePointData::center, "center"},
+                                {&SphereCenterSurfacePointData::center, "c"}>
+    , public NamingScheme::IExportStruct<DeferenceablePoint, SphereCenterSurfacePointData,
+                                {&SphereCenterSurfacePointData::surface_point, "surface_point"},
+                                {&SphereCenterSurfacePointData::surface_point, "p"}>
     , public NamingScheme::Chainables<DeferenceablePoint>
 {
 public:
-  SphereCenterAndSurfacePoint(Point center, Point surface_point);
+  SphereCenterSurfacePoint(Point center, Point surface_point);
 
-  std::unique_ptr<SphereCenterAndSurfacePoint> deepCopy() const;
+  std::unique_ptr<SphereCenterSurfacePoint> deepCopy() const;
   std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
   { return deepCopy(); }
 };
