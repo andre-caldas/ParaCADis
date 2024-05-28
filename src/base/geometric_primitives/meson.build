@@ -5,6 +5,7 @@ geometric_primitives_src = [
   'deferenceables.cpp',
   'exceptions.cpp',
   'lines.cpp',
+  'spheres.cpp',
   'types.cpp',
 ]
 
@@ -15,6 +16,7 @@ geometric_primitives_includes = [
   'deferenceables.h',
   'exceptions.h',
   'lines.h',
+  'spheres.h',
   'types.h',
 ]
 

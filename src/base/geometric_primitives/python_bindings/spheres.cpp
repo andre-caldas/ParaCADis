@@ -20,10 +20,43 @@
  *                                                                          *
  ***************************************************************************/
 
-#pragma once
-
 #include <pybind11/pybind11.h>
+#include <pybind11/operators.h>
+#include <pybind11/stl.h>
+
+#include "module.h"
+
+#include <base/geometric_primitives/spheres.h>
+#include <base/geometric_primitives/types.h>
+#include <python_bindings/types.h>
 
 namespace py = pybind11;
+using namespace py::literals;
 
-void init_geometric_primitives(py::module_& parent_module);
+using namespace NamingScheme;
+
+void init_geometric_primitives_spheres(py::module_& module)
+{
+  py::class_<SphereCenterRadius2, SharedPtr<SphereCenterRadius2>>(
+      module, "SphereCenterRadius2",
+      "A sphere determined by its center and squared radius.")
+      .def(py::init<Point, Real>(),
+           "center"_a, "radius2"_a,
+           "The sphere is determined by its 'center' and squared radius ('radius2').")
+      .def("__repr__",
+           [](const SphereCenterRadius2&)
+           { return "<SPHERECENTERRADIUS2... (put info here)>"; });
+
+
+  py::class_<SphereCenterAndSurfacePoint, ExporterBase,
+             SharedPtr<SphereCenterAndSurfacePoint>>(
+      module, "SphereCenterAndSurfacePoint", py::multiple_inheritance(),
+      "A sphere determined by its center and one surface point.")
+      .def(py::init<Point, Point>(),
+           "center"_a, "surface_point"_a,
+           "The sphere is determined by its 'center'"
+           " and a 'surface_point'.")
+      .def("__repr__",
+           [](const SphereCenterAndSurfacePoint&)
+           { return "<SPHEREANDSURFACEPOINT... (put info here)>"; });
+}

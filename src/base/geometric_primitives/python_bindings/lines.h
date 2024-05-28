@@ -26,4 +26,4 @@
 
 namespace py = pybind11;
 
-void init_geometric_primitives(py::module_& parent_module);
+void init_geometric_primitives_lines(py::module_& module);
