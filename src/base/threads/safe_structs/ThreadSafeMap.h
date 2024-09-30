@@ -20,8 +20,7 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef SafeStructs_ThreadSafeMap_H
-#define SafeStructs_ThreadSafeMap_H
+#pragma once
 
 #include "ThreadSafeContainer.h"
 
@@ -125,6 +124,26 @@ namespace Threads::SafeStructs
   static_assert(std::ranges::range<ThreadSafeUnorderedMap<int, float>>
                 && "ThreadSafeUnorderedMap must be a range.");
 
-}  // namespace Threads::SafeStructs
+  /**
+   * @brief This wraps an std::map and provides a shared_mutex
+   * to make the map readable by many only when the map structure
+   * is not being modified.
+   * The map elements are not protected, just the map structure.
+   * To protect each element, use std::atomic.
+   *
+   * Iterators use SharedLock.
+   * Methods that change the map structure use a lock.
+   */
+  template<typename Key, typename Val>
+  class ThreadSafeUnorderedMultimap
+      : public ThreadSafeMapCommon<std::unordered_multimap<Key, Val>, Key, Val>
+  {
+    using parent_t = ThreadSafeMapCommon<std::unordered_multimap<Key, Val>, Key, Val>;
+  public:
+    using parent_t::ThreadSafeMapCommon;
+  };
 
-#endif
+  static_assert(std::ranges::range<ThreadSafeUnorderedMap<int, float>>
+                && "ThreadSafeUnorderedMap must be a range.");
+
+}  // namespace Threads::SafeStructs

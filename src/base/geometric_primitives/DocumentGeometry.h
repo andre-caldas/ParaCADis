@@ -22,67 +22,46 @@
 
 #pragma once
 
-#include "forwards.h"
+#include <base/expected_behaviour/SharedPtr.h>
 
-#include <base/document_tree/Container.h>
-#include <base/document_tree/DocumentTree.h>
-#include <base/threads/message_queue/SignalQueue.h>
-#include <base/threads/safe_structs/ThreadSafeMap.h>
+#include <gismo/gsCore/gsCurve.h>
+#include <gismo/gsCore/gsSurface.h>
 
-#include <memory>
 
-namespace Ogre {
-  class SceneManager;
-}
-
-namespace SceneGraph
+namespace Document
 {
-  /**
-   * The SceneRoot is the OGRE side of the DocumentTree.
-   *
-   * A DocumentTree is associated to a SceneRoot.
-   * Every Container is associated to a ContainerNode and
-   * every geometry (Exporter) is associated to a NurbsNode.
-   */
-  class SceneRoot
+  class DocumentGeometry
   {
-    friend class ContainerNode;
-
   public:
-    SceneRoot(Ogre::SceneManager& scene_manager);
+    using geometry_t = gismo::gsGeometry<real_t>;
+    using curve_t    = gismo::gsCurve<real_t>;
+    using surface_t  = gismo::gsSurface<real_t>;
 
-    /**
-     * Initiates the bridge structure between the document and
-     * the OGRE scene graph.
-     */
-    static void populate(const SharedPtr<SceneRoot>& self,
-                         const SharedPtr<Document::DocumentTree>& document);
+    virtual SharedPtr<const geometry_t> getGismoGeometry() const = 0;
+    virtual ~DocumentGeometry() = default;
+  };
 
-    void runQueue();
 
-    const SharedPtr<Threads::SignalQueue>& getQueue() { return signalQueue; }
-
-  private:
-    WeakPtr<SceneRoot>              self;
-    SharedPtr<Threads::SignalQueue> signalQueue;
-
-    SharedPtr<ContainerNode> rootContainer;
-
-    /**
-     * The document tree structure is kept flat.
-     * We do not use a tree here.
-     *
-     * The document tree strucutre is transported directly to the OGRE scene.
-     */
-    /// @{
-    template<typename Key, typename Val>
-    using map_t = Threads::SafeStructs::ThreadSafeUnorderedMultimap<Key, Val>;
-    map_t<container_t*, SharedPtr<ContainerNode>> containerNodes;
-    map_t<geometry_t*,  SharedPtr<MeshNode>>      meshNodes;
-    /// @}
-
-  /* OGRE stuff */
+  class DocumentCurve : public DocumentGeometry
+  {
   public:
-    Ogre::SceneManager* sceneManager = nullptr;
+    SharedPtr<const geometry_t> getGismoGeometry() const override;
+    SharedPtr<const curve_t> getGismoCurve() const;
+
+  protected:
+    mutable std::atomic<std::shared_ptr<const curve_t>> gismoGeometry;
+    virtual SharedPtr<const curve_t> produceGismoCurve() const = 0;
+  };
+
+
+  class DocumentSurface : public DocumentGeometry
+  {
+  public:
+    SharedPtr<const geometry_t> getGismoGeometry() const override;
+    SharedPtr<const surface_t> getGismoSurface() const;
+
+  protected:
+    mutable std::atomic<std::shared_ptr<const surface_t>> gismoGeometry;
+    virtual SharedPtr<const surface_t> produceGismoSurface() const = 0;
   };
 }

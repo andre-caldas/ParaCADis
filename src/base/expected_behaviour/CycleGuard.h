@@ -20,29 +20,68 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "SharedPtr.h"
-#include "SharedPtr_impl.h"
+#pragma once
 
-JustLockPtr& JustLockPtr::operator= (const JustLockPtr& other)
+#include <unordered_set>
+
+/**
+ * Checks if a certain pointer has already been processed.
+ *
+ * The idea is to pass a CycleGuard to a recursive function that
+ * parses a grafo. Even if the grafo is cyclic, the recursive function
+ * can avoid recursing nodes that were already processed.
+ */
+template<typename T>
+class CycleGuard
 {
-  assert(!lock && "Cannot attribute to an already locked lock.");
-  lock = other.lock;
-  return *this;
-}
+public:
+  CycleGuard() = default;
+  CycleGuard(const CycleGuard&) = delete;
+  CycleGuard& operator=(const CycleGuard&) = delete;
 
-JustLockPtr& JustLockPtr::operator= (JustLockPtr&& other)
-{
-  assert(!lock && "Cannot attribute to an already locked lock.");
-  lock = std::move(other.lock);
-  return *this;
-}
+  struct Sentinel {
+    Sentinel(std::unordered_set<T*>& set, T* element)
+        : set(set), element(element) {}
 
-JustLockPtr::JustLockPtr(std::shared_ptr<void>&& ptr) : lock(std::move(ptr))
-{
-  assert(lock && "You cannot hold an unlocked shared_ptr.");
-}
+    Sentinel(const Sentinel&) = delete;
+    Sentinel(Sentinel&&) = delete;
+    Sentinel& operator=(const Sentinel&) = delete;
+    Sentinel& operator=(Sentinel&&) = delete;
 
+    ~Sentinel() {
+      if(element) set.erase(element);
+    }
 
-#include <base/naming_scheme/Exporter.h>
+    bool success() const {return (element != nullptr);}
 
-template class SharedPtr<NamingScheme::ExporterBase>;
+    std::unordered_set<T*>& set;
+    T* element = nullptr;
+  };
+
+  /**
+   * Pushes a "new" pointer to the list.
+   *
+   * @returns If pointer did not already exist, returns true.
+   *
+   * @example
+   * { // sentinel scope
+   *   auto sentinel = guard.push(p);
+   *   if(sentinel.success()) {
+   *     my_recursion(guard, p);
+   *   }
+   * }
+   */
+  [[nodiscard]]
+  Sentinel sentinel(T* p);
+  bool already_processed(T* p) const {return processed.contains(p);}
+
+  CycleGuard clone() const;
+
+private:
+  bool push(T* p);
+  void pop(T* p);
+
+  std::unordered_set<T*> processed;
+};
+
+#include "CycleGuard.hpp"

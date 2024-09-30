@@ -20,26 +20,51 @@
  *                                                                          *
  ***************************************************************************/
 
-#pragma once
+#include "DocumentGeometry.h"
 
-#include "MeshProvider.h"
+using namespace Document;
 
-#include <base/geometric_primitives/circles.h>
-
-namespace Mesh
+SharedPtr<const DocumentGeometry::geometry_t>
+DocumentCurve::getGismoGeometry() const
 {
-  class MeshCirclePointRadius2Normal
-      : public MeshProviderCurve<CirclePointRadius2Normal>
-  {
-  public:
-    void _recalculate() override;
-  };
+  return getGismoCurve();
+}
+
+SharedPtr<const DocumentGeometry::curve_t>
+DocumentCurve::getGismoCurve() const
+{
+  auto loaded = gismoGeometry.load();
+  if(!loaded) {
+    // Not really thread-safe because if the geometry changes while
+    // it is being produced, two produceGismoCurve() will be called
+    // concurrently. Even if they are thread-safe,
+    // you do not know if gismoGeometry will endup with the new or old geometry.
+    auto result = produceGismoCurve();
+    gismoGeometry = result.sliced();
+    return result;
+  }
+  return loaded;
+}
 
 
-  class MeshCircle3Points
-      : public MeshProviderCurve<Circle3Points>
-  {
-  public:
-    void _recalculate() override;
-  };
+SharedPtr<const DocumentGeometry::geometry_t>
+DocumentSurface::getGismoGeometry() const
+{
+  return getGismoSurface();
+}
+
+SharedPtr<const DocumentGeometry::surface_t>
+DocumentSurface::getGismoSurface() const
+{
+  auto loaded = gismoGeometry.load();
+  if(!loaded) {
+    // Not really thread-safe because if the geometry changes while
+    // it is being produced, two produceGismoSurface() will be called
+    // concurrently. Even if they are thread-safe,
+    // you do not know if gismoSurface will endup with the new or old geometry.
+    auto result = produceGismoSurface();
+    gismoGeometry = result.sliced();
+    return result;
+  }
+  return loaded;
 }

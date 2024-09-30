@@ -22,56 +22,60 @@
 
 #pragma once
 
-#include <base/expected_behaviour/SharedPtr.h>
-#include <base/geometric_primitives/types.h>
-#include <base/threads/message_queue/Signal.h>
+#include "Signal.h"
 
-#include <CGAL/Surface_mesh.h>
-
-#include <memory>
-#include <atomic>
-
-namespace Mesh
+namespace Threads
 {
-  class MeshProvider
+  /**
+   * Abstract base convenience base class used to trigger an action
+   * whenever a signal arrives. For now, it is used to keep generated
+   * data in sync with the source data. For example, we use it to
+   * update a G+Smo mesh whenever the corresponding document object changes.
+   */
+  class Trigger
   {
   public:
-    virtual ~MeshProvider() = default;
+    /**
+     * Connects a Trigger that generates a mesh from SourceObject.
+     *
+     * @attention This is not (in) a constructor because we need the object
+     * to be fully constructed before connecting signals to it.
+     */
+    template<class SourceObject>
+    void _connect(const SharedPtr<SourceObject>& from,
+                  const SharedPtr<SignalQueue>& queue,
+                  const SharedPtr<Trigger>& self);
 
-    // To be used as a signal slot.
-    void recalculate() { _recalculate(); changed_sig.emit_signal(); }
+    /**
+     * Although harmless, copies are also not very useful,
+     * because the originally connected incoming signals
+     * will not be connected to this new object.
+     * So, we have it forbiden by now.
+     */
+    /// @{
+    Trigger(const Trigger&) = delete;
+    Trigger(Trigger&&) = delete;
+    Trigger& operator=(const Trigger&) = delete;
+    Trigger& operator=(Trigger&&) = delete;
+    /// @}
 
-    mutable Threads::Signal<> changed_sig;
+    virtual ~Trigger() = default;
+
+    /**
+     * To be used as the signal slot.
+     * That is, this is what the signal is connected to
+     * when _connect() is called.
+     */
+    void callback() { _callback(); changed_sig.emit_signal(); }
+
+    mutable Signal<> changed_sig;
 
   protected:
-    virtual void _recalculate() = 0;
+    /**
+     * Called when a signal from SourceObject is received.
+     */
+    virtual void _callback() = 0;
   };
-
-  template<typename MeshType, typename ReferenceableGeometry>
-  class MeshProviderT : public MeshProvider
-  {
-  public:
-    MeshProviderT(SharedPtr<ReferenceableGeometry> geometry);
-    SharedPtr<const MeshType> getMesh();
-
-  protected:
-    void setMesh(SharedPtr<const MeshType> value);
-
-    WeakPtr<ReferenceableGeometry> geometry_weak;
-    std::atomic<std::shared_ptr<const MeshType>> mesh;
-  };
-
-
-  class LineMesh;
-  using SurfaceMesh = CGAL::Surface_mesh<Point>;
-
-  template<typename ReferenceableGeometry>
-  using MeshProviderCurve
-      = MeshProviderT<LineMesh, ReferenceableGeometry>;
-
-  template<typename ReferenceableGeometry>
-  using MeshProviderSurface
-      = MeshProviderT<SurfaceMesh, ReferenceableGeometry>;
 }
 
-#include "MeshProvider_impl.h"
+#include "Trigger_impl.h"

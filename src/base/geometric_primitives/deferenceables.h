@@ -64,8 +64,6 @@ public:
   std::unique_ptr<DeferenceablePoint> deepCopy() const;
   std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
   { return deepCopy(); }
-
-//  std::string toString() const override;
 };
 
 

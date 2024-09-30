@@ -8,4 +8,6 @@ threads_includes += files(
   'MutexSignal.h',
   'MutexSignal_impl.h',
   'SignalQueue.h',
+  'Trigger.h',
+  'Trigger_impl.h',
 )

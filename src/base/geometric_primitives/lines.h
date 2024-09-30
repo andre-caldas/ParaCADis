@@ -20,10 +20,10 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef GeometricPrimitives_Lines
-#define GeometricPrimitives_Lines
+#pragma once
 
 #include "deferenceables.h"
+#include "DocumentGeometry.h"
 #include "types.h"
 
 #include <base/naming_scheme/Chainables.h>
@@ -48,7 +48,8 @@ struct Line2PointsData {
  * It can be bounded by the any of the two points.
  */
 class Line2Points
-    : public NamingScheme::Exporter<Line2PointsData>
+    : public Document::DocumentCurve
+    , public NamingScheme::Exporter<Line2PointsData>
     , public NamingScheme::IExportStruct<DeferenceablePoint, Line2PointsData,
                                 {&Line2PointsData::start, "start"},
                                 {&Line2PointsData::start, "a"},
@@ -67,7 +68,8 @@ public:
   std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
   { return deepCopy(); }
 
-//  std::string toString() const override;
+private:
+  SharedPtr<const curve_t> produceGismoCurve() const override;
 };
 
 
@@ -87,7 +89,8 @@ struct LinePointDirectionData {
  * It can be bounded in the starting point, or not.
  */
 class LinePointDirection
-    : public NamingScheme::Exporter<LinePointDirectionData>
+    : public Document::DocumentCurve
+    , public NamingScheme::Exporter<LinePointDirectionData>
     , public NamingScheme::IExportStruct<DeferenceablePoint, LinePointDirectionData,
                                 {&LinePointDirectionData::start, "start"},
                                 {&LinePointDirectionData::start, "a"}>
@@ -107,7 +110,6 @@ public:
   std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
   { return deepCopy(); }
 
-//  std::string toString() const override;
+private:
+  SharedPtr<const curve_t> produceGismoCurve() const override;
 };
-
-#endif

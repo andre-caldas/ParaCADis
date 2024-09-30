@@ -22,40 +22,32 @@
 
 #pragma once
 
-#include <base/threads/message_queue/SignalQueue.h>
+#include <memory>
 
-union SDL_Event;
-struct SDL_MouseButtonEvent;
+#include <base/expected_behaviour/CycleGuard.h>
+#include <base/expected_behaviour/SharedPtr.h>
 
-struct SDL_TextEditingEvent;
-struct SDL_TextInputEvent;
-struct SDL_KeyboardEvent;
+namespace Ogre {
+  class SceneNode;
+}
 
-struct SDL_JoyButtonEvent;
-struct SDL_JoyAxisEvent;
-struct SDL_JoyHatEvent;
+namespace Document {
+  class DocumentTree;
+  class Container;
+  class DocumentGeometry;
+}
 
-namespace SceneGraph
-{
+namespace NamingScheme {
+  class ExporterBase;
+}
 
-    class GraphicsSystem;
-    class CameraController;
+namespace SceneGraph {
+  using document_t  = Document::DocumentTree;
+  using container_t = Document::Container;
+  using geometry_t  = Document::DocumentGeometry;
+  using non_container_t = NamingScheme::ExporterBase;
 
-    class UiState
-    {
-    protected:
-        GraphicsSystem& graphics;
-        CameraController& camera_controller;
-
-    public:
-        UiState();
-        ~UiState() override;
-
-        void keyPressed( const SDL_KeyboardEvent &arg );
-        void keyReleased( const SDL_KeyboardEvent &arg );
-
-        void mouseMoved( const SDL_Event &arg );
-    };
-}  // namespace Demo
-
-#endif
+  class SceneRoot;
+  class ContainerNode;
+  class MeshNode;
+}

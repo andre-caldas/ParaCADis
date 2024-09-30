@@ -44,7 +44,7 @@ namespace Check
   Vector assertLI(Vector x, Vector y)
   {
     auto z = cross_product(x, y);
-    if (z == NULL_VECTOR) {
+    if (z == CGAL::NULL_VECTOR) {
       throw Exception::NeedsLI(x, y);
     }
     return z;

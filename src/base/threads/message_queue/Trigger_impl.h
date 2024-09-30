@@ -22,22 +22,17 @@
 
 #pragma once
 
-#include <base/geometric_primitives/types.h>
+#include "Trigger.h"
 
-#include <vector>
-
-namespace Mesh
+namespace Threads
 {
-
-  class LineMesh : private std::vector<Point>
+  template<class SourceObject>
+  void Trigger::_connect(const SharedPtr<SourceObject>& from,
+                               const SharedPtr<SignalQueue>& queue,
+                               const SharedPtr<Trigger>& self)
   {
-  public:
-    template<typename... P>
-    LineMesh(const P&... points) : std::vector<Point>::vector{points...} {}
-
-    using std::vector<Point>::reserve;
-    using std::vector<Point>::push_back;
-    using std::vector<Point>::front;
-  };
-
+    assert(dynamic_cast<Trigger*>(self.get()) == this
+           && "Pointer 'self' must point to myself.");
+    from->getChangedSignal().connect(from, queue, self, callback);
+  }
 }

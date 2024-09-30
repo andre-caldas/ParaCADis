@@ -20,10 +20,10 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef GeometricPrimitives_Circles
-#define GeometricPrimitives_Circles
+#pragma once
 
 #include "deferenceables.h"
+#include "DocumentGeometry.h"
 #include "types.h"
 
 #include <base/naming_scheme/Chainables.h>
@@ -42,7 +42,8 @@ struct CirclePointRadius2NormalData {
  * A counter-clockwise oriented circle, thumbs up (right-hand).
  */
 class CirclePointRadius2Normal
-    : public NamingScheme::Exporter<CirclePointRadius2NormalData>
+    : public Document::DocumentCurve
+    , public NamingScheme::Exporter<CirclePointRadius2NormalData>
     , public NamingScheme::IExportStruct<DeferenceablePoint, CirclePointRadius2NormalData,
                                 {&CirclePointRadius2NormalData::center, "center"},
                                 {&CirclePointRadius2NormalData::center, "c"}>
@@ -60,6 +61,9 @@ public:
   std::unique_ptr<CirclePointRadius2Normal> deepCopy() const;
   std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
   { return deepCopy(); }
+
+private:
+  SharedPtr<const curve_t> produceGismoCurve() const override;
 };
 
 
@@ -77,7 +81,8 @@ struct Circle3PointsData {
  * Orientation given by the oriented triangle: a --> b --> c.
  */
 class Circle3Points
-    : public NamingScheme::Exporter<Circle3PointsData>
+    : public Document::DocumentCurve
+    , public NamingScheme::Exporter<Circle3PointsData>
     , public NamingScheme::IExportStruct<DeferenceablePoint, Circle3PointsData,
                                 {&Circle3PointsData::a, "a"},
                                 {&Circle3PointsData::a, "p1"},
@@ -93,6 +98,7 @@ public:
   std::unique_ptr<Circle3Points> deepCopy() const;
   std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
   { return deepCopy(); }
-};
 
-#endif
+private:
+  SharedPtr<const curve_t> produceGismoCurve() const override;
+};

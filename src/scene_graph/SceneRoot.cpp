@@ -20,7 +20,7 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "config.h"
+//#include "config.h"
 
 #include "SceneRoot.h"
 
@@ -28,56 +28,15 @@
 
 #include <cassert>
 
-#include <OGRE/Compositor/OgreCompositorManager2.h>
-#include <OGRE/Compositor/OgreCompositorWorkspace.h>
-#include <OGRE/OgreCamera.h>
-#include <OGRE/OgreWindow.h>
+#include <OGRE/OgreSceneManager.h>
 
 #include <iostream>
 namespace SceneGraph
 {
-
-  SceneRoot::SceneRoot()
+  SceneRoot::SceneRoot(Ogre::SceneManager& scene_manager)
       : signalQueue(std::make_shared<Threads::SignalQueue>())
+      , sceneManager(&scene_manager)
   {
-    ogreRoot = std::make_unique<Ogre::Root>(
-        nullptr, OGRE_DEFAULT_PLUGIN_CFG);
-
-    Ogre::RenderSystem* renderSystem =
-        ogreRoot->getRenderSystemByName("OpenGL 3+ Rendering Subsystem");
-    if (!renderSystem)
-    {
-      throw std::runtime_error("Render system not found!");
-    }
-    renderSystem->setConfigOption("Full Screen", "No");
-    renderSystem->setConfigOption("Video Mode", "1280 x 720");
-    renderSystem->setConfigOption("sRGB Gamma Conversion", "Yes");
-    ogreRoot->setRenderSystem(renderSystem);
-
-    const char window_title[] = "ParaCADis window";
-    ogreRoot->initialise(false, window_title);
-    window = ogreRoot->createRenderWindow(window_title, 1024, 786, false);
-
-    sceneManager = ogreRoot->createSceneManager(
-        Ogre::ST_GENERIC, 2, "ParaCADis SceneManager");
-
-    rootSceneNode = sceneManager->getRootSceneNode();
-
-    camera = sceneManager->createCamera("The Camera!");
-    camera->setAutoAspectRatio(true);
-    camera->setNearClipDistance(0.2f);
-    camera->setFarClipDistance(1000.0f);
-    camera->setPosition({0, 20, 15});
-    camera->lookAt({0, 0, 0});
-
-    const char workspace_name[] = "ParaCADis workspace";
-    auto* compositor_manager = ogreRoot->getCompositorManager2();
-    if(!compositor_manager->hasWorkspaceDefinition(workspace_name)) {
-      compositor_manager->createBasicWorkspaceDef(
-          workspace_name, Ogre::ColourValue( 0.6f, 0.0f, 0.6f ));
-    }
-    workspace = compositor_manager->addWorkspace(
-        sceneManager, window->getTexture(), camera, workspace_name, true);
   }
 
 
@@ -85,7 +44,7 @@ namespace SceneGraph
                            const SharedPtr<Document::DocumentTree>& document)
   {
     self->self = self;
-    self->rootContainer = ContainerNode::create_document(self, document);
+    self->rootContainer = ContainerNode::create_root_node(self, document);
   }
 
   void SceneRoot::runQueue()

@@ -46,8 +46,9 @@ SharedPtr<ExporterBase> Container::getElement(uuid_type uuid) const
 {
   { // gate scope.
     Threads::ReaderGate gate{non_containers};
-    if (gate->contains(uuid)) {
-      return gate->at(uuid);
+    auto it = gate->find(uuid);
+    if (it != gate->end()) {
+      return it->second;
     }
   }
   return getContainer(uuid);
@@ -56,8 +57,9 @@ SharedPtr<ExporterBase> Container::getElement(uuid_type uuid) const
 SharedPtr<Container> Container::getContainer(uuid_type uuid) const
 {
   Threads::ReaderGate gate{containers};
-  if (gate->contains(uuid)) {
-    return gate->at(uuid);
+  auto it = gate->find(uuid);
+  if (it != gate->end()) {
+    return it->second;
   }
   throw Exception::ElementNotInContainer(uuid, *this);
 }

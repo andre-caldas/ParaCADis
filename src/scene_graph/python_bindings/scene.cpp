@@ -24,10 +24,16 @@
 
 #include "scene.h"
 
+#include <exception>
+
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/document_tree/DocumentTree.h>
 #include <python_bindings/types.h>
 #include <scene_graph/SceneRoot.h>
+
+#include <OGRE/OgreSceneManager.h>
+
+#include <Python.h>
 
 namespace py = pybind11;
 using namespace py::literals;
@@ -35,9 +41,30 @@ using namespace Document;
 using namespace SceneGraph;
 
 namespace {
-  SharedPtr<SceneRoot> new_scene()
+  /**
+   * A hack to extract an object form the SWIG wrapper.
+   */
+  template<typename T>
+  T* extract_from_swig(PyObject* swig_wrapper)
   {
-    auto result = std::make_shared<SceneRoot>();
+    typedef struct
+    {
+      PyObject_HEAD
+      void* ptr;
+    } SwigPyObject;
+
+    PyObject* pySwigThis = PyObject_GetAttrString(swig_wrapper, "this");
+    if(!pySwigThis) {
+      throw std::runtime_error("Passed object is not a SceneManager (I think!).");
+    }
+    auto* swig = reinterpret_cast<SwigPyObject*>(pySwigThis);
+    return reinterpret_cast<T*>(swig->ptr);
+  }
+
+  SharedPtr<SceneRoot> new_scene(py::handle py_scn_mgr)
+  {
+    auto* scene_manager = extract_from_swig<Ogre::SceneManager>(py_scn_mgr.ptr());
+    auto result = std::make_shared<SceneRoot>(*scene_manager);
     result->runQueue();
     return result;
   }
@@ -49,7 +76,7 @@ void init_scene(py::module_& m)
       m, "Scene",
       "A scene graph with a message queue that keeps it updated.")
       .def(py::init(&new_scene),
-           "Creates an empty scene.")
+           "Creates an empty scene and associates it to an OGRE SceneManager.")
       .def("populate",
            [](const SharedPtr<SceneRoot>& self, const SharedPtr<DocumentTree>& doc)
            {self->populate(self, doc);},

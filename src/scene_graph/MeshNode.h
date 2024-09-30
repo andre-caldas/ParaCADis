@@ -22,53 +22,41 @@
 
 #pragma once
 
-#include <base/document_tree/Container.h>
-
-#include <base/mesh_provider/MeshProvider.h>
+#include <base/geometric_primitives/DocumentGeometry.h>
+#include <mesh_provider/MeshProvider.h>
 
 #include <memory>
 
+namespace Ogre {
+  class Mesh;
+}
+
 namespace SceneGraph
 {
-
   /**
    * Vurtual base to implement a bridge between ParaCADis geometric objects
    * and the SceneGraph tree leafs.
    */
   class MeshNode
   {
-  protected:
-    virtual ~MeshNode() = default;
-  };
+    using MeshProvider        = Mesh::MeshProviderBase;
+    using MeshProviderCurve   = Mesh::MeshProviderCurve;
+    using MeshProviderSurface = Mesh::MeshProviderSurface;
 
-
-  /**
-   * Implements a bridge between ParaCADis 1D geometric objects
-   * and the SceneGraph tree leafs.
-   */
-  class MeshCurveNode : public MeshNode
-  {
-    using mesh_t = Mesh::MeshProviderCurve;
   public:
-    MeshCurveNode(mesh_t mesh) : mesh(std::move(mesh)) {}
+    static SharedPtr<MeshNode> make_shared(SharedPtr<MeshProvider> mesh_provider);
 
   private:
-    mesh_t mesh;
+    SharedPtr<Ogre::Mesh> getOgreMesh();
+
+    /**
+     * To be attached to a signal that indicates geometry changes.
+     */
+    void updateMesh();
+
+    MeshNode(SharedPtr<MeshProvider> mesh_provider)
+        : mesh_provider(std::move(mesh_provider)) {}
+
+    SharedPtr<MeshProvider> mesh_provider;
   };
-
-
-  /**
-   * Implements a bridge between 2D ParaCADis geometric objects
-   * and the SceneGraph tree leafs.
-   */
-  class MeshSurfaceNode : public MeshNode
-  {
-    using mesh_t = Mesh::MeshProviderSurface;
-  public:
-    MeshSurfaceNode(mesh_t mesh) : mesh(std::move(mesh)) {}
-
-  private:
-    mesh_t mesh;
-  };
-
 }

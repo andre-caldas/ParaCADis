@@ -25,10 +25,8 @@
 #include <CGAL/Quotient.h>
 #include <CGAL/Simple_homogeneous.h>
 
-using namespace CGAL;
-
 // TODO: Use/develop a Ring with square root.
-typedef Simple_homogeneous<Gmpz> K;
+typedef CGAL::Simple_homogeneous<CGAL::Gmpz> K;
 
 typedef K::FT       Real;
 typedef K::RT       Ring;

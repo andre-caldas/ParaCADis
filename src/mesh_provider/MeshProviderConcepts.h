@@ -22,34 +22,38 @@
 
 #pragma once
 
-#include "MeshProvider.h"
+#include <concepts>
+
+#include <gismo/gsCore/gsCurve.h>
+#include <gismo/gsCore/gsSurface.h>
 
 namespace Mesh
 {
-  template<typename MeshType, typename ReferenceableGeometry>
-  MeshProviderT<MeshType, ReferenceableGeometry>::MeshProviderT(
-      SharedPtr<ReferenceableGeometry> geometry)
-      : geometry_weak(geometry)
+  template<typename GismoGeo>
+  concept C_GismoCurve = requires(GismoGeo g)
   {
-    geometry->getChangedSignal().connect(recalculate);
-  }
+    typename GismoGeo::Scalar_t;
+    {g} -> std::convertible_to<gismo::gsCurve<typename GismoGeo::Scalar_t>>;
+  };
 
-  template<typename MeshType, typename ReferenceableGeometry>
-  SharedPtr<const MeshType>
-  MeshProviderT<MeshType, ReferenceableGeometry>::getMesh()
+  template<typename GismoGeo>
+  concept C_GismoSurface = requires(GismoGeo g)
   {
-    if(!mesh) {
-      recalculate();
-    }
-    assert(mesh && "Virtual method recalculate() needs to generate a valid mesh.");
-    return mesh;
-  }
+    typename GismoGeo::Scalar_t;
+    {g} -> std::convertible_to<gismo::gsSurface<typename GismoGeo::Scalar_t>>;
+  };
 
-  template<typename MeshType, typename ReferenceableGeometry>
-  void MeshProviderT<MeshType, ReferenceableGeometry>::setMesh(
-      SharedPtr<const MeshType> value)
+  template<typename Provider>
+  concept C_ProvidesGismoCurve = requires(Provider s)
   {
-    assert(value && "Cannot set mesh to invalid pointer.");
-    mesh = value.sliced();
-  }
+    typename Provider::curve_t;
+    {*(s.produceGismoCurve())} -> C_GismoCurve;
+  };
+
+  template<typename Provider>
+  concept C_ProvidesGismoSurface = requires(Provider s)
+  {
+    typename Provider::surface_t;
+    {*(s.produceGismoSurface())} -> C_GismoSurface;
+  };
 }

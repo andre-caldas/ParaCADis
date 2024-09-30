@@ -35,6 +35,12 @@ std::unique_ptr<Line2Points> Line2Points::deepCopy() const
                                        gate->is_bounded_start, gate->is_bounded_end);
 }
 
+SharedPtr<const Line2Points::curve_t> Line2Points::produceGismoCurve() const
+{
+  assert(false && "Implement!");
+  return {};
+}
+
 
 LinePointDirection::LinePointDirection(Point start, Vector direction,
                                        bool is_bounded_start, bool is_bounded_end)
@@ -47,6 +53,12 @@ std::unique_ptr<LinePointDirection> LinePointDirection::deepCopy() const
   Threads::ReaderGate gate{*this};
   return std::make_unique<LinePointDirection>(gate->start, gate->direction,
                                               gate->is_bounded_start, gate->is_bounded_end);
+}
+
+SharedPtr<const LinePointDirection::curve_t> LinePointDirection::produceGismoCurve() const
+{
+  assert(false && "Implement!");
+  return {};
 }
 
 /**

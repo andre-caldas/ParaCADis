@@ -3,6 +3,8 @@ expected_behaviour_src = [
 ]
 
 expected_behaviour_includes = [
+  'CycleGuard.h',
+  'CycleGuard.hpp',
   'SharedPtr.h',
   'SharedPtr_impl.h',
 ]

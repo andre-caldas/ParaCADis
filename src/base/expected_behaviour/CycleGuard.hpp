@@ -20,26 +20,40 @@
  *                                                                          *
  ***************************************************************************/
 
-#pragma once
+#include "CycleGuard.h"
 
-#include "MeshProvider.h"
+#include <cassert>
 
-#include <base/geometric_primitives/lines.h>
-
-namespace Mesh
+template<typename T>
+CycleGuard<T>::Sentinel CycleGuard<T>::sentinel(T* p)
 {
-  class MeshLine2Points
-      : public MeshProviderCurve<Line2Points>
-  {
-  public:
-    void _recalculate() override;
-  };
+  if(push(p)) {
+    return {processed, p};
+  }
+  return {processed, nullptr};
+}
 
+template<typename T>
+bool CycleGuard<T>::push(T* p)
+{
+  if(already_processed(p)) {
+    return false;
+  }
+  processed.insert(p);
+  return true;
+}
 
-  class MeshLinePointDirection
-      : public MeshProviderCurve<LinePointDirection>
-  {
-  public:
-    void _recalculate() override;
-  };
+template<typename T>
+void CycleGuard<T>::pop(T* p)
+{
+  assert(processed.contains(p) && "Cannot pop an item that was not processed.");
+  processed.erase(p);
+}
+
+template<typename T>
+CycleGuard<T> CycleGuard<T>::clone() const
+{
+  CycleGuard<T> result;
+  result.processed = processed;
+  return result;
 }

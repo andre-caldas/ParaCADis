@@ -23,10 +23,16 @@
 #pragma once
 
 #include "deferenceables.h"
+#include "DocumentGeometry.h"
 #include "types.h"
+
+#include <memory>
+#include <atomic>
 
 #include <base/naming_scheme/Chainables.h>
 #include <base/naming_scheme/IExport.h>
+
+#include <gismo/gsNurbs/gsTensorNurbs.h>
 
 /**
  * DataStruct for ShpereCenterRadius2.
@@ -40,7 +46,8 @@ struct SphereCenterRadius2Data {
  * A sphere determined by its center and the squared radius.
  */
 class SphereCenterRadius2
-    : public NamingScheme::Exporter<SphereCenterRadius2Data>
+    : public Document::DocumentSurface
+    , public NamingScheme::Exporter<SphereCenterRadius2Data>
     , public NamingScheme::IExportStruct<DeferenceablePoint, SphereCenterRadius2Data,
                                 {&SphereCenterRadius2Data::center, "center"},
                                 {&SphereCenterRadius2Data::center, "c"}>
@@ -55,6 +62,9 @@ public:
   std::unique_ptr<SphereCenterRadius2> deepCopy() const;
   std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
   { return deepCopy(); }
+
+private:
+  SharedPtr<const surface_t> produceGismoSurface() const;
 };
 
 
@@ -70,7 +80,8 @@ struct SphereCenterSurfacePointData {
  * A sphere determined by its center and a point on its surface.
  */
 class SphereCenterSurfacePoint
-    : public NamingScheme::Exporter<SphereCenterSurfacePointData>
+    : public Document::DocumentSurface
+    , public NamingScheme::Exporter<SphereCenterSurfacePointData>
     , public NamingScheme::IExportStruct<DeferenceablePoint, SphereCenterSurfacePointData,
                                 {&SphereCenterSurfacePointData::center, "center"},
                                 {&SphereCenterSurfacePointData::center, "c"}>
@@ -85,4 +96,7 @@ public:
   std::unique_ptr<SphereCenterSurfacePoint> deepCopy() const;
   std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
   { return deepCopy(); }
+
+private:
+  SharedPtr<const surface_t> produceGismoSurface() const;
 };

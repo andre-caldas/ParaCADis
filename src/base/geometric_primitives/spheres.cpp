@@ -22,6 +22,16 @@
 
 #include "spheres.h"
 
+#include <gismo/gsNurbs/gsBSpline.h>
+#include <gismo/gsNurbs/gsNurbs.h>
+#include <gismo/gsNurbs/gsNurbsCreator.h>
+
+using namespace gismo;
+using namespace Document;
+
+/*
+ * SphereCenterRadius2
+ */
 SphereCenterRadius2::SphereCenterRadius2(Point center, Real radius2)
     : Exporter{{std::move(center), std::move(radius2)}}
 {
@@ -31,6 +41,22 @@ std::unique_ptr<SphereCenterRadius2> SphereCenterRadius2::deepCopy() const
 {
   Threads::ReaderGate gate{*this};
   return std::make_unique<SphereCenterRadius2>(gate->center, gate->radius2);
+}
+
+SharedPtr<const DocumentGeometry::surface_t>
+SphereCenterRadius2::produceGismoSurface() const
+{
+  Point  center;
+  real_t radius2;
+  {
+    Threads::ReaderGate gate{*this};
+    radius2 = CGAL::to_double(gate->radius2);
+    center = gate->center;
+  }
+  real_t x = CGAL::to_double(center.x());
+  real_t y = CGAL::to_double(center.y());
+  real_t z = CGAL::to_double(center.z());
+  return SharedPtr{gsNurbsCreator<real_t>::NurbsSphere(std::sqrt(radius2), x, y, z)};
 }
 
 
@@ -44,6 +70,23 @@ std::unique_ptr<SphereCenterSurfacePoint> SphereCenterSurfacePoint::deepCopy() c
 {
   Threads::ReaderGate gate{*this};
   return std::make_unique<SphereCenterSurfacePoint>(gate->center, gate->surface_point);
+}
+
+SharedPtr<const DocumentGeometry::surface_t>
+SphereCenterSurfacePoint::produceGismoSurface() const
+{
+  Point center;
+  Point surface_point;
+  {
+    Threads::ReaderGate gate{*this};
+    surface_point = gate->surface_point;
+    center = gate->center;
+  }
+  real_t radius2 = CGAL::to_double((surface_point-center).squared_length());
+  real_t x = CGAL::to_double(center.x());
+  real_t y = CGAL::to_double(center.y());
+  real_t z = CGAL::to_double(center.z());
+  return SharedPtr{gsNurbsCreator<real_t>::NurbsSphere(std::sqrt(radius2), x, y, z)};
 }
 
 

@@ -20,8 +20,7 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef DocumentTree_Container_H
-#define DocumentTree_Container_H
+#pragma once
 
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/geometric_primitives/CoordinateSystem.h>
@@ -52,7 +51,7 @@ namespace Document
     using uuid_type = NamingScheme::Uuid::uuid_type;
 
     std::unique_ptr<Container> deepCopy() const;
-    std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
+    std::unique_ptr<ExporterBase> deepCopyExporter() const override
     { return deepCopy(); }
 
     std::string toString() const override;
@@ -103,12 +102,12 @@ namespace Document
 
   private:
     template<typename Key, typename Val>
-    using UnorderedMap = Threads::SafeStructs::ThreadSafeUnorderedMap<Key, Val>;
+    using UnorderedMultimap = Threads::SafeStructs::ThreadSafeUnorderedMultimap<Key, Val>;
 
     // Data protected by mutexes.
-    UnorderedMap<uuid_type, SharedPtr<NamingScheme::ExporterBase>> non_containers;
-    UnorderedMap<uuid_type, SharedPtr<Container>> containers;
-    DeferenceableCoordinateSystem                 coordinate_system;
+    UnorderedMultimap<uuid_type, SharedPtr<ExporterBase>> non_containers;
+    UnorderedMultimap<uuid_type, SharedPtr<Container>>    containers;
+    DeferenceableCoordinateSystem                         coordinate_system;
 
     /**
      * This is the pivot mutex. No one should use it directly.
@@ -144,5 +143,3 @@ namespace Document
   static_assert(Threads::C_MutexHolder<Container>, "A container is a C_MutexHolder.");
 
 }  // namespace Document
-
-#endif

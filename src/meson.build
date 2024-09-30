@@ -4,6 +4,7 @@ add_project_arguments('-DCGAL_HAS_THREADS', language : 'cpp')
 
 deps = [
   dependency('CGAL'),
+  dependency('gismo'),
   dependency('gmpxx'),
   dependency('mpfr'),
 ]
@@ -26,6 +27,7 @@ pybind_main_src = []
 
 subdir('base')
 subdir('python_bindings')
+subdir('mesh_provider')
 subdir('scene_graph')
 
 paracadis_exec = executable('paracadis', 'paracadis.cpp',

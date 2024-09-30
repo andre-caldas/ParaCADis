@@ -20,11 +20,11 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef ExpectedBehaviour_SharedPtr_H
-#define ExpectedBehaviour_SharedPtr_H
+#pragma once
 
 #include <memory>
 #include <type_traits>
+#include <unordered_map>
 #include <utility>
 
 namespace pybind11 {
@@ -64,6 +64,7 @@ public:
   SharedPtr(SharedPtr&&) = default;
   SharedPtr(const std::shared_ptr<T>& shared);
   SharedPtr(std::shared_ptr<T>&& shared);
+  SharedPtr(std::unique_ptr<T>&& unique);
   template<class X, typename M = T> requires(!std::is_void_v<M>)
   SharedPtr(const SharedPtr<X>& shared, M X::* localPointer);
   template<class X, typename M = T> requires(!std::is_void_v<M>)
@@ -118,12 +119,21 @@ public:
 
   template<typename S>
   SharedPtr<S> cast() const { return std::dynamic_pointer_cast<S>(sliced()); }
+  template<typename S>
+  SharedPtr<S> cast_nothrow() const { return std::dynamic_pointer_cast<S>(sliced_nothrow()); }
 
 private:
   SharedPtr(T* ptr) : std::shared_ptr<T>(ptr) {}
   template <typename type_, typename... options>
   friend class pybind11::class_;
 };
+
+namespace std {
+  template<typename T>
+  struct hash<SharedPtr<T>> {
+    size_t operator()(SharedPtr<T> p) {return p.get();}
+  };
+}
 
 
 template<typename T>
@@ -143,6 +153,29 @@ public:
   WeakPtr<S> cast() const;
 };
 
-#include "SharedPtr_impl.h"
 
-#endif
+class JustLockPtr
+{
+public:
+  JustLockPtr() = default;
+  JustLockPtr(const JustLockPtr&) = default;
+  JustLockPtr(JustLockPtr&&) = default;
+
+  JustLockPtr& operator= (const JustLockPtr& other);
+  JustLockPtr& operator= (JustLockPtr&& other);
+
+  JustLockPtr(std::shared_ptr<void>&& ptr);
+
+  template<typename T>
+  JustLockPtr(const std::shared_ptr<T>& ptr);
+
+  template<typename T>
+  JustLockPtr(const SharedPtr<T>& ptr) : JustLockPtr(ptr.sliced()) {}
+
+  operator bool() const {return bool(lock);}
+
+private:
+  std::shared_ptr<void> lock;
+};
+
+#include "SharedPtr_impl.h"

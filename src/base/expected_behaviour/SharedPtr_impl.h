@@ -20,11 +20,11 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef ExpectedBehaviour_SharedPtr_impl_H
-#define ExpectedBehaviour_SharedPtr_impl_H
+#pragma once
 
 #include "SharedPtr.h"  // Just to make tools happy!
 
+#include <cassert>
 #include <memory>
 #include <optional>
 
@@ -37,6 +37,12 @@ SharedPtr<T, NotBool>::SharedPtr(const std::shared_ptr<T>& shared)
 template<typename T, typename NotBool>
 SharedPtr<T, NotBool>::SharedPtr(std::shared_ptr<T>&& shared)
     : std::shared_ptr<T>(std::move(shared))
+{
+}
+
+template<typename T, typename NotBool>
+SharedPtr<T, NotBool>::SharedPtr(std::unique_ptr<T>&& unique)
+    : std::shared_ptr<T>(std::move(unique))
 {
 }
 
@@ -104,4 +110,11 @@ WeakPtr<S> WeakPtr<T>::cast() const
   return shared.template cast<S>().getWeakPtr();
 }
 
-#endif  // ExpectedBehaviour_SharedPtr_impl_H
+
+
+
+template<typename T>
+JustLockPtr::JustLockPtr(const std::shared_ptr<T>& ptr) : lock(ptr)
+{
+  assert(lock && "You cannot hold an unlocked shared_ptr.");
+}
