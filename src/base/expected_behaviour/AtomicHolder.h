@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2023 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -22,38 +22,31 @@
 
 #pragma once
 
-#include <concepts>
+#include "SharedPtr.h"
 
-#include <gismo/gsCore/gsCurve.h>
-#include <gismo/gsCore/gsSurface.h>
+#include <atomic>
+#include <memory>
 
-namespace Mesh
+/**
+ * This class holds a constant and thread-safe object that is ALWAYS AVAILABLE.
+ *
+ * In a highly multithreaded environment,
+ * we ensure that the generated data is encapsulated in an
+ * atomic shared pointer to a constant data structure.
+ * This way, threads that still rely on old data do not crash.
+ * And no one needs to wait for the data to be generated,
+ * because new data is generated "off line" and it is just
+ * swapped with the official when it ready for use.
+ */
+template<typename T>
+class AtomicHolder
 {
-  template<typename GismoGeo>
-  concept C_GismoCurve = requires(GismoGeo g)
-  {
-    typename GismoGeo::Scalar_t;
-    {g} -> std::convertible_to<gismo::gsCurve<typename GismoGeo::Scalar_t>>;
-  };
+public:
+  SharedPtr<T> get() const;
+  void set(const SharedPtr<T>& value);
 
-  template<typename GismoGeo>
-  concept C_GismoSurface = requires(GismoGeo g)
-  {
-    typename GismoGeo::Scalar_t;
-    {g} -> std::convertible_to<gismo::gsSurface<typename GismoGeo::Scalar_t>>;
-  };
+private:
+  std::atomic<std::shared_ptr<T>> ptr;
+};
 
-  template<typename Provider>
-  concept C_ProvidesGismoCurve = requires(Provider s)
-  {
-    typename Provider::curve_t;
-    {*(s.produceGismoCurve())} -> C_GismoCurve;
-  };
-
-  template<typename Provider>
-  concept C_ProvidesGismoSurface = requires(Provider s)
-  {
-    typename Provider::surface_t;
-    {*(s.produceGismoSurface())} -> C_GismoSurface;
-  };
-}
+#include "AtomicHolder.hpp"

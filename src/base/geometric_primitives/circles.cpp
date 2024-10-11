@@ -89,8 +89,8 @@ std::unique_ptr<CirclePointRadius2Normal> CirclePointRadius2Normal::deepCopy() c
   return std::make_unique<CirclePointRadius2Normal>(gate->center, gate->radius2, gate->normal);
 }
 
-SharedPtr<const DocumentGeometry::curve_t>
-CirclePointRadius2Normal::produceGismoCurve() const
+SharedPtr<const DocumentGeometry::iga_curve_t>
+CirclePointRadius2Normal::produceIgaCurve() const
 {
   Point center;
   real_t radius2;
@@ -117,8 +117,8 @@ std::unique_ptr<Circle3Points> Circle3Points::deepCopy() const
   return std::make_unique<Circle3Points>(gate->a, gate->b, gate->c);
 }
 
-SharedPtr<const DocumentGeometry::curve_t>
-Circle3Points::produceGismoCurve() const
+SharedPtr<const DocumentGeometry::iga_curve_t>
+Circle3Points::produceIgaCurve() const
 {
   Point a, b, c;
   {

@@ -26,6 +26,7 @@
 #include "MeshNode.h"
 
 #include <base/expected_behaviour/CycleGuard.h>
+#include <mesh_provider/MeshProvider.h>
 
 #include <cassert>
 #include <iostream>
@@ -65,10 +66,8 @@ namespace SceneGraph
   ContainerNode::ContainerNode(const SharedPtr<SceneRoot>& scene_root)
       : sceneRootWeak(scene_root)
   {
-    auto* ogreNode = scene_root->sceneManager->createSceneNode();
-    ogreNodeWeak = SharedPtr{scene_root, ogreNode};
     auto* root_node = scene_root->sceneManager->getRootSceneNode();
-    root_node->addChild(ogreNode);
+    ogreNodeWeak = SharedPtr{scene_root, root_node};
   }
 
   ContainerNode::ContainerNode(const SharedPtr<SceneRoot>& scene_root,
@@ -243,13 +242,23 @@ namespace SceneGraph
       }
     }
 
+    Threads::WriterGate gate{scene_root->meshNodes};
     if(!new_mesh_node) {
-assert(false);
-//      xxxxxxx create a mesh_provider;
-//      new_mesh_node = MeshNode::make_shared(mesh_provider);
+      // We check again, but with a writer gate.
+      auto it = gate->find(geo.get());
+      if(it != gate->end()) {
+        new_mesh_node = it->second;
+        assert(new_mesh_node && "Mapped MeshNode is supposed to be valid.");
+      } else {
+        auto scene = sceneRootWeak.lock();
+        if(!scene) {
+          return;
+        }
+        auto mesh_provider = Mesh::MeshProvider::make_shared(geo, scene->getQueue());
+        new_mesh_node = MeshNode::make_shared(std::move(mesh_provider));
+      }
     }
 
-    Threads::WriterGate gate{scene_root->meshNodes};
     gate->emplace(geo.get(), std::move(new_mesh_node));
   }
 

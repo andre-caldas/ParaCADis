@@ -64,7 +64,7 @@ public:
   { return deepCopy(); }
 
 private:
-  SharedPtr<const surface_t> produceGismoSurface() const;
+  SharedPtr<const iga_surface_t> produceIgaSurface() const;
 };
 
 
@@ -98,5 +98,5 @@ public:
   { return deepCopy(); }
 
 private:
-  SharedPtr<const surface_t> produceGismoSurface() const;
+  SharedPtr<const iga_surface_t> produceIgaSurface() const;
 };

@@ -27,6 +27,13 @@
 #include <cassert>
 #include <memory>
 #include <optional>
+#include <type_traits>
+
+template<typename T, typename NotBool>
+SharedPtr<T> SharedPtr<T, NotBool>::from_pointer(T* ptr)
+{
+  return std::shared_ptr<T>(ptr);
+}
 
 template<typename T, typename NotBool>
 SharedPtr<T, NotBool>::SharedPtr(const std::shared_ptr<T>& shared)
@@ -100,6 +107,33 @@ const std::shared_ptr<T>& SharedPtr<T, NotBool>::sliced() const
   if (!*this) { throw std::bad_optional_access{}; }
   return *this;
 }
+
+template<typename T, typename NotBool>
+template<typename S>
+SharedPtr<S> SharedPtr<T, NotBool>::cast() const
+{
+  if constexpr(std::is_same_v<T,S>) {
+    return *this;
+  } else if constexpr(std::has_virtual_destructor_v<T>) {
+    return std::dynamic_pointer_cast<S>(sliced());
+  } else {
+    return std::static_pointer_cast<S>(sliced());
+  }
+}
+
+template<typename T, typename NotBool>
+template<typename S>
+SharedPtr<S> SharedPtr<T, NotBool>::cast_nothrow() const
+{
+  if constexpr(std::is_same_v<T,S>) {
+    return *this;
+  } else if constexpr(std::has_virtual_destructor_v<T>) {
+    return std::dynamic_pointer_cast<S>(sliced_nothrow());
+  } else {
+    return std::static_pointer_cast<S>(sliced_nothrow());
+  }
+}
+
 
 template<typename T>
 template<typename S>

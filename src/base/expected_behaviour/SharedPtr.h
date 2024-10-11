@@ -100,6 +100,8 @@ public:
     return std::make_shared<T>(std::forward<Args>(args)...);
   }
 
+  static SharedPtr<T> from_pointer(T* ptr);
+
   template<typename S>
   bool operator==(const SharedPtr<S>& other) const noexcept
   {
@@ -118,9 +120,9 @@ public:
   operator SharedPtr<S>() const { return {sliced()}; }
 
   template<typename S>
-  SharedPtr<S> cast() const { return std::dynamic_pointer_cast<S>(sliced()); }
+  SharedPtr<S> cast() const;
   template<typename S>
-  SharedPtr<S> cast_nothrow() const { return std::dynamic_pointer_cast<S>(sliced_nothrow()); }
+  SharedPtr<S> cast_nothrow() const;
 
 private:
   SharedPtr(T* ptr) : std::shared_ptr<T>(ptr) {}

@@ -20,19 +20,41 @@
  *                                                                          *
  ***************************************************************************/
 
-#pragma once
+#include "MeshProvider.h"
 
-#include "Trigger.h"
+#include "OgreGismoMesh.h"
 
-namespace Threads
+#include <memory>
+
+using namespace Mesh;
+
+/*
+ * MeshProvider
+ */
+MeshProvider::MeshProvider(SharedPtr<IgaProvider> iga_provider)
+    : igaProvider(std::move(iga_provider))
+    , mesh(igaProvider->getIgaGeometry())
+{}
+
+SharedPtr<MeshProvider>
+MeshProvider::make_shared(SharedPtr<native_geometry_t> geometry,
+                          const SharedPtr<Threads::SignalQueue>& queue)
 {
-  template<class SourceObject>
-  void Trigger::_connect(const SharedPtr<SourceObject>& from,
-                               const SharedPtr<SignalQueue>& queue,
-                               const SharedPtr<Trigger>& self)
-  {
-    assert(dynamic_cast<Trigger*>(self.get()) == this
-           && "Pointer 'self' must point to myself.");
-    from->getChangedSignal().connect(from, queue, self, callback);
-  }
+  auto iga_provider = IgaProvider::make_shared(std::move(geometry), queue);
+  return make_shared(std::move(iga_provider), queue);
+}
+
+SharedPtr<MeshProvider>
+MeshProvider::make_shared(SharedPtr<IgaProvider> iga_provider,
+                          const SharedPtr<Threads::SignalQueue>& queue)
+{
+  auto self = SharedPtr<MeshProvider>::from_pointer(new MeshProvider(iga_provider));
+  iga_provider->igaChangedSig.connect(
+      std::move(iga_provider), queue, self, &MeshProvider::slotUpdate);
+  return self;
+}
+
+void MeshProvider::slotUpdate()
+{
+  mesh.resetIgaGeometry(igaProvider->getIgaGeometry());
 }

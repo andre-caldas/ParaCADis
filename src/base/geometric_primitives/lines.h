@@ -69,7 +69,7 @@ public:
   { return deepCopy(); }
 
 private:
-  SharedPtr<const curve_t> produceGismoCurve() const override;
+  SharedPtr<const iga_curve_t> produceIgaCurve() const override;
 };
 
 
@@ -111,5 +111,5 @@ public:
   { return deepCopy(); }
 
 private:
-  SharedPtr<const curve_t> produceGismoCurve() const override;
+  SharedPtr<const iga_curve_t> produceIgaCurve() const override;
 };

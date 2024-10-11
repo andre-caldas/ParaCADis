@@ -20,50 +20,41 @@
  *                                                                          *
  ***************************************************************************/
 
-#pragma once
+#include "IgaProvider.h"
 
-#include <base/expected_behaviour/SharedPtr.h>
-#include <base/threads/message_queue/Signal.h>
+#include <cassert>
 
-#include <gismo/gsCore/gsCurve.h>
-#include <gismo/gsCore/gsSurface.h>
+using namespace Mesh;
 
-
-namespace Document
+/**
+ * IgaGeometryHolder
+ */
+void IgaGeometryHolder::setIgaGeometry(const SharedPtr<const iga_geometry_t>& value)
 {
-  class DocumentGeometry
-  {
-  public:
-    using iga_geometry_t = gismo::gsGeometry<real_t>;
-    using iga_curve_t    = gismo::gsCurve<real_t>;
-    using iga_surface_t  = gismo::gsSurface<real_t>;
-
-    virtual SharedPtr<const iga_geometry_t> getIgaGeometry() const = 0;
-    virtual ~DocumentGeometry() = default;
-    Threads::Signal<>& getChangedSignal() const;
-  };
+  geo.set(value);
+  igaChangedSig.emit_signal();
+}
 
 
-  class DocumentCurve : public DocumentGeometry
-  {
-  public:
-    SharedPtr<const iga_geometry_t> getIgaGeometry() const override;
-    SharedPtr<const iga_curve_t> getIgaCurve() const;
+/*
+ * IgaProvider
+ */
+SharedPtr<IgaProvider>
+IgaProvider::make_shared(SharedPtr<native_geometry_t> geometry,
+                         const SharedPtr<Threads::SignalQueue>& queue)
+{
+  assert(geometry && "Invalid geometry passed");
+  if(!geometry) { return {}; }
 
-  protected:
-    mutable std::atomic<std::shared_ptr<const iga_curve_t>> gismoGeometry;
-    virtual SharedPtr<const iga_curve_t> produceIgaCurve() const = 0;
-  };
+  auto self = SharedPtr<IgaProvider>::from_pointer(new IgaProvider(geometry));
+  geometry->getChangedSignal().connect(geometry, queue, self, &IgaProvider::slotUpdate);
+  return self;
+}
 
 
-  class DocumentSurface : public DocumentGeometry
-  {
-  public:
-    SharedPtr<const iga_geometry_t> getIgaGeometry() const override;
-    SharedPtr<const iga_surface_t> getIgaSurface() const;
-
-  protected:
-    mutable std::atomic<std::shared_ptr<const iga_surface_t>> gismoGeometry;
-    virtual SharedPtr<const iga_surface_t> produceIgaSurface() const = 0;
-  };
+void IgaProvider::slotUpdate()
+{
+  auto geometry = geometryWeak.lock();
+  if(!geometry) { return; }
+  setIgaGeometry(geometry->getIgaGeometry());
 }

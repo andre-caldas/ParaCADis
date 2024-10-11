@@ -31,7 +31,10 @@
 #include <python_bindings/types.h>
 #include <scene_graph/SceneRoot.h>
 
+#include <OGRE/OgreRoot.h>
 #include <OGRE/OgreSceneManager.h>
+#include <OGRE/Bites/OgreApplicationContext.h>
+#include <OGRE/Bites/OgreInput.h>
 
 #include <Python.h>
 
@@ -45,7 +48,7 @@ namespace {
    * A hack to extract an object form the SWIG wrapper.
    */
   template<typename T>
-  T* extract_from_swig(PyObject* swig_wrapper)
+  T* extract_from_swig(py::handle swig_wrapper)
   {
     typedef struct
     {
@@ -53,7 +56,7 @@ namespace {
       void* ptr;
     } SwigPyObject;
 
-    PyObject* pySwigThis = PyObject_GetAttrString(swig_wrapper, "this");
+    PyObject* pySwigThis = PyObject_GetAttrString(swig_wrapper.ptr(), "this");
     if(!pySwigThis) {
       throw std::runtime_error("Passed object is not a SceneManager (I think!).");
     }
@@ -63,7 +66,7 @@ namespace {
 
   SharedPtr<SceneRoot> new_scene(py::handle py_scn_mgr)
   {
-    auto* scene_manager = extract_from_swig<Ogre::SceneManager>(py_scn_mgr.ptr());
+    auto* scene_manager = extract_from_swig<Ogre::SceneManager>(py_scn_mgr);
     auto result = std::make_shared<SceneRoot>(*scene_manager);
     result->runQueue();
     return result;

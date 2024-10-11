@@ -35,7 +35,7 @@ std::unique_ptr<Line2Points> Line2Points::deepCopy() const
                                        gate->is_bounded_start, gate->is_bounded_end);
 }
 
-SharedPtr<const Line2Points::curve_t> Line2Points::produceGismoCurve() const
+SharedPtr<const Line2Points::iga_curve_t> Line2Points::produceIgaCurve() const
 {
   assert(false && "Implement!");
   return {};
@@ -55,7 +55,7 @@ std::unique_ptr<LinePointDirection> LinePointDirection::deepCopy() const
                                               gate->is_bounded_start, gate->is_bounded_end);
 }
 
-SharedPtr<const LinePointDirection::curve_t> LinePointDirection::produceGismoCurve() const
+SharedPtr<const LinePointDirection::iga_curve_t> LinePointDirection::produceIgaCurve() const
 {
   assert(false && "Implement!");
   return {};

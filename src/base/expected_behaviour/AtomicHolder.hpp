@@ -20,13 +20,23 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef Threads_AtomicSharedPtr_H
-#define Threads_AtomicSharedPtr_H
+#pragma once
 
-#include <memory>
-#include <atomic>
+#include "AtomicHolder.h"
+
+#include <cassert>
 
 template<typename T>
-using AtomicSharedPtr = std::atomic<std::shared_ptr<T>>;
+SharedPtr<T> AtomicHolder<T>::get() const
+{
+  auto result = ptr.load();
+  assert(result && "Shall not get() an uninitialized pointer.");
+  return result;
+}
 
-#endif
+template<typename T>
+void AtomicHolder<T>::set(const SharedPtr<T>& p)
+{
+  assert(p && "Shall not set() to an uninitialized pointer.");
+  ptr = p.sliced();
+}

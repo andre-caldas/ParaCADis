@@ -1,5 +1,6 @@
 scene_graph_src = [
   'ContainerNode.cpp',
+  'MeshNode.cpp',
   'SceneRoot.cpp',
 ]
 

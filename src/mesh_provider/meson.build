@@ -1,10 +1,13 @@
 mesh_provider_src = [
+  'IgaProvider.cpp',
+  'MeshProvider.cpp',
+  'OgreGismoMesh.cpp',
 ]
 
 mesh_provider_includes = [
+  'IgaProvider.h',
   'MeshProvider.h',
-  'MeshProviderConcepts.h',
-  'MeshProvider_impl.h',
+  'OgreGismoMesh.h',
 ]
 
 install_headers(mesh_provider_includes,
@@ -13,6 +16,7 @@ install_headers(mesh_provider_includes,
 
 mesh_provider_deps = [
   dependency('gismo'),
+  dependency('OGRE'),
 ]
 
 mesh_provider_lib = library(

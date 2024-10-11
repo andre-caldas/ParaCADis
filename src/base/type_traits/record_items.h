@@ -21,81 +21,14 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef BASE_Threads_record_items_H
-#define BASE_Threads_record_items_H
+#pragma once
 
 #include <utility>
 #include <type_traits>
 #include <memory>
 
-#include "../AtomicSharedPtr.h"
-
 namespace Base::Threads
 {
-
-/*
- * Types in the MultiIndexMap are reduced to a "type",
- * and this is "type" is actuall indexed.
- * Anything that reduces to the same "type" can be used for look up.
- * For example,
- * a shared_ptr<DocumentObject> can be searched for using another
- * shared_ptr<DocumentObject> or a DocumentObject "raw pointer".
- */
-
-template<typename T>
-struct ReduceToRawAux
-{
-    static_assert(!std::is_class_v<T>, "Need a rule to reduce this class.");
-    using from_type = T;
-    using type = T;
-    static type reduce(from_type val) {return val;}
-};
-
-template<typename T>
-struct ReduceToRawAux<T&>
-    : ReduceToRawAux<std::remove_cv_t<T>>
-{};
-
-template<typename T>
-struct ReduceToRawAux<T*>
-{
-    using from_type = const T*;
-    using type = const T*;
-    static type reduce(from_type ptr) {return ptr;}
-};
-
-template<typename T>
-struct ReduceToRawAux<std::shared_ptr<T>>
-{
-    using from_type = std::shared_ptr<T>;
-    using next_type = std::remove_cv_t<T>*;
-    using type = typename ReduceToRawAux<next_type>::type;
-    static type reduce(const from_type& ptr) {return ReduceToRawAux<next_type>::reduce(ptr.get());}
-};
-
-template<typename T>
-struct ReduceToRawAux<std::unique_ptr<T>>
-{
-    using from_type = std::unique_ptr<T>;
-    using next_type = std::remove_cv_t<T>*;
-    using type = typename ReduceToRawAux<next_type>::type;
-    static type reduce(const from_type& ptr) {return ReduceToRawAux<next_type>::reduce(ptr.get());}
-};
-
-template<typename T>
-struct ReduceToRawAux<AtomicSharedPtr<T>>
-{
-    using from_type = AtomicSharedPtr<T>;
-    using next_type = std::shared_ptr<T>;
-    using type = typename ReduceToRawAux<next_type>::type;
-    static type reduce(const from_type& ptr) {return ReduceToRawAux<next_type>::reduce(ptr.load());}
-};
-
-template<typename T>
-struct ReduceToRaw
-    : ReduceToRawAux<std::remove_cv_t<T>>
-{};
-
 
 /*
  * Index traits.
@@ -167,5 +100,3 @@ template<std::size_t I, auto ...ValN>
 static constexpr auto ValueAtIndex_v = ValueAtIndex<I, ValN...>::value;
 
 } //namespace ::Threads
-
-#endif // BASE_Threads_record_items_H

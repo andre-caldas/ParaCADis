@@ -20,62 +20,73 @@
  *                                                                          *
  ***************************************************************************/
 
+/**
+ * @file
+ * A IgaProvider is a class that reads a native geometric object
+ * and generates a mesh that can be processed using Isogeometric Analysis.
+ *
+ * Iga providers keep a reference to a native object of type DocumentGeometry
+ * and a newly generated G+Smo object.
+ *
+ * Therefore, we implement two auxiliary classes to handle those references:
+ * IgaGeometryHolder and NativeGeometryHolder.
+ */
+
 #pragma once
 
-#include "Signal.h"
+#include <base/expected_behaviour/AtomicHolder.h>
+#include <base/geometric_primitives/DocumentGeometry.h>
 
-namespace Threads
+namespace Mesh
 {
+  using native_geometry_t = Document::DocumentGeometry;
+  using iga_geometry_t = native_geometry_t::iga_geometry_t;
+
   /**
-   * Abstract base convenience base class used to trigger an action
-   * whenever a signal arrives. For now, it is used to keep generated
-   * data in sync with the source data. For example, we use it to
-   * update a G+Smo mesh whenever the corresponding document object changes.
+   * Holds (shared_ptr to) a constant IgA geometry and emits a signal
+   * when the shared_ptr changes.
    */
-  class Trigger
+  class IgaGeometryHolder
   {
   public:
-    /**
-     * Connects a Trigger that generates a mesh from SourceObject.
-     *
-     * @attention This is not (in) a constructor because we need the object
-     * to be fully constructed before connecting signals to it.
-     */
-    template<class SourceObject>
-    void _connect(const SharedPtr<SourceObject>& from,
-                  const SharedPtr<SignalQueue>& queue,
-                  const SharedPtr<Trigger>& self);
+    virtual ~IgaGeometryHolder() = default;
+
+    SharedPtr<const iga_geometry_t> getIgaGeometry() const
+    {return geo.get();}
 
     /**
-     * Although harmless, copies are also not very useful,
-     * because the originally connected incoming signals
-     * will not be connected to this new object.
-     * So, we have it forbiden by now.
+     * Signals that the IgA data structure was changed and is ready.
      */
-    /// @{
-    Trigger(const Trigger&) = delete;
-    Trigger(Trigger&&) = delete;
-    Trigger& operator=(const Trigger&) = delete;
-    Trigger& operator=(Trigger&&) = delete;
-    /// @}
-
-    virtual ~Trigger() = default;
-
-    /**
-     * To be used as the signal slot.
-     * That is, this is what the signal is connected to
-     * when _connect() is called.
-     */
-    void callback() { _callback(); changed_sig.emit_signal(); }
-
-    mutable Signal<> changed_sig;
+    Threads::Signal<> igaChangedSig;
 
   protected:
+    void setIgaGeometry(const SharedPtr<const iga_geometry_t>& value);
+
+    AtomicHolder<const iga_geometry_t> geo;
+  };
+
+
+  /**
+   * Sets up an IgA geometry that is updated when the original
+   * native geometry changes.
+   */
+  class IgaProvider
+      : public IgaGeometryHolder
+  {
+  public:
+    static SharedPtr<IgaProvider>
+    make_shared(SharedPtr<native_geometry_t> geometry,
+                const SharedPtr<Threads::SignalQueue>& queue);
+
+  protected:
+    IgaProvider(SharedPtr<native_geometry_t> geometry)
+        : geometryWeak(std::move(geometry)) {}
+
+    WeakPtr<native_geometry_t> geometryWeak;
+
     /**
-     * Called when a signal from SourceObject is received.
+     * Called whenever DeferenceableGeometry changes.
      */
-    virtual void _callback() = 0;
+    void slotUpdate();
   };
 }
-
-#include "Trigger_impl.h"

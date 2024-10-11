@@ -28,7 +28,7 @@
 #include <memory>
 #include <string>
 
-#include <base/expected_behaviour/AtomicSharedPtr.h>
+#include <base/expected_behaviour/SharedPtr.h>
 
 namespace TypeTraits
 {
@@ -75,15 +75,6 @@ struct ReduceToRawAux<const char*>
 };
 
 template<typename T>
-struct ReduceToRawAux<std::shared_ptr<T>>
-{
-    using from_type = std::shared_ptr<T>;
-    using next_type = std::remove_cv_t<T>*;
-    using type = typename ReduceToRawAux<next_type>::type;
-    static type reduce(const from_type& ptr) {return ReduceToRawAux<next_type>::reduce(ptr.get());}
-};
-
-template<typename T>
 struct ReduceToRawAux<std::unique_ptr<T>>
 {
     using from_type = std::unique_ptr<T>;
@@ -93,12 +84,21 @@ struct ReduceToRawAux<std::unique_ptr<T>>
 };
 
 template<typename T>
-struct ReduceToRawAux<AtomicSharedPtr<T>>
+struct ReduceToRawAux<std::shared_ptr<T>>
 {
-    using from_type = AtomicSharedPtr<T>;
-    using next_type = std::shared_ptr<T>;
+    using from_type = std::shared_ptr<T>;
+    using next_type = std::remove_cv_t<T>*;
     using type = typename ReduceToRawAux<next_type>::type;
-    static type reduce(const from_type& ptr) {return ReduceToRawAux<next_type>::reduce(ptr.load());}
+    static type reduce(const from_type& ptr) {return ReduceToRawAux<next_type>::reduce(ptr.get());}
+};
+
+template<typename T>
+struct ReduceToRawAux<SharedPtr<T>>
+{
+    using from_type = SharedPtr<T>;
+    using next_type = std::remove_cv_t<T>*;
+    using type = typename ReduceToRawAux<next_type>::type;
+    static type reduce(const from_type& ptr) {return ReduceToRawAux<next_type>::reduce(ptr.get());}
 };
 
 } //namespace rtr_detail

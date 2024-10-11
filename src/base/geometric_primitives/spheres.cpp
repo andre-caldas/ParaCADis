@@ -43,8 +43,8 @@ std::unique_ptr<SphereCenterRadius2> SphereCenterRadius2::deepCopy() const
   return std::make_unique<SphereCenterRadius2>(gate->center, gate->radius2);
 }
 
-SharedPtr<const DocumentGeometry::surface_t>
-SphereCenterRadius2::produceGismoSurface() const
+SharedPtr<const DocumentGeometry::iga_surface_t>
+SphereCenterRadius2::produceIgaSurface() const
 {
   Point  center;
   real_t radius2;
@@ -72,8 +72,8 @@ std::unique_ptr<SphereCenterSurfacePoint> SphereCenterSurfacePoint::deepCopy() c
   return std::make_unique<SphereCenterSurfacePoint>(gate->center, gate->surface_point);
 }
 
-SharedPtr<const DocumentGeometry::surface_t>
-SphereCenterSurfacePoint::produceGismoSurface() const
+SharedPtr<const DocumentGeometry::iga_surface_t>
+SphereCenterSurfacePoint::produceIgaSurface() const
 {
   Point center;
   Point surface_point;

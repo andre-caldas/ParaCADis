@@ -23,47 +23,55 @@
 #pragma once
 
 #include <base/expected_behaviour/SharedPtr.h>
-#include <base/threads/message_queue/Signal.h>
+#include <base/geometric_primitives/DocumentGeometry.h>
 
-#include <gismo/gsCore/gsCurve.h>
-#include <gismo/gsCore/gsSurface.h>
+#include <gismo/gsCore/gsFieldCreator.h>
+#include <gismo/gsCore/gsGeometry.h>
 
+#include <OGRE/OgreMesh.h>
+#include <OGRE/OgreResource.h>
 
-namespace Document
+#include <memory>
+#include <atomic>
+
+namespace Mesh
 {
-  class DocumentGeometry
+  using native_geometry_t = Document::DocumentGeometry;
+  using iga_geometry_t = native_geometry_t::iga_geometry_t;
+
+  /**
+   * A mesh for the IgA geometries provided by G+Smo.
+   *
+   * This class contains an Ogre::Mesh and a mesh loader that
+   * converts the G+Smo geometry to the Ogre::Mesh.
+   */
+  class OgreGismoMesh : public Ogre::ManualResourceLoader
   {
   public:
-    using iga_geometry_t = gismo::gsGeometry<real_t>;
-    using iga_curve_t    = gismo::gsCurve<real_t>;
-    using iga_surface_t  = gismo::gsSurface<real_t>;
-
-    virtual SharedPtr<const iga_geometry_t> getIgaGeometry() const = 0;
-    virtual ~DocumentGeometry() = default;
-    Threads::Signal<>& getChangedSignal() const;
-  };
-
-
-  class DocumentCurve : public DocumentGeometry
-  {
-  public:
-    SharedPtr<const iga_geometry_t> getIgaGeometry() const override;
-    SharedPtr<const iga_curve_t> getIgaCurve() const;
+    OgreGismoMesh(SharedPtr<const iga_geometry_t> iga_geometry);
+    void resetIgaGeometry(SharedPtr<const iga_geometry_t> iga_geometry);
+    const SharedPtr<Ogre::Mesh>& getOgreMesh() const {return mesh;}
 
   protected:
-    mutable std::atomic<std::shared_ptr<const iga_curve_t>> gismoGeometry;
-    virtual SharedPtr<const iga_curve_t> produceIgaCurve() const = 0;
-  };
+    void prepareResource(Ogre::Resource* resource) override;
+    void loadResource(Ogre::Resource* resource) override;
 
+  private:
+    SharedPtr<Ogre::Mesh> mesh;
+    std::atomic<std::shared_ptr<const iga_geometry_t>> igaGeometry;
 
-  class DocumentSurface : public DocumentGeometry
-  {
-  public:
-    SharedPtr<const iga_geometry_t> getIgaGeometry() const override;
-    SharedPtr<const iga_surface_t> getIgaSurface() const;
+    // Prepared data.
+    std::vector<float> vertex;
+    std::vector<Ogre::uint16> indexes;
+    Ogre::Vector3 min_bound;
+    Ogre::Vector3 max_bound;
 
-  protected:
-    mutable std::atomic<std::shared_ptr<const iga_surface_t>> gismoGeometry;
-    virtual SharedPtr<const iga_surface_t> produceIgaSurface() const = 0;
+    int vertexEntriesPerPoint() const;
+
+    void prepareCurve();
+    void prepareSurface();
+
+    void loadCurve();
+    void loadSurface();
   };
 }

@@ -39,24 +39,14 @@ namespace SceneGraph
    */
   class MeshNode
   {
-    using MeshProvider        = Mesh::MeshProviderBase;
-    using MeshProviderCurve   = Mesh::MeshProviderCurve;
-    using MeshProviderSurface = Mesh::MeshProviderSurface;
-
   public:
-    static SharedPtr<MeshNode> make_shared(SharedPtr<MeshProvider> mesh_provider);
+    static SharedPtr<MeshNode> make_shared(SharedPtr<Mesh::MeshProvider> mesh_provider);
 
   private:
     SharedPtr<Ogre::Mesh> getOgreMesh();
 
-    /**
-     * To be attached to a signal that indicates geometry changes.
-     */
-    void updateMesh();
+    MeshNode(SharedPtr<Mesh::MeshProvider> mesh_provider);
 
-    MeshNode(SharedPtr<MeshProvider> mesh_provider)
-        : mesh_provider(std::move(mesh_provider)) {}
-
-    SharedPtr<MeshProvider> mesh_provider;
+    const SharedPtr<Mesh::MeshProvider> meshProvider;
   };
 }

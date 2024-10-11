@@ -28,22 +28,19 @@
 namespace SceneGraph
 {
 
+  SharedPtr<MeshNode> MeshNode::make_shared(SharedPtr<Mesh::MeshProvider> mp)
+  {
+    return SharedPtr<MeshNode>::from_pointer(new MeshNode(mp));
+  }
+
+  MeshNode::MeshNode(SharedPtr<Mesh::MeshProvider> mesh_provider)
+      : meshProvider(std::move(mesh_provider))
+  {}
+
   SharedPtr<Ogre::Mesh> MeshNode::getOgreMesh()
   {
-    xxxx;
+    assert(meshProvider && "Shared pointer not supposed to be invalid");
+    return meshProvider->getOgreMesh();
   }
 
-  void MeshNode::update()
-  {
-    auto ogre_mesh = getOgreMesh();
-    update ogre scene graph.
-    xxxx;
-  }
-
-  SharedPtr<MeshNode> MeshNode::make_shared(SharedPtr<MeshProvider> mp)
-  {
-    std::shared_ptr<MeshNode> self = new MeshNode(mp);
-    mp->changed_sig.connect(mp, xxx, self, update);
-    return self;
-  }
 }

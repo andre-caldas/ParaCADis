@@ -22,24 +22,37 @@
 
 #include "DocumentGeometry.h"
 
+#include <base/naming_scheme/Exporter.h>
+
 using namespace Document;
 
-SharedPtr<const DocumentGeometry::geometry_t>
-DocumentCurve::getGismoGeometry() const
+
+Threads::Signal<>& DocumentGeometry::getChangedSignal() const
 {
-  return getGismoCurve();
+  auto* exporter = dynamic_cast<const NamingScheme::ExporterBase*>(this);
+  if(exporter) {
+    return exporter->getChangedSignal();
+  }
+  assert(false && "DocumentGeometry has no known sibling with 'getChangedSignal()'");
 }
 
-SharedPtr<const DocumentGeometry::curve_t>
-DocumentCurve::getGismoCurve() const
+
+SharedPtr<const DocumentGeometry::iga_geometry_t>
+DocumentCurve::getIgaGeometry() const
+{
+  return getIgaCurve();
+}
+
+SharedPtr<const DocumentGeometry::iga_curve_t>
+DocumentCurve::getIgaCurve() const
 {
   auto loaded = gismoGeometry.load();
   if(!loaded) {
     // Not really thread-safe because if the geometry changes while
-    // it is being produced, two produceGismoCurve() will be called
+    // it is being produced, two produceIgaCurve() will be called
     // concurrently. Even if they are thread-safe,
     // you do not know if gismoGeometry will endup with the new or old geometry.
-    auto result = produceGismoCurve();
+    auto result = produceIgaCurve();
     gismoGeometry = result.sliced();
     return result;
   }
@@ -47,22 +60,22 @@ DocumentCurve::getGismoCurve() const
 }
 
 
-SharedPtr<const DocumentGeometry::geometry_t>
-DocumentSurface::getGismoGeometry() const
+SharedPtr<const DocumentGeometry::iga_geometry_t>
+DocumentSurface::getIgaGeometry() const
 {
-  return getGismoSurface();
+  return getIgaSurface();
 }
 
-SharedPtr<const DocumentGeometry::surface_t>
-DocumentSurface::getGismoSurface() const
+SharedPtr<const DocumentGeometry::iga_surface_t>
+DocumentSurface::getIgaSurface() const
 {
   auto loaded = gismoGeometry.load();
   if(!loaded) {
     // Not really thread-safe because if the geometry changes while
-    // it is being produced, two produceGismoSurface() will be called
+    // it is being produced, two produceIgaSurface() will be called
     // concurrently. Even if they are thread-safe,
     // you do not know if gismoSurface will endup with the new or old geometry.
-    auto result = produceGismoSurface();
+    auto result = produceIgaSurface();
     gismoGeometry = result.sliced();
     return result;
   }
