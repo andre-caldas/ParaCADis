@@ -48,7 +48,7 @@ namespace Mesh
   class OgreGismoMesh : public Ogre::ManualResourceLoader
   {
   public:
-    OgreGismoMesh(SharedPtr<const iga_geometry_t> iga_geometry);
+    OgreGismoMesh(std::shared_ptr<const iga_geometry_t> iga_geometry);
     void resetIgaGeometry(SharedPtr<const iga_geometry_t> iga_geometry);
     const SharedPtr<Ogre::Mesh>& getOgreMesh() const {return mesh;}
 

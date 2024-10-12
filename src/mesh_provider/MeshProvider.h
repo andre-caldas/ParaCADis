@@ -25,8 +25,6 @@
 #include "IgaProvider.h"
 #include "OgreGismoMesh.h"
 
-#include <base/expected_behaviour/AtomicHolder.h>
-
 namespace Mesh
 {
   class MeshProvider

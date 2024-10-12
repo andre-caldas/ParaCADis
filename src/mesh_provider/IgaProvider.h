@@ -34,8 +34,10 @@
 
 #pragma once
 
-#include <base/expected_behaviour/AtomicHolder.h>
 #include <base/geometric_primitives/DocumentGeometry.h>
+
+#include <atomic>
+#include <memory>
 
 namespace Mesh
 {
@@ -51,8 +53,8 @@ namespace Mesh
   public:
     virtual ~IgaGeometryHolder() = default;
 
-    SharedPtr<const iga_geometry_t> getIgaGeometry() const
-    {return geo.get();}
+    std::shared_ptr<const iga_geometry_t> getIgaGeometry() const
+    {return igaGeometry.load();}
 
     /**
      * Signals that the IgA data structure was changed and is ready.
@@ -60,9 +62,9 @@ namespace Mesh
     Threads::Signal<> igaChangedSig;
 
   protected:
-    void setIgaGeometry(const SharedPtr<const iga_geometry_t>& value);
+    void setIgaGeometry(std::shared_ptr<const iga_geometry_t> value);
 
-    AtomicHolder<const iga_geometry_t> geo;
+    std::atomic<std::shared_ptr<const iga_geometry_t>> igaGeometry;
   };
 
 

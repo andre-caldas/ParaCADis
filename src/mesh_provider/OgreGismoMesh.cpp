@@ -27,13 +27,14 @@
 #include <OGRE/OgreSubMesh.h>
 
 #include <atomic>
+#include <memory>
 #include <format>
 
 using namespace Mesh;
 using namespace gismo;
 
-OgreGismoMesh::OgreGismoMesh(SharedPtr<const iga_geometry_t> iga_geometry)
-    : igaGeometry(iga_geometry.sliced())
+OgreGismoMesh::OgreGismoMesh(std::shared_ptr<const iga_geometry_t> iga_geometry)
+    : igaGeometry(std::move(iga_geometry))
 {
   using namespace Ogre;
   static std::atomic<unsigned int> counter = 0;

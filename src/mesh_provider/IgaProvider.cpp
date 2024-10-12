@@ -24,14 +24,16 @@
 
 #include <cassert>
 
+#include <gismo/gsHSplines/gsTHBSpline.h>
+
 using namespace Mesh;
 
 /**
  * IgaGeometryHolder
  */
-void IgaGeometryHolder::setIgaGeometry(const SharedPtr<const iga_geometry_t>& value)
+void IgaGeometryHolder::setIgaGeometry(std::shared_ptr<const iga_geometry_t> value)
 {
-  geo.set(value);
+  igaGeometry = std::move(value);
   igaChangedSig.emit_signal();
 }
 
@@ -56,5 +58,5 @@ void IgaProvider::slotUpdate()
 {
   auto geometry = geometryWeak.lock();
   if(!geometry) { return; }
-  setIgaGeometry(geometry->getIgaGeometry());
+  setIgaGeometry(geometry->getIgaGeometry().sliced());
 }
