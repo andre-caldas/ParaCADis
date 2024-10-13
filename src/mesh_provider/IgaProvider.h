@@ -81,8 +81,7 @@ namespace Mesh
                 const SharedPtr<Threads::SignalQueue>& queue);
 
   protected:
-    IgaProvider(SharedPtr<native_geometry_t> geometry)
-        : geometryWeak(std::move(geometry)) {}
+    IgaProvider(SharedPtr<native_geometry_t> geometry);
 
     WeakPtr<native_geometry_t> geometryWeak;
 

@@ -41,6 +41,12 @@ void IgaGeometryHolder::setIgaGeometry(std::shared_ptr<const iga_geometry_t> val
 /*
  * IgaProvider
  */
+IgaProvider::IgaProvider(SharedPtr<native_geometry_t> geometry)
+    : geometryWeak(std::move(geometry))
+{
+  slotUpdate();
+}
+
 SharedPtr<IgaProvider>
 IgaProvider::make_shared(SharedPtr<native_geometry_t> geometry,
                          const SharedPtr<Threads::SignalQueue>& queue)
