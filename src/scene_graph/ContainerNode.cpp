@@ -263,6 +263,14 @@ namespace SceneGraph
       }
     }
 
+    // Prepare stuff before holding a lock.
+    auto scene = sceneRootWeak.lock();
+    if(!scene) {
+      return;
+    }
+    auto mesh_provider = Mesh::MeshProvider::make_shared(geo, scene->getQueue());
+    auto temp_mesh_node = MeshNode::make_shared(std::move(mesh_provider));
+
     { // Scoped lock.
       Threads::WriterGate gate{scene_root->meshNodes};
       if(!new_mesh_node) {
@@ -272,15 +280,9 @@ namespace SceneGraph
           new_mesh_node = it->second;
           assert(new_mesh_node && "Mapped MeshNode is supposed to be valid.");
         } else {
-          auto scene = sceneRootWeak.lock();
-          if(!scene) {
-            return;
-          }
-          auto mesh_provider = Mesh::MeshProvider::make_shared(geo, scene->getQueue());
-          new_mesh_node = MeshNode::make_shared(std::move(mesh_provider));
+          new_mesh_node = std::move(temp_mesh_node);
         }
       }
-
       gate->emplace(geo.get(), new_mesh_node);
     }
 
