@@ -23,6 +23,7 @@
 #include "SignalQueue.h"
 
 #include <base/threads/locks/writer_locks.h>
+#include <base/threads/utils.h>
 
 #include <thread>
 
@@ -62,7 +63,9 @@ namespace Threads
       }
     };
 
-    std::thread{std::move(lambda)}.detach();
+    std::thread thread{std::move(lambda)};
+    Threads::set_thread_name(thread, "signal queue");
+    thread.detach();
   }
 
   void SignalQueue::push(function_t&& callback, void* id)

@@ -1,6 +1,10 @@
 threads_dep = [dependency('threads')]
-threads_src = []
-threads_includes = []
+threads_src = files(
+  'utils.cpp',
+)
+threads_includes = files(
+  'utils.h',
+)
 
 subdir('locks')
 subdir('safe_structs')
