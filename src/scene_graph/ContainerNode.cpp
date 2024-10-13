@@ -29,8 +29,10 @@
 #include <mesh_provider/MeshProvider.h>
 
 #include <cassert>
+#include <exception>
 #include <iostream>
 
+#include <OGRE/OgreEntity.h>
 #include <OGRE/OgreSceneManager.h>
 
 namespace SceneGraph
@@ -42,23 +44,12 @@ namespace SceneGraph
   {
     std::shared_ptr<ContainerNode> result(new ContainerNode{scene_root});
     result->self = result;
+
+    auto* root_node = scene_root->sceneManager->getRootSceneNode();
+    result->ogreNodeWeak = SharedPtr{scene_root, root_node};
+
     CycleGuard<container_t> cycle_guard;
     result->populate(cycle_guard, document);
-    return result;
-  }
-
-  SharedPtr<ContainerNode>
-  ContainerNode::create(CycleGuard<container_t>& cycle_guard,
-                        const SharedPtr<ContainerNode>& parent,
-                        const SharedPtr<container_t>& self_container)
-  {
-    assert(static_cast<document_t*>(self_container.get()) == nullptr &&
-           "Use create_root_node() to associate a document to a node.");
-    auto scene_root = parent->sceneRootWeak.lock();
-    std::shared_ptr<ContainerNode> sptr{new ContainerNode(scene_root, parent)};
-    auto result = SharedPtr{std::move(sptr)};
-    result->self = result;
-    result->populate(cycle_guard, self_container);
     return result;
   }
 
@@ -66,27 +57,24 @@ namespace SceneGraph
   ContainerNode::ContainerNode(const SharedPtr<SceneRoot>& scene_root)
       : sceneRootWeak(scene_root)
   {
-    auto* root_node = scene_root->sceneManager->getRootSceneNode();
-    ogreNodeWeak = SharedPtr{scene_root, root_node};
   }
 
-  ContainerNode::ContainerNode(const SharedPtr<SceneRoot>& scene_root,
-                               const SharedPtr<ContainerNode>& parent)
-      : sceneRootWeak(scene_root)
+  ContainerNode::~ContainerNode()
   {
-    assert(parent);
-    auto* ogreNode = scene_root->sceneManager->createSceneNode();
-    ogreNodeWeak = SharedPtr{scene_root, ogreNode};
-    auto parent_ogre_node = parent->ogreNodeWeak.lock();
-    assert(parent_ogre_node && "Parent OGRE SceneNode was supposed to be alive.");
-    parent_ogre_node->addChild(ogreNode);
+    auto ogre_node = ogreNodeWeak.lock();
+    assert(ogre_node);
+    auto scene_root = sceneRootWeak.lock();
+    assert(scene_root);
+    scene_root->sceneManager->destroySceneNode(ogre_node.get());
   }
+
 
   void ContainerNode::populate(CycleGuard<container_t>& cycle_guard,
                                const SharedPtr<container_t>& my_container)
   {
-    auto sentinel = cycle_guard.sentinel(my_container.get());
-    if(!sentinel.success()) {
+    auto cycle_sentinel = cycle_guard.sentinel(my_container.get());
+    if(!cycle_sentinel.success()) {
+      // TODO: remove output. Not a bug.
       std::cerr << "Cycle detected!";
       return;
     }
@@ -164,16 +152,29 @@ namespace SceneGraph
   void ContainerNode::addContainerCycleGuard(CycleGuard<container_t>& cycle_guard,
                                              SharedPtr<container_t> added_container)
   {
-    auto self_lock = self.lock();
-    auto new_node = ContainerNode::create(
-        cycle_guard, std::move(self_lock), added_container);
-
     auto scene_root = sceneRootWeak.lock();
     if(!scene_root) {
       return;
     }
-    Threads::WriterGate gate{scene_root->containerNodes};
-    gate->emplace(added_container.get(), std::move(new_node));
+
+    auto new_node = SharedPtr<ContainerNode>::from_pointer(new ContainerNode(scene_root));
+    new_node->self = new_node;
+
+    { // Scoped lock.
+      Threads::WriterGate gate{containerNodes};
+      auto [it, success] = gate->emplace(added_container.get(), std::move(new_node));
+      if(!success) {
+        throw std::runtime_error("Container alredy a child of this node");
+      }
+    }
+
+    new_node->populate(cycle_guard, added_container);
+
+    auto ogre_node = ogreNodeWeak.lock();
+    auto ogre_new_node = new_node->ogreNodeWeak.lock();
+    assert(ogre_node);
+    assert(ogre_new_node);
+    ogre_node->addChild(ogre_new_node.get());
   }
 
   void ContainerNode::addContainer(SharedPtr<container_t> added_container)
@@ -188,8 +189,28 @@ namespace SceneGraph
     if(!scene_root) {
       return;
     }
-    Threads::WriterGate gate{scene_root->containerNodes};
-    gate->extract(removed_container.get());
+
+    auto ogre_node = ogreNodeWeak.lock();
+    assert(ogre_node);
+    Ogre::SceneNode* ogre_removed_node = nullptr;
+
+    SharedPtr<ContainerNode> removed_node;
+    { // Scoped lock.
+      Threads::WriterGate gate{containerNodes};
+      auto nh = gate->extract(removed_container.get());
+      if(!nh) {
+        throw std::runtime_error("Not a child of this node");
+      }
+      removed_node = std::move(nh.mapped());
+    }
+
+    assert(removed_node);
+    auto ogre_removed_lock = removed_node->ogreNodeWeak.lock();
+    assert(ogre_removed_lock);
+    ogre_removed_node = ogre_removed_lock.get();
+
+    assert(ogre_removed_node);
+    ogre_node->removeChild(ogre_removed_node);
   }
 
   void ContainerNode::moveContainer(SharedPtr<container_t> moved_container,
@@ -242,24 +263,34 @@ namespace SceneGraph
       }
     }
 
-    Threads::WriterGate gate{scene_root->meshNodes};
-    if(!new_mesh_node) {
-      // We check again, but with a writer gate.
-      auto it = gate->find(geo.get());
-      if(it != gate->end()) {
-        new_mesh_node = it->second;
-        assert(new_mesh_node && "Mapped MeshNode is supposed to be valid.");
-      } else {
-        auto scene = sceneRootWeak.lock();
-        if(!scene) {
-          return;
+    { // Scoped lock.
+      Threads::WriterGate gate{scene_root->meshNodes};
+      if(!new_mesh_node) {
+        // We check again because we have released the lock.
+        auto it = gate->find(geo.get());
+        if(it != gate->end()) {
+          new_mesh_node = it->second;
+          assert(new_mesh_node && "Mapped MeshNode is supposed to be valid.");
+        } else {
+          auto scene = sceneRootWeak.lock();
+          if(!scene) {
+            return;
+          }
+          auto mesh_provider = Mesh::MeshProvider::make_shared(geo, scene->getQueue());
+          new_mesh_node = MeshNode::make_shared(std::move(mesh_provider));
         }
-        auto mesh_provider = Mesh::MeshProvider::make_shared(geo, scene->getQueue());
-        new_mesh_node = MeshNode::make_shared(std::move(mesh_provider));
       }
+
+      gate->emplace(geo.get(), new_mesh_node);
     }
 
-    gate->emplace(geo.get(), std::move(new_mesh_node));
+    auto mesh = new_mesh_node->getOgreMesh();
+    auto mesh_entity = scene_root->sceneManager->createEntity(mesh.sliced());
+    mesh_entity->setMaterialName("WoodPallet");
+
+    auto ogre_node = ogreNodeWeak.lock();
+    assert(ogre_node);
+    ogre_node->attachObject(mesh_entity);
   }
 
   void ContainerNode::removeMesh(SharedPtr<geometry_t> geo)

@@ -28,6 +28,7 @@
 
 #include <base/expected_behaviour/CycleGuard.h>
 #include <base/expected_behaviour/SharedPtr.h>
+#include <base/threads/safe_structs/ThreadSafeMap.h>
 
 namespace SceneGraph
 {
@@ -37,7 +38,7 @@ namespace SceneGraph
   class ContainerNode
   {
   public:
-    virtual ~ContainerNode() = default;
+    virtual ~ContainerNode();
 
     /**
      * Creates a new "root" ContainerNode,
@@ -75,8 +76,6 @@ namespace SceneGraph
 
   protected:
     ContainerNode(const SharedPtr<SceneRoot>& scene_root);
-    ContainerNode(const SharedPtr<SceneRoot>& scene_root,
-                  const SharedPtr<ContainerNode>& parent);
 
     void populate(CycleGuard<container_t>& cycle_guard,
                   const SharedPtr<container_t>& my_container);
@@ -92,6 +91,7 @@ namespace SceneGraph
      * This is only used so we can pass a shared pointer to ourselves to a function.
      */
     WeakPtr<ContainerNode> self;
+
     /**
      * Pointer to the OGRE node associated to the same control block as sceneRootWeak.
      *
@@ -107,5 +107,9 @@ namespace SceneGraph
      * ogreNodeWeak = SharedPtr{sceneRoot, ogreNode};
      */
     WeakPtr<Ogre::SceneNode> ogreNodeWeak;
+
+    template<typename Key, typename Val>
+    using map_t = Threads::SafeStructs::ThreadSafeUnorderedMap<Key, Val>;
+    map_t<container_t*, SharedPtr<ContainerNode>> containerNodes;
   };
 }

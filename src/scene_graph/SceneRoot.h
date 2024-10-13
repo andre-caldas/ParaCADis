@@ -76,9 +76,8 @@ namespace SceneGraph
      */
     /// @{
     template<typename Key, typename Val>
-    using map_t = Threads::SafeStructs::ThreadSafeUnorderedMultimap<Key, Val>;
-    map_t<container_t*, SharedPtr<ContainerNode>> containerNodes;
-    map_t<geometry_t*,  SharedPtr<MeshNode>>      meshNodes;
+    using multimap_t = Threads::SafeStructs::ThreadSafeUnorderedMultimap<Key, Val>;
+    multimap_t<geometry_t*, SharedPtr<MeshNode>> meshNodes;
     /// @}
 
   /* OGRE stuff */
