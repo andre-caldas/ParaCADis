@@ -22,57 +22,26 @@
 
 #pragma once
 
-#include <base/expected_behaviour/SharedPtr.h>
-#include <base/geometric_primitives/DocumentGeometry.h>
+#include <base/threads/safe_structs/ThreadSafeQueue.h>
+#include <OGRE/OgreFrameListener.h>
 
-#include <gismo/gsCore/gsFieldCreator.h>
-#include <gismo/gsCore/gsGeometry.h>
-
-#include <OGRE/OgreMesh.h>
-#include <OGRE/OgreResource.h>
-
-#include <memory>
-#include <mutex>
+#include <functional>
 
 namespace Mesh
 {
-  using native_geometry_t = Document::DocumentGeometry;
-  using iga_geometry_t = native_geometry_t::iga_geometry_t;
-
   /**
-   * A mesh for the IgA geometries provided by G+Smo.
+   * GL operations can only be made in the thread that holds the GL context.
+   * Therefore, we register this frame listener that holds a queue of
+   * closures (lambdas) that will be executed in this thread.
    *
-   * This class contains an Ogre::Mesh and a mesh loader that
-   * converts the G+Smo geometry to the Ogre::Mesh.
+   * @attention
+   * Ideally, only the GL part should be executed by those lambdas.
    */
-  class OgreGismoMesh : public Ogre::ManualResourceLoader
+  class GlThreadQueue
+      : public Ogre::FrameListener
   {
   public:
-    OgreGismoMesh(std::shared_ptr<const iga_geometry_t> iga_geometry);
-    void resetIgaGeometry(SharedPtr<const iga_geometry_t> iga_geometry);
-    const SharedPtr<Ogre::Mesh>& getOgreMesh() const {return mesh;}
-
-  protected:
-    void prepareResource(Ogre::Resource* resource) override;
-    void loadResource(Ogre::Resource* resource) override;
-
-  private:
-    SharedPtr<Ogre::Mesh> mesh;
-    std::atomic<std::shared_ptr<const iga_geometry_t>> igaGeometry;
-
-    // Prepared data.
-    std::mutex mutex_for_swapping_data;
-    std::vector<float> vertex;
-    std::vector<Ogre::uint16> indexes;
-    Ogre::Vector3 min_bound;
-    Ogre::Vector3 max_bound;
-
-    int vertexEntriesPerPoint() const;
-
-    void prepareCurve();
-    void prepareSurface();
-
-    void loadCurve();
-    void loadSurface();
+    bool frameRenderingQueued(const Ogre::FrameEvent& evt) override;
+    Threads::SafeStructs::ThreadSafeQueue<std::function<void()>> queue;
   };
 }

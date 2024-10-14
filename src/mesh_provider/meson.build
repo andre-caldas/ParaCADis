@@ -1,10 +1,12 @@
 mesh_provider_src = [
+  'GlThreadQueue.cpp',
   'IgaProvider.cpp',
   'MeshProvider.cpp',
   'OgreGismoMesh.cpp',
 ]
 
 mesh_provider_includes = [
+  'GlThreadQueue.h',
   'IgaProvider.h',
   'MeshProvider.h',
   'OgreGismoMesh.h',

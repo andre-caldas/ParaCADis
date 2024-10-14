@@ -22,8 +22,11 @@
 
 #include "OgreGismoMesh.h"
 
+#include "GlThreadQueue.h"
+
 #include <OGRE/OgreHardwareBufferManager.h>
 #include <OGRE/OgreMeshManager.h>
+#include <OGRE/OgreRoot.h>
 #include <OGRE/OgreSubMesh.h>
 
 #include <atomic>
@@ -32,6 +35,21 @@
 
 using namespace Mesh;
 using namespace gismo;
+
+namespace {
+  GlThreadQueue& register_queue()
+  {
+    static GlThreadQueue listener;
+    Ogre::Root::getSingleton().addFrameListener(&listener);
+    return listener;
+  }
+
+  auto& get_queue()
+  {
+    static GlThreadQueue& listener = register_queue();
+    return listener.queue;
+  }
+}
 
 OgreGismoMesh::OgreGismoMesh(std::shared_ptr<const iga_geometry_t> iga_geometry)
     : igaGeometry(std::move(iga_geometry))
@@ -113,15 +131,14 @@ void OgreGismoMesh::prepareCurve()
   const auto np = pIter.numPointsCwise();
   const auto npoints = np[0];
 
-  auto& positions = vertex;
+  std::vector<float> positions;
+  std::vector<Ogre::uint16> local_indexes;
 
-  positions.clear();
-  indexes.clear();
-  min_bound = Vector3::ZERO;
-  max_bound = Vector3::ZERO;
+  auto local_min_bound = Vector3::ZERO;
+  auto local_max_bound = Vector3::ZERO;
 
   positions.reserve(vertexEntriesPerPoint() * npoints);
-  indexes.reserve(npoints);
+  local_indexes.reserve(npoints);
 
   auto domain_points = pIter.toMatrix();
   // TODO: process in parallel.
@@ -133,16 +150,22 @@ void OgreGismoMesh::prepareCurve()
 
     Vector3 pos(pcol[0], pcol[1], pcol[2]);
     // Sets the bounding box.
-    min_bound.makeFloor(pos);
-    max_bound.makeCeil(pos);
+    local_min_bound.makeFloor(pos);
+    local_max_bound.makeCeil(pos);
 
     // Sets the positions
     positions.push_back(pos[0]);
     positions.push_back(pos[1]);
     positions.push_back(pos[2]);
 
-    indexes.push_back(i);
+    local_indexes.push_back(i);
   }
+
+  std::scoped_lock lock{mutex_for_swapping_data};
+  vertex  = std::move(positions);
+  indexes = std::move(local_indexes);
+  min_bound = local_min_bound;
+  max_bound = local_max_bound;
 }
 
 void OgreGismoMesh::prepareSurface()
@@ -163,13 +186,11 @@ void OgreGismoMesh::prepareSurface()
   const auto npoints = np[0] * np[1];
   const auto ntriangles = 2 * (np[0]-1) * (np[1]-1);
 
-  auto& positions_normals = vertex;
-  auto& triangles = indexes;
+  std::vector<float> positions_normals;
+  std::vector<Ogre::uint16> triangles;
 
-  positions_normals.clear();
-  triangles.clear();
-  min_bound = Vector3::ZERO;
-  max_bound = Vector3::ZERO;
+  auto local_min_bound = Vector3::ZERO;
+  auto local_max_bound = Vector3::ZERO;
 
   positions_normals.reserve(vertexEntriesPerPoint() * npoints);
   triangles.reserve(2 * 3 * ntriangles);
@@ -191,8 +212,8 @@ void OgreGismoMesh::prepareSurface()
     normal.normalise();
 
     // Sets the bounding box.
-    min_bound.makeFloor(pos);
-    max_bound.makeCeil(pos);
+    local_min_bound.makeFloor(pos);
+    local_max_bound.makeCeil(pos);
 
     // Sets the positions
     positions_normals.push_back(pos[0]);
@@ -223,74 +244,92 @@ void OgreGismoMesh::prepareSurface()
       triangles.push_back(ind2);
     }
   }
+
+  std::scoped_lock lock{mutex_for_swapping_data};
+  vertex  = std::move(positions_normals);
+  indexes = std::move(triangles);
+  min_bound = local_min_bound;
+  max_bound = local_max_bound;
 }
 
 
 void OgreGismoMesh::loadCurve()
 {
+  using namespace Ogre;
   assert(igaGeometry.load() && "Should not be called when IgA geometry is unset");
 
-  using namespace Ogre;
-  mesh->_setBounds(AxisAlignedBox(min_bound, max_bound));
+  auto lambda = [this]
+  {
+    std::scoped_lock lock{mutex_for_swapping_data};
+    mesh->_setBounds(AxisAlignedBox(min_bound, max_bound));
 
-  mesh->createVertexData();
-  mesh->sharedVertexData->vertexCount = vertexEntriesPerPoint();
-  auto* decl = mesh->sharedVertexData->vertexDeclaration;
-  auto* bind = mesh->sharedVertexData->vertexBufferBinding;
+    mesh->createVertexData();
+    mesh->sharedVertexData->vertexCount = vertexEntriesPerPoint();
+    auto* decl = mesh->sharedVertexData->vertexDeclaration;
+    auto* bind = mesh->sharedVertexData->vertexBufferBinding;
 
-  size_t offset = 0;
-  offset += decl->addElement(0, offset, VET_FLOAT3, VES_POSITION).getSize();
+    size_t offset = 0;
+    offset += decl->addElement(0, offset, VET_FLOAT3, VES_POSITION).getSize();
 
-  auto vbuf =
-    HardwareBufferManager::getSingleton().createVertexBuffer(
-      offset, vertex.size()/vertexEntriesPerPoint(), HBU_GPU_ONLY);
-  vbuf->writeData(0, vbuf->getSizeInBytes(), vertex.data(), true);
-  bind->setBinding(0, vbuf);
+    auto vbuf =
+      HardwareBufferManager::getSingleton().createVertexBuffer(
+        offset, vertex.size()/vertexEntriesPerPoint(), HBU_GPU_ONLY);
+    vbuf->writeData(0, vbuf->getSizeInBytes(), vertex.data(), true);
+    bind->setBinding(0, vbuf);
 
-  auto ibuf =
-    HardwareBufferManager::getSingleton().createIndexBuffer(
-      HardwareIndexBuffer::IT_16BIT, indexes.size(), HBU_GPU_ONLY);
-  ibuf->writeData(0, ibuf->getSizeInBytes(), indexes.data(), true);
+    auto ibuf =
+      HardwareBufferManager::getSingleton().createIndexBuffer(
+        HardwareIndexBuffer::IT_16BIT, indexes.size(), HBU_GPU_ONLY);
+    ibuf->writeData(0, ibuf->getSizeInBytes(), indexes.data(), true);
 
-  SubMesh* sub = mesh->createSubMesh();
-  sub->operationType = RenderOperation::OT_LINE_STRIP;
-//  sub->useSharedVertices = true;
-  sub->indexData->indexBuffer = ibuf;
-  sub->indexData->indexStart = 0;
-  sub->indexData->indexCount = indexes.size();
+    SubMesh* sub = mesh->createSubMesh();
+    sub->operationType = RenderOperation::OT_LINE_STRIP;
+//    sub->useSharedVertices = true;
+    sub->indexData->indexBuffer = ibuf;
+    sub->indexData->indexStart = 0;
+    sub->indexData->indexCount = indexes.size();
+  };
+
+  get_queue().push(lambda);
 }
 
 void OgreGismoMesh::loadSurface()
 {
+  using namespace Ogre;
   assert(igaGeometry.load() && "Should not be called when IgA geometry is unset");
 
-  using namespace Ogre;
-  mesh->_setBounds(AxisAlignedBox(min_bound, max_bound));
+  auto lambda = [this]
+  {
+    std::scoped_lock lock{mutex_for_swapping_data};
+    mesh->_setBounds(AxisAlignedBox(min_bound, max_bound));
 
-  mesh->createVertexData();
-  mesh->sharedVertexData->vertexCount = vertexEntriesPerPoint();
-  auto* decl = mesh->sharedVertexData->vertexDeclaration;
-  auto* bind = mesh->sharedVertexData->vertexBufferBinding;
+    mesh->createVertexData();
+    mesh->sharedVertexData->vertexCount = vertexEntriesPerPoint();
+    auto* decl = mesh->sharedVertexData->vertexDeclaration;
+    auto* bind = mesh->sharedVertexData->vertexBufferBinding;
 
-  size_t offset = 0;
-  offset += decl->addElement(0, offset, VET_FLOAT3, VES_POSITION).getSize();
-  offset += decl->addElement(0, offset, VET_FLOAT3, VES_NORMAL).getSize();
+    size_t offset = 0;
+    offset += decl->addElement(0, offset, VET_FLOAT3, VES_POSITION).getSize();
+    offset += decl->addElement(0, offset, VET_FLOAT3, VES_NORMAL).getSize();
 
-  auto vbuf =
-    HardwareBufferManager::getSingleton().createVertexBuffer(
-      offset, vertex.size()/vertexEntriesPerPoint(), HBU_GPU_ONLY);
-  vbuf->writeData(0, vbuf->getSizeInBytes(), vertex.data(), true);
-  bind->setBinding(0, vbuf);
+    auto vbuf =
+      HardwareBufferManager::getSingleton().createVertexBuffer(
+        offset, vertex.size()/vertexEntriesPerPoint(), HBU_GPU_ONLY);
+    vbuf->writeData(0, vbuf->getSizeInBytes(), vertex.data(), true);
+    bind->setBinding(0, vbuf);
 
-  auto ibuf =
-    HardwareBufferManager::getSingleton().createIndexBuffer(
-      HardwareIndexBuffer::IT_16BIT, indexes.size(), HBU_GPU_ONLY);
-  ibuf->writeData(0, ibuf->getSizeInBytes(), indexes.data(), true);
+    auto ibuf =
+      HardwareBufferManager::getSingleton().createIndexBuffer(
+        HardwareIndexBuffer::IT_16BIT, indexes.size(), HBU_GPU_ONLY);
+    ibuf->writeData(0, ibuf->getSizeInBytes(), indexes.data(), true);
 
-  SubMesh* sub = mesh->createSubMesh();
-  sub->operationType = RenderOperation::OT_TRIANGLE_LIST;
-//  sub->useSharedVertices = true;
-  sub->indexData->indexBuffer = ibuf;
-  sub->indexData->indexStart = 0;
-  sub->indexData->indexCount = indexes.size();
+    SubMesh* sub = mesh->createSubMesh();
+    sub->operationType = RenderOperation::OT_TRIANGLE_LIST;
+//    sub->useSharedVertices = true;
+    sub->indexData->indexBuffer = ibuf;
+    sub->indexData->indexStart = 0;
+    sub->indexData->indexCount = indexes.size();
+  };
+
+  get_queue().push(lambda);
 }
