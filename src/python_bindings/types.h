@@ -27,5 +27,19 @@
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/naming_scheme/Uuid.h>
 
-PYBIND11_DECLARE_HOLDER_TYPE(T, PYBIND11_TYPE(SharedPtr<T,T>));
 PYBIND11_MAKE_OPAQUE(NamingScheme::Uuid::uuid_type);
+
+/*
+ * A SharedPtr<T> is copy constructible even if T is not!
+ * So, PYBIND11_DECLARE_HOLDER_TYPE does not work. :-(
+ */
+//PYBIND11_DECLARE_HOLDER_TYPE(T, SharedPtr<T>);
+PYBIND11_NAMESPACE_BEGIN(PYBIND11_NAMESPACE)
+namespace detail {
+  template <typename T>
+  class type_caster<SharedPtr<T>>
+      : public copyable_holder_caster<T, SharedPtr<T>> {};
+  template <typename T>
+  struct is_holder_type<T, SharedPtr<T>> : std::true_type {};
+}
+PYBIND11_NAMESPACE_END(PYBIND11_NAMESPACE)
