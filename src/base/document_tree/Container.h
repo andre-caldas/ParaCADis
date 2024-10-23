@@ -23,11 +23,12 @@
 #pragma once
 
 #include <base/expected_behaviour/SharedPtr.h>
-#include <base/geometric_primitives/CoordinateSystem.h>
+#include <base/geometric_primitives/coordinate_system/DeferenceableCoordinates.h>
 #include <base/naming_scheme/Chainables.h>
 #include <base/naming_scheme/Exporter.h>
 #include <base/naming_scheme/IExport.h>
 #include <base/threads/safe_structs/ThreadSafeMap.h>
+#include <base/threads/safe_structs/ThreadSafeSharedPtr.h>
 #include <base/threads/message_queue/Signal.h>
 #include <base/threads/message_queue/MutexSignal.h>
 
@@ -36,12 +37,11 @@
 
 namespace Document
 {
-
   class Container
       : public NamingScheme::ExporterBase
       , public NamingScheme::IExport<Container>
-      , public NamingScheme::IExport<DeferenceableCoordinateSystem>
-      , public NamingScheme::Chainables<Container, DeferenceableCoordinateSystem>
+      , public NamingScheme::IExport<DeferenceableCoordinates>
+      , public NamingScheme::Chainables<Container, DeferenceableCoordinates>
   {
     using ExporterBase = NamingScheme::ExporterBase;
     template<typename T>
@@ -92,29 +92,29 @@ namespace Document
     auto nonContainersView() const
     { return std::ranges::subrange(non_containers); }
 
+    SharedPtr<DeferenceableCoordinates> getCoordinates() const;
+    SharedPtr<DeferenceableCoordinates>
+    setCoordinates(SharedPtr<DeferenceableCoordinates> coordinates);
+
 
     SharedPtr<ExporterBase>
     resolve_shared(token_iterator& tokens, ExporterBase* = nullptr) override;
     SharedPtr<Container>
     resolve_shared(token_iterator& tokens, Container* = nullptr) override;
-    DeferenceableCoordinateSystem*
-    resolve_ptr(token_iterator& tokens, DeferenceableCoordinateSystem* = nullptr) override;
+    SharedPtr<DeferenceableCoordinates>
+    resolve_shared(token_iterator& tokens, DeferenceableCoordinates* = nullptr) override;
 
   private:
     template<typename Key, typename Val>
     using UnorderedMultimap = Threads::SafeStructs::ThreadSafeUnorderedMultimap<Key, Val>;
+    template<typename T>
+    using SafeSharedPtr = Threads::SafeStructs::ThreadSafeSharedPtr<T>;
 
     // Data protected by mutexes.
     UnorderedMultimap<uuid_type, SharedPtr<ExporterBase>> non_containers;
     UnorderedMultimap<uuid_type, SharedPtr<Container>>    containers;
-    DeferenceableCoordinateSystem                         coordinate_system;
+    SafeSharedPtr<DeferenceableCoordinates>               coordinate_system;
 
-    /**
-     * This is the pivot mutex. No one should use it directly.
-     * @attention A SharedLock on it is not what you expect.
-     * Use `mutex` instead.
-     * @see MutexesWithPivot.
-     */
     mutable Threads::GatherMutexData<Threads::MutexData,
                                      Threads::MutexData,
                                      Threads::MutexData>
@@ -122,6 +122,7 @@ namespace Document
               containers.getMutexLike(),
               coordinate_system.getMutexLike()};
 
+    // TODO: remove this and use specific signals instead?
     mutable Threads::MutexSignal modified_sig{mutex};
 
   public:
@@ -129,6 +130,8 @@ namespace Document
 
     Threads::Signal<>& getChangedSignal() const override
     { return modified_sig; }
+
+    mutable Threads::MutexSignal coordinate_modified_sig{coordinate_system.getMutexLike()};
 
     Threads::Signal<SharedPtr<Container>>                  add_container_sig;
     Threads::Signal<SharedPtr<NamingScheme::ExporterBase>> add_non_container_sig;
@@ -141,5 +144,4 @@ namespace Document
   };
 
   static_assert(Threads::C_MutexHolder<Container>, "A container is a C_MutexHolder.");
-
 }  // namespace Document

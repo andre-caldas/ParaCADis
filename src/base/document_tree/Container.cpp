@@ -209,6 +209,18 @@ bool Container::contains(std::string_view name) const
   return false;
 }
 
+SharedPtr<DeferenceableCoordinates>
+Container::getCoordinates() const
+{
+  return coordinate_system.getSharedPtr();
+}
+
+SharedPtr<DeferenceableCoordinates>
+Container::setCoordinates(SharedPtr<DeferenceableCoordinates> coordinates)
+{
+  return coordinate_system.setSharedPtr(std::move(coordinates));
+}
+
 
 SharedPtr<ExporterBase>
 Container::resolve_shared(token_iterator& tokens, ExporterBase*)
@@ -266,6 +278,11 @@ Container::resolve_shared(token_iterator& tokens, ExporterBase*)
 SharedPtr<Container>
 Container::resolve_shared(token_iterator& tokens, Container*)
 {
+  if(!tokens)
+  {
+    return {};
+  }
+
   auto& token = tokens.front();
   if (token.isUuid())
   {
@@ -290,18 +307,18 @@ Container::resolve_shared(token_iterator& tokens, Container*)
   return {};
 }
 
-DeferenceableCoordinateSystem*
-Container::resolve_ptr(token_iterator& tokens, DeferenceableCoordinateSystem*)
+SharedPtr<DeferenceableCoordinates>
+Container::resolve_shared(token_iterator& tokens, DeferenceableCoordinates*)
 {
   if(!tokens)
   {
-    return nullptr;
+    return {};
   }
 
   if(tokens.front() == "axis")
   {
     tokens.advance(1);
-    return &coordinate_system;
+    return coordinate_system.getSharedPtr();
   }
-  return nullptr;
+  return {};
 }

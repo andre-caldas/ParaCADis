@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,21 +20,32 @@
  *                                                                          *
  ***************************************************************************/
 
-#pragma once
+#include "ThreadSafeSharedPtr.h"
 
-#include <pybind11/pybind11.h>
-
-#include <base/expected_behaviour/SharedPtr.h>
-#include <base/naming_scheme/ReferenceToObject.h>
-
-#include <python_bindings/types.h>
-
-namespace py = pybind11;
-
-py::module_ init_naming_scheme(py::module_& parent_module);
+namespace Threads::SafeStructs
+{
 
 template<typename T>
-py::class_<NamingScheme::ReferenceTo<T>, SharedPtr<NamingScheme::ReferenceTo<T>>>
-bind_reference_to(py::module_& m, std::string_view type_name);
+ThreadSafeSharedPtr<T>::ThreadSafeSharedPtr(SharedPtr<T> shared_ptr)
+    : theSharedPtr(std::move(shared_ptr))
+{}
 
-#include"module_impl.h"
+template<typename T>
+SharedPtr<T>
+ThreadSafeSharedPtr<T>::getSharedPtr() const
+{
+  Threads::SharedLock lock{mutex};
+  return theSharedPtr;
+}
+
+template<typename T>
+SharedPtr<T>
+ThreadSafeSharedPtr<T>::setSharedPtr(SharedPtr<T> shared_ptr)
+{
+  Threads::ExclusiveLock lock{mutex};
+  SharedPtr<T> result = std::move(theSharedPtr);
+  theSharedPtr = std::move(shared_ptr);
+  return result;
+}
+
+}  // namespace Threads::SafeStructs

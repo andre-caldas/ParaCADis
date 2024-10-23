@@ -10,6 +10,8 @@ threads_includes += files(
   'ThreadSafeMap.h',
   'ThreadSafeMultiIndex.h',
   'ThreadSafeMultiIndex_inl.h',
+  'ThreadSafeSharedPtr.h',
+  'ThreadSafeSharedPtr.hpp',
   'ThreadSafeStruct.h',
   'ThreadSafeStruct_inl.h',
   'ThreadSafeVector.h',

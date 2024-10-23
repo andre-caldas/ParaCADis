@@ -39,40 +39,38 @@ void init_document_tree(py::module_& parent_module)
   auto m = parent_module.def_submodule("document");
   m.doc() = "Manages the nodes in a ParaCADis document structure.";
 
-  py::class_<Container, ExporterBase, SharedPtr<Container>>(
+  py::class_<Container, ExporterBase, SharedPtr<Container>> cont(
       m, "Container", py::multiple_inheritance(),
-      "A container with coordinate system to hold other objects or containers.")
-      .def(py::init<>(),
-           "Creates an empty container.")
+      "A container with coordinate system to hold other objects or containers.");
+  cont.def(py::init<>(), "Creates an empty container.");
 #if 0
-      .def("contains",
+  cont.def("contains",
            py::overload_cast<Uuid::uuid_type>(&Container::contains), "uuid"_a,
-           "Verifies if the container holds or not the corresponding element.")
-      .def("get_element",
+           "Verifies if the container holds or not the corresponding element.");
+  cont.def("get_element",
            py::overload_cast<Uuid::uuid_type>(&Container::contains), "uuid"_a,
-           "Retrives the corresponding element.")
+           "Retrives the corresponding element.");
 #endif
-      .def("add_container", &Container::addContainer, "container"_a,
-           "Adds a nested container.")
-      .def("add_element", &Container::addElement, "element"_a,
-           "Adds an element to the container.")
-.def("add_element", [](const Container& self, std::shared_ptr<ExporterBase>){}, "element"_a,
-     "Adds an element to the container.")
+  cont.def("add_container", &Container::addContainer, "container"_a,
+           "Adds a nested container.");
+  cont.def("add_element", &Container::addElement, "element"_a,
+           "Adds an element to the container.");
+  cont.def("add_element", [](const Container& self, std::shared_ptr<ExporterBase>){}, "element"_a,
+           "Adds an element to the container.");
 #if 0
-      .def("remove_element", &Container::removeElement, xxxxx,
-           "Removes the corresponding element from the container.")
-      .def("move_element_to", &Container::moveElementTo, xxxxx,
-           "Moves an element from one container to some other container.")
+  cont.def("remove_element", &Container::removeElement, xxxxx,
+           "Removes the corresponding element from the container.");
+  cont.def("move_element_to", &Container::moveElementTo, xxxxx,
+           "Moves an element from one container to some other container.");
 #endif
-      .def("__repr__",
+  cont.def("__repr__",
            [](const Container& c){ return "<CONTAINER... (put info here)>"; });
 
 
-  py::class_<DocumentTree, Container, SharedPtr<DocumentTree>>(
+  py::class_<DocumentTree, Container, SharedPtr<DocumentTree>> tree(
       m, "Document", py::multiple_inheritance(),
-      "A container to hold a full document.")
-      .def(py::init<>(),
-           "Creates an empty document.")
-      .def("__repr__",
+      "A container to hold a full document.");
+  tree.def(py::init<>(), "Creates an empty document.");
+  tree.def("__repr__",
            [](const DocumentTree& d){ return "<DOCUMENT... (put info here)>"; });
 }

@@ -22,13 +22,22 @@
 
 #include "GlThreadQueue.h"
 
+#include <exception>
+#include <iostream>
+
 namespace Mesh
 {
   bool GlThreadQueue::frameRenderingQueued(const Ogre::FrameEvent& evt)
   {
     while(!queue.empty()) {
       auto callback = queue.pull();
-      callback();
+      try {
+        callback();
+      } catch(const std::exception& e) {
+        std::cerr << "Exception caught in rednering queue: " << e.what() << ".\n";
+      } catch(...) {
+        std::cerr << "Unkown exception caught in rendering queue.\n";
+      }
     }
     return true;
   }

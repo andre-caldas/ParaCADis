@@ -26,9 +26,10 @@
 
 #include <exception>
 
+#include <python_bindings/types.h>
+
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/document_tree/DocumentTree.h>
-#include <python_bindings/types.h>
 #include <scene_graph/SceneRoot.h>
 
 #include <OGRE/OgreRoot.h>
@@ -81,8 +82,8 @@ void init_scene(py::module_& m)
       .def(py::init(&new_scene),
            "Creates an empty scene and associates it to an OGRE SceneManager.")
       .def("populate",
-           [](const SharedPtr<SceneRoot>& self, const SharedPtr<DocumentTree>& doc)
-           {self->populate(self, doc);},
+           [](SharedPtr<SceneRoot> self, std::shared_ptr<DocumentTree> doc)
+           {self->populate(std::move(self), std::move(doc));},
            "document"_a,
            "Populates the scene with the contents of 'document'.")
       .def("__repr__",

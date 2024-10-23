@@ -127,8 +127,8 @@ namespace NamingScheme
   };
 
 
-  template<typename DataStruct>
-  class Exporter : public ExporterBase
+  template<typename DataStruct, typename BASE = ExporterBase>
+  class Exporter : public BASE
   {
     using data_t        = DataStruct;
     using safe_struct_t = Threads::SafeStructs::ThreadSafeStruct<data_t>;

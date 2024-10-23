@@ -1,26 +1,26 @@
-geometric_primitives_src = [
+geometric_primitives_src = files(
   'checks.cpp',
   'circles.cpp',
-  'CoordinateSystem.cpp',
   'deferenceables.cpp',
   'DocumentGeometry.cpp',
   'exceptions.cpp',
   'lines.cpp',
   'spheres.cpp',
   'types.cpp',
-]
+)
 
-geometric_primitives_includes = [
+geometric_primitives_includes = files(
   'checks.h',
   'circles.h',
-  'CoordinateSystem.h',
   'deferenceables.h',
   'DocumentGeometry.h',
   'exceptions.h',
   'lines.h',
   'spheres.h',
   'types.h',
-]
+)
+
+subdir('coordinate_system')
 
 install_headers(geometric_primitives_includes,
   preserve_path: true,

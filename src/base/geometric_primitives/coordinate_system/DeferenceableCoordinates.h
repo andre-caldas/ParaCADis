@@ -22,19 +22,13 @@
 
 #pragma once
 
-#include <pybind11/pybind11.h>
+#include "CoordinateSystem.h"
 
-#include <base/expected_behaviour/SharedPtr.h>
-#include <base/naming_scheme/ReferenceToObject.h>
+#include "../deferenceables.h"
+#include "../types.h"
 
-#include <python_bindings/types.h>
+#include <base/naming_scheme/Exporter.h>
 
-namespace py = pybind11;
-
-py::module_ init_naming_scheme(py::module_& parent_module);
-
-template<typename T>
-py::class_<NamingScheme::ReferenceTo<T>, SharedPtr<NamingScheme::ReferenceTo<T>>>
-bind_reference_to(py::module_& m, std::string_view type_name);
-
-#include"module_impl.h"
+class DeferenceableCoordinates
+    : public NamingScheme::ExporterBase
+{};

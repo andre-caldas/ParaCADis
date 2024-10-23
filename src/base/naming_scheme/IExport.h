@@ -36,16 +36,16 @@ namespace NamingScheme
 {
 
   /**
-   * @brief Any class that exports some type T must subclass @class IExport<T>.
+   * @brief Any class that exports some type T must subclass IExport<T>.
    *
    * @attention
-   * In order for this class to be part of a chain of @class Exporter,
-   * it does need to subclass @class Exporter.
+   * In order for this class to be part of a chain of Exporter,
+   * it does need to subclass Exporter.
    * We opted for **not making** `IExport<T>` a public virtual
-   * subclass of @class Exporter and instead giving the developer the
+   * subclass of Exporter and instead giving the developer the
    * **responsibility** to subclass it.
    * The optional template parameter may be used if you do not want
-   * your class to derive from @class Exporter.
+   * your class to derive from Exporter.
    */
   template<typename T>
   class IExport
@@ -99,19 +99,33 @@ namespace NamingScheme
     virtual SharedPtr<T> resolve_shared(token_iterator& tokens, T* = nullptr);
   };
 
+  template<std::size_t N>
+  struct TemplateString
+  {
+    constexpr TemplateString(const char (&str)[N])
+    {
+      static_assert(N <= 20, "Exported variable's name is too long.");
+      std::ranges::copy(str, string);
+    }
+    char string[N];
+  };
 
   template<class C, typename T, std::size_t N>
   struct EachExportedData
   {
     constexpr EachExportedData(T C::* local_ptr, const char (&str)[N])
         : local_ptr(local_ptr)
-    {
-      static_assert(N <= 20, "Exported variable's name is too long.");
-      std::ranges::copy(str, name);
-    }
+        , name(str)
+    {}
+
+    constexpr EachExportedData(T C::* local_ptr, TemplateString<N> str)
+        : local_ptr(local_ptr)
+        , name(str)
+    {}
+
     using data_type = T;
     T C::* local_ptr;
-    char name[N];
+    TemplateString<N> name;
   };
 
 
@@ -131,7 +145,7 @@ namespace NamingScheme
 
   private:
     const std::map<std::string, T DataStruct::*> map
-        = {{dataInfo.name,dataInfo.local_ptr}...};
+        = {{dataInfo.name.string,dataInfo.local_ptr}...};
   };
 
 }  // namespace NamingScheme

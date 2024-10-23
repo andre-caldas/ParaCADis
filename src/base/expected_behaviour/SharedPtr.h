@@ -125,7 +125,7 @@ public:
   SharedPtr<S> cast_nothrow() const;
 
 private:
-  SharedPtr(T* ptr) : std::shared_ptr<T>(ptr) {}
+  explicit SharedPtr(T* ptr) : std::shared_ptr<T>(ptr) {}
   template <typename type_, typename... options>
   friend class pybind11::class_;
 };

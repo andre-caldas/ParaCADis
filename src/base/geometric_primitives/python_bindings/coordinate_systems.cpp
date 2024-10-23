@@ -26,7 +26,8 @@
 
 #include "module.h"
 
-#include <base/geometric_primitives/CoordinateSystem.h>
+#include <base/geometric_primitives/coordinate_system/DeferenceableCoordinateSystem.h>
+#include <base/geometric_primitives/coordinate_system/DeferenceableCoordinatePoints.h>
 #include <base/geometric_primitives/types.h>
 #include <python_bindings/types.h>
 
@@ -40,16 +41,33 @@ void init_geometric_primitives_coordinate_systems(py::module_& module)
   /*
    * DeferenceableCoordinateSystem.
    */
-  py::class_<DeferenceableCoordinateSystem, ExporterBase,
-             SharedPtr<DeferenceableCoordinateSystem>>(
-      module, "DeferenceableCoordinateSystem", py::multiple_inheritance(),
+  py::class_<DeferenceableCoordinateSystemXY, ExporterBase,
+             SharedPtr<DeferenceableCoordinateSystemXY>>(
+      module, "DeferenceableCoordinateSystemXY", py::multiple_inheritance(),
       "A coordinate system that exports its parameters.")
       .def(py::init<>(), "Identity coordinate system.")
       .def(py::init<const Point&>(), "A translated coordinate system.")
-      .def(py::init<const Point&, const Vector&, const Vector&, const Vector&>(),
+      .def(py::init<const Point&, const Vector&, const Vector&>(),
            "Translated coordinate system with axis."
            " The axis need to be orthonormal.")
       .def("__repr__",
-           [](const DeferenceableCoordinateSystem&)
-           { return "<DEF_COORDINATESYSTEM... (put info here)>"; });
+           [](const DeferenceableCoordinateSystemXY&)
+           { return "<DEF_COORDINATESYSTEM - XY... (put info here)>"; });
+
+
+  /*
+   * DeferenceableCoordinatePoints.
+   */
+  py::class_<DeferenceableCoordinatePointsXY, ExporterBase,
+             SharedPtr<DeferenceableCoordinatePointsXY>>(
+      module, "DeferenceableCoordinatePointsXY", py::multiple_inheritance(),
+      "A coordinate system that exports its parameters.")
+      .def(py::init<>(), "Identity coordinate system.")
+      .def(py::init<const Point&>(), "A translated coordinate system.")
+      .def(py::init<const Point&, const Point&, const Point&>(),
+           "Translated coordinate system with axis."
+           " The axis need to be orthonormal.")
+      .def("__repr__",
+           [](const DeferenceableCoordinatePointsXY&)
+           { return "<DEF_COORDINATEPOINTS - XY... (put info here)>"; });
 }
