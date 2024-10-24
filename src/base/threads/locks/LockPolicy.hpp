@@ -20,15 +20,13 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef Threads_LockPolicy_inc_H
-#define Threads_LockPolicy_inc_H
+#pragma once
 
 #include "LockPolicy.h"
 #include "MutexData.h"
 
 namespace Threads
 {
-
   template<C_MutexLike... MutN>
   LockPolicy::LockPolicy(const bool is_exclusive, MutN&... mutex)
       : mutexes(MutexVector{mutex...})
@@ -52,7 +50,4 @@ namespace Threads
   {
     return isLocked(holder.getMutexLike());
   }
-
 }  // namespace Threads
-
-#endif

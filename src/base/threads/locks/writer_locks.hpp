@@ -20,8 +20,7 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef Threads_WriterLocks_impl_H
-#define Threads_WriterLocks_impl_H
+#pragma once
 
 #include "writer_locks.h"
 
@@ -30,7 +29,6 @@
 #include <map>
 
 namespace Threads {
-
   template<C_MutexLike... Mutex>
   ExclusiveLock::ExclusiveLock(Mutex&... mutexes)
       : LockPolicy(true, mutexes...)
@@ -52,8 +50,16 @@ namespace Threads {
   template<C_MutexHolderWithGates Holder>
   auto& WriterGate<Holders...>::operator[](Holder& holder) const
   {
+    assert(!released && "Accessing data with released lock!");
     assert(all_holders.contains(&holder));
     return Holder::GateInfo::getData(holder);
+  }
+
+  template<C_MutexHolderWithGates ... Holders>
+  void WriterGate<Holders...>::release()
+  {
+    lock.release();
+    released = true;
   }
 
 
@@ -67,9 +73,14 @@ namespace Threads {
   template<C_MutexHolderWithGates Holder>
   auto& WriterGate<Holder>::operator*()
   {
+    assert(!released && "Accessing data with released lock!");
     return Holder::GateInfo::getData(holder);
   }
 
+  template<C_MutexHolderWithGates Holder>
+  void WriterGate<Holder>::release()
+  {
+    lock.release();
+    released = true;
+  }
 }
-
-#endif

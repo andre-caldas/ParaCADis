@@ -24,7 +24,6 @@
 
 namespace Threads
 {
-
   void SharedLock::lock()
   {
     // We can simply lock, without further worries
@@ -42,4 +41,10 @@ namespace Threads
     }
   }
 
+
+  void SharedLock::release()
+  {
+    locks.clear();
+    detachFromThread();
+  }
 }

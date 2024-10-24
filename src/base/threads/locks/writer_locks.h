@@ -20,8 +20,7 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef Threads_WriterLocks_H
-#define Threads_WriterLocks_H
+#pragma once
 
 #include "gates.h"
 #include "LockPolicy.h"
@@ -34,7 +33,6 @@
 
 namespace Threads
 {
-
   /**
    * Locks many mutexes exclsively (for writing).
    */
@@ -47,6 +45,18 @@ namespace Threads
     [[nodiscard]]
     ExclusiveLock(Mutex&... mutex);
 
+    /**
+     * Prematurely releases the lock.
+     *
+     * Usually, we do not want to bother about releasing the lock,
+     * because we use RAII. However, sometimes you want to construct
+     * a structure while holding the lock and have it to remain valid
+     * after the lock was released.
+     *
+     * @attention
+     * Selfom use this. Rethink your design... you probably ain't gonna need it.
+     */
+    void release();
     ~ExclusiveLock();
 
   private:
@@ -67,9 +77,23 @@ namespace Threads
     template<C_MutexHolderWithGates Holder>
     auto& operator[](Holder& holder) const;
 
+    /**
+     * Prematurely releases the lock.
+     *
+     * Usually, we do not want to bother about releasing the lock,
+     * because we use RAII. However, sometimes you want to construct
+     * a structure while holding the lock and have it to remain valid
+     * after the lock was released.
+     *
+     * @attention
+     * Selfom use this. Rethink your design... you probably ain't gonna need it.
+     */
+    void release();
+
   private:
     ExclusiveLock lock;
 #ifndef NDEBUG
+    bool released = false;
     const std::unordered_set<const void*> all_holders;
 #endif
   };
@@ -87,13 +111,26 @@ namespace Threads
     auto& operator*();
     auto* operator->() { return &**this; }
 
+    /**
+     * Prematurely releases the lock.
+     *
+     * Usually, we do not want to bother about releasing the lock,
+     * because we use RAII. However, sometimes you want to construct
+     * a structure while holding the lock and have it to remain valid
+     * after the lock was released.
+     *
+     * @attention
+     * Selfom use this. Rethink your design... you probably ain't gonna need it.
+     */
+    void release();
+
   private:
     ExclusiveLock lock;
     Holder& holder;
+#ifndef NDEBUG
+    bool released = false;
+#endif
   };
-
 }  // namespace Threads
 
-#include "writer_locks_impl.h"
-
-#endif
+#include "writer_locks.hpp"

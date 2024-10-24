@@ -20,8 +20,7 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef Threads_ReaderLocks_H
-#define Threads_ReaderLocks_H
+#pragma once
 
 #include "gates.h"
 #include "LockPolicy.h"
@@ -35,7 +34,6 @@
 
 namespace Threads
 {
-
   class SharedLock : public LockPolicy
   {
   public:
@@ -44,6 +42,19 @@ namespace Threads
     template<C_MutexLike... Mutex>
     [[nodiscard]]
     SharedLock(Mutex&... mutex);
+
+    /**
+     * Prematurely releases the lock.
+     *
+     * Usually, we do not want to bother about releasing the lock,
+     * because we use RAII. However, sometimes you want to construct
+     * a structure while holding the lock and have it to remain valid
+     * after the lock was released.
+     *
+     * @attention
+     * Selfom use this. Rethink your design... you probably ain't gonna need it.
+     */
+    void release();
 
   private:
     std::vector<std::shared_lock<YesItIsAMutex>> locks;
@@ -64,6 +75,19 @@ namespace Threads
     auto& operator[](const Holder& holder) const;
 
     /**
+     * Prematurely releases the lock.
+     *
+     * Usually, we do not want to bother about releasing the lock,
+     * because we use RAII. However, sometimes you want to construct
+     * a structure while holding the lock and have it to remain valid
+     * after the lock was released.
+     *
+     * @attention
+     * Selfom use this. Rethink your design... you probably ain't gonna need it.
+     */
+    void release();
+
+    /**
      * Gets a non-const reference.
      *
      * A big dilema... we do not want `operator*()` to return non-const.
@@ -78,6 +102,7 @@ namespace Threads
   private:
     SharedLock lock;
 #ifndef NDEBUG
+    bool released = false;
     const std::unordered_set<const void*> all_holders;
 #endif
   };
@@ -97,6 +122,19 @@ namespace Threads
     const auto* operator->() const { return &**this; }
 
     /**
+     * Prematurely releases the lock.
+     *
+     * Usually, we do not want to bother about releasing the lock,
+     * because we use RAII. However, sometimes you want to construct
+     * a structure while holding the lock and have it to remain valid
+     * after the lock was released.
+     *
+     * @attention
+     * Selfom use this. Rethink your design... you probably ain't gonna need it.
+     */
+    void release();
+
+    /**
      * Gets a non-const reference.
      *
      * A big dilema... we do not want `operator*()` to return non-const.
@@ -110,6 +148,9 @@ namespace Threads
   private:
     SharedLock lock;
     const Holder& holder;
+#ifndef NDEBUG
+    bool released = false;
+#endif
   };
 
 
@@ -130,9 +171,6 @@ namespace Threads
     Holder holder;
   };
   /// @}
-
 }  // namespace Threads
 
-#include "reader_locks_impl.h"
-
-#endif
+#include "reader_locks.hpp"

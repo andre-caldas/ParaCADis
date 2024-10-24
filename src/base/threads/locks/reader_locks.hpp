@@ -20,8 +20,7 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef Threads_ReaderLocks_impl_H
-#define Threads_ReaderLocks_impl_H
+#pragma once
 
 #include "reader_locks.h"
 
@@ -30,7 +29,6 @@
 #include <map>
 
 namespace Threads {
-
   template<C_MutexLike... Mutex>
   SharedLock::SharedLock(Mutex&... mutex)
       : LockPolicy(false, mutex...)
@@ -52,14 +50,23 @@ namespace Threads {
   template<C_MutexHolderWithGates Holder>
   auto& ReaderGate<Holders...>::operator[](const Holder& holder) const
   {
+    assert(!released && "Accessing data with released lock!");
     assert(all_holders.contains(&holder));
     return Holder::GateInfo::getData(holder);
+  }
+
+  template<C_MutexHolderWithGates ... Holders>
+  void ReaderGate<Holders...>::release()
+  {
+    lock.release();
+    released = true;
   }
 
   template<C_MutexHolderWithGates ... Holders>
   template<C_MutexHolderWithGates Holder>
   auto& ReaderGate<Holders...>::getNonConst(Holder& holder) const
   {
+    assert(!released && "Accessing data with released lock!");
     assert(all_holders.contains(&holder));
     return Holder::GateInfo::getData(holder);
   }
@@ -75,12 +82,21 @@ namespace Threads {
   template<C_MutexHolderWithGates Holder>
   const auto& ReaderGate<Holder>::operator*() const
   {
+    assert(!released && "Accessing data with released lock!");
     return Holder::GateInfo::getData(holder);
+  }
+
+  template<C_MutexHolderWithGates Holder>
+  void ReaderGate<Holder>::release()
+  {
+    lock.release();
+    released = true;
   }
 
   template<C_MutexHolderWithGates Holder>
   auto& ReaderGate<Holder>::getNonConst(Holder& h) const
   {
+    assert(!released && "Accessing data with released lock!");
     assert(&h == &holder);
     return Holder::GateInfo::getData(h);
   }
@@ -98,7 +114,4 @@ namespace Threads {
   {
     return Holder::GateInfo::getData(holder);
   }
-
 }
-
-#endif

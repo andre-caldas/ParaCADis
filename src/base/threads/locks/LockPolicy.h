@@ -20,8 +20,7 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef Threads_LockPolicy_H
-#define Threads_LockPolicy_H
+#pragma once
 
 #include "MutexData.h"
 #include "YesItIsAMutex.h"
@@ -102,6 +101,10 @@ namespace Threads
     const std::unordered_set<MutexData*>& getMutexes() const;
 
   protected:
+    /**
+     * Removes information from thread_local variables.
+     */
+    void detachFromThread();
     virtual ~LockPolicy();
 
   private:
@@ -113,15 +116,7 @@ namespace Threads
     void _processLock(bool is_exclusive);
     void _processExclusiveLock();
     void _processSharedLock();
-
-    /**
-     * Removes information from thread_local variables.
-     */
-    void _detachFromThread();
   };
-
 }  // namespace Threads
 
-#include "LockPolicy_inl.h"
-
-#endif
+#include "LockPolicy.hpp"

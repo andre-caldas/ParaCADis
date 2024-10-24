@@ -65,7 +65,7 @@ namespace Threads
     assert(locks.size() == mutexes.size());
   }
 
-  ExclusiveLock::~ExclusiveLock()
+  void ExclusiveLock::release()
   {
     auto& mutexes = getMutexes();
     for(auto mutex: mutexes) {
@@ -73,6 +73,12 @@ namespace Threads
         signal->emit_signal();
       }
     }
+    detachFromThread();
+  }
+
+  ExclusiveLock::~ExclusiveLock()
+  {
+    release();
   }
 
 }

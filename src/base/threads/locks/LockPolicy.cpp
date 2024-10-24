@@ -102,7 +102,7 @@ namespace Threads
     return mutexes;
   }
 
-  void LockPolicy::_detachFromThread()
+  void LockPolicy::detachFromThread()
   {
     if (mutexes.empty()) {
       return;
@@ -125,6 +125,7 @@ namespace Threads
         threadSharedMutexes.erase(mutex);
       }
     }
+    mutexes.clear();
 
     operationInfo.pop();
   }
@@ -241,7 +242,7 @@ namespace Threads
 
   LockPolicy::~LockPolicy()
   {
-    _detachFromThread();
+    detachFromThread();
   }
 
 }  // namespace Threads
