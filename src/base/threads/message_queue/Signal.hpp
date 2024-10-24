@@ -20,34 +20,23 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef MessageQueue_Signal_impl_H
-#define MessageQueue_Signal_impl_H
+#pragma once
 
+#include <base/threads/locks/reader_locks.h>
 #include <base/threads/locks/writer_locks.h>
 
 #include "SignalQueue.h"
 
 #include <concepts>
+#include <vector>
 
 namespace Threads
 {
-
   template<typename... Args>
   void Signal<Args...>::emit_signal(Args... args)
   {
-    WriterGate gate{callBacks};
-    for(auto it = callBacks.begin(); it != callBacks.end();)
-    {
-      auto qlock = it->second.queue_weak.lock();
-      auto tolock = it->second.to_void_weak.lock();
-      if(qlock && tolock) {
-        auto lambda = [cb = it->second.call_back, args...]{cb(args...);};
-        qlock->push(std::move(lambda), tolock.get());
-        ++it;
-      } else {
-        it = gate->erase(it);
-      }
-    }
+    emit_signal_to_callbacks(args...);
+    emit_signal_to_proxies(args...);
   }
 
 
@@ -77,6 +66,7 @@ namespace Threads
                             .call_back = std::move(lambda)});
     return key;
   }
+
 
   template<typename... Args>
   template<class SignalFrom, class SignalTo>
@@ -113,6 +103,116 @@ namespace Threads
     gate->erase(id);
   }
 
-}
 
+  template<typename... Args>
+  void Signal<Args...>::emit_signal_to_proxies(Args... args)
+  {
+    // When the WeakPtr is no longer valid, we clean up.
+    // To avoid a WriterGate, we save the callBack keys and delete later.
+    std::vector<size_t> to_delete;
+
+    std::vector<SharedPtr<signal_t>> locked_proxies;
+    { // Scoped lock.
+      ReaderGate gate{proxies};
+      locked_proxies.reserve(gate->size());
+
+      for(auto& [key, proxy_weak]: *gate)
+      {
+        auto proxy = proxy_weak.lock();
+        if(proxy) {
+          locked_proxies.emplace_back(std::move(proxy));
+        } else {
+          to_delete.push_back(key);
+        }
+      }
+    }
+
+    for(auto& proxy: locked_proxies) {
+      proxy->emit_signal(args...);
+    }
+
+    // Clean up.
+    if(!to_delete.empty()) {
+      WriterGate gate{proxies};
+      for(auto key: to_delete) {
+        gate->erase(key);
+      }
+    }
+  }
+
+
+  template<typename... Args>
+  void Signal<Args...>::emit_signal_to_callbacks(Args... args)
+  {
+    // When the WeakPtr is no longer valid, we clean up.
+    // To avoid a WriterGate, we save the callBack keys and delete later.
+    std::vector<int> to_delete;
+
+    { // Scoped lock.
+      ReaderGate gate{callBacks};
+      for(auto& [key, data]: *gate)
+      {
+        // To avoid complexities,
+        // we push_to_queue() while still holding the gate.
+        // But of course we could reserve some vector of LockedData.
+        // Things work fine because the signal queue uses MutexData::LOCKFREE locks.
+        auto locked_data = data.lock();
+        if(!locked_data.push_to_queue(args...)) {
+          to_delete.push_back(key);
+        }
+      }
+    }
+
+    // Clean up.
+    if(!to_delete.empty()) {
+      WriterGate gate{callBacks};
+      for(auto key: to_delete) {
+        gate->erase(key);
+      }
+    }
+  }
+
+
+  template<typename... Args>
+  bool Signal<Args...>::LockedData::push_to_queue(Args... args)
+  {
+#ifndef NDEBUG
+    assert(!already_called && "Cannot use the same locked data twice.");
+    already_called = true;
 #endif
+
+    if(!queue || !to_void) {
+      return false;
+    }
+    auto lambda = [cb = std::move(call_back), ...args = std::move(args)]{cb(args...);};
+    queue->push(std::move(lambda), to_void.get());
+    return true;
+  }
+
+
+  template<typename... Args>
+  template<typename Holder, typename SIG>
+  size_t Signal<Args...>::setProxy(SharedPtr<Holder> holder, SIG Holder::* signal)
+  {
+    SharedPtr<signal_t> sig(std::move(holder), signal);
+    size_t key = (size_t)sig.get();
+
+    WriterGate gate{proxies};
+    gate->try_emplace(key, sig);
+    return key;
+  }
+
+  template<typename... Args>
+  template<typename Holder, typename SIG>
+  void Signal<Args...>::removeProxy(SharedPtr<Holder> holder, SIG Holder::* signal)
+  {
+    removeProxy(&(holder->*signal));
+  }
+
+  template<typename... Args>
+  void Signal<Args...>::removeProxy(size_t key)
+  {
+    WriterGate gate{proxies};
+    gate->remove(key);
+  }
+}

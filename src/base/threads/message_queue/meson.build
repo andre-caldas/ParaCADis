@@ -4,8 +4,8 @@ threads_src += files(
 
 threads_includes += files(
   'Signal.h',
-  'Signal_impl.h',
+  'Signal.hpp',
   'MutexSignal.h',
-  'MutexSignal_impl.h',
+  'MutexSignal.hpp',
   'SignalQueue.h',
 )

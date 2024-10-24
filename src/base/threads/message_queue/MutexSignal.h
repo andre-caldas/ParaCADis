@@ -20,8 +20,7 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef MessageQueue_MutexSignal_H
-#define MessageQueue_MutexSignal_H
+#pragma once
 
 #include "Signal.h"
 
@@ -42,6 +41,4 @@ namespace Threads
 
 }
 
-#include "MutexSignal_impl.h"
-
-#endif
+#include "MutexSignal.hpp"

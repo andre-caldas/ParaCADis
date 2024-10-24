@@ -20,8 +20,7 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef MessageQueue_Signal_H
-#define MessageQueue_Signal_H
+#pragma once
 
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/threads/safe_structs/ThreadSafeMap.h>
@@ -47,6 +46,8 @@ namespace Threads
   template<typename... Args>
   class Signal
   {
+    using signal_t = Signal<Args...>;
+
   public:
     Signal() = default;
 
@@ -61,7 +62,8 @@ namespace Threads
     /// @}
 
     /**
-     * Sends the signal to all registered callbacks.
+     * Sends the signal to all registered callbacks
+     * and all registered proxies.
      */
     void emit_signal(Args... args);
 
@@ -106,19 +108,50 @@ namespace Threads
 
     void disconnect(int id);
 
+    template<typename Holder, typename SIG>
+    size_t setProxy(SharedPtr<Holder> holder, SIG Holder::* signal);
+    template<typename Holder, typename SIG>
+    void removeProxy(SharedPtr<Holder> holder, SIG Holder::* signal);
+    void removeProxy(size_t key);
+
   private:
     std::atomic<int> id{0};
+
+    struct LockedData {
+      SharedPtr<SignalQueue> queue;
+      SharedPtr<void> to_void;  // Just to auto disconnect.
+      std::function<void(Args... args)> call_back;
+      /// @attention Can be used only once!
+      bool push_to_queue(Args... args);
+#ifndef NDEBUG
+      bool already_called = false;
+#endif
+    };
+
     struct Data {
       WeakPtr<SignalQueue> queue_weak;
       WeakPtr<void> to_void_weak;  // Just to auto disconnect.
       std::function<void(Args... args)> call_back;
+      LockedData lock() const
+      {return {queue_weak.lock(), to_void_weak.lock(), call_back};}
     };
 
-    SafeStructs::ThreadSafeUnorderedMap<int, Data> callBacks{MutexData::LOCKFREE-1};
+    template<typename K, typename V>
+    using SafeUnorderedMap = SafeStructs::ThreadSafeUnorderedMap<K, V>;
+    SafeUnorderedMap<int, Data>             callBacks{MutexData::LOCKFREE-1};
+    SafeUnorderedMap<size_t, WeakPtr<signal_t>> proxies{MutexData::LOCKFREE-1};
+
+    /**
+     * Sends the signal to all registered callbacks.
+     */
+    void emit_signal_to_callbacks(Args... args);
+
+    /**
+     * Sends the signal to all registered proxies.
+     */
+    void emit_signal_to_proxies(Args... args);
   };
 
 }
 
-#include "Signal_impl.h"
-
-#endif
+#include "Signal.hpp"
