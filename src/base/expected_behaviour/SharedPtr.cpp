@@ -21,7 +21,6 @@
  ***************************************************************************/
 
 #include "SharedPtr.h"
-#include "SharedPtr_impl.h"
 
 JustLockPtr& JustLockPtr::operator= (const JustLockPtr& other)
 {

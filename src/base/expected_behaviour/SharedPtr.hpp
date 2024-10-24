@@ -36,13 +36,7 @@ SharedPtr<T> SharedPtr<T, NotBool>::from_pointer(T* ptr)
 }
 
 template<typename T, typename NotBool>
-SharedPtr<T, NotBool>::SharedPtr(const std::shared_ptr<T>& shared)
-    : std::shared_ptr<T>(shared)
-{
-}
-
-template<typename T, typename NotBool>
-SharedPtr<T, NotBool>::SharedPtr(std::shared_ptr<T>&& shared)
+SharedPtr<T, NotBool>::SharedPtr(std::shared_ptr<T> shared)
     : std::shared_ptr<T>(std::move(shared))
 {
 }
@@ -55,15 +49,8 @@ SharedPtr<T, NotBool>::SharedPtr(std::unique_ptr<T>&& unique)
 
 template<typename T, typename NotBool>
 template<class X, typename M> requires(!std::is_void_v<M>)
-SharedPtr<T, NotBool>::SharedPtr(const SharedPtr<X>& shared, M X::* localPointer)
-    : std::shared_ptr<T>(shared, &(shared->*localPointer))
-{
-}
-
-template<typename T, typename NotBool>
-template<class X, typename M> requires(!std::is_void_v<M>)
-SharedPtr<T, NotBool>::SharedPtr(SharedPtr<X>&& shared, M X::* localPointer)
-    : std::shared_ptr<T>(std::move(shared), &(shared->*localPointer))
+SharedPtr<T, NotBool>::SharedPtr(SharedPtr<X> shared, M X::* localPointer)
+    : std::shared_ptr<T>(std::move(shared), &((*shared).*localPointer))
 {
 }
 
@@ -98,7 +85,7 @@ SharedPtr<T, NotBool>::operator NotBool&() const
 template<typename T, typename NotBool>
 WeakPtr<T> SharedPtr<T, NotBool>::getWeakPtr() const
 {
-  return WeakPtr<T>(sliced_nothrow());
+  return {sliced_nothrow()};
 }
 
 template<typename T, typename NotBool>

@@ -62,13 +62,10 @@ public:
   SharedPtr() = default;
   SharedPtr(const SharedPtr&) = default;
   SharedPtr(SharedPtr&&) = default;
-  SharedPtr(const std::shared_ptr<T>& shared);
-  SharedPtr(std::shared_ptr<T>&& shared);
+  SharedPtr(std::shared_ptr<T> shared);
   SharedPtr(std::unique_ptr<T>&& unique);
   template<class X, typename M = T> requires(!std::is_void_v<M>)
-  SharedPtr(const SharedPtr<X>& shared, M X::* localPointer);
-  template<class X, typename M = T> requires(!std::is_void_v<M>)
-  SharedPtr(SharedPtr<X>&& shared, M X::* localPointer);
+  SharedPtr(SharedPtr<X> shared, M X::* localPointer);
   template<typename X>
   SharedPtr(const SharedPtr<X>& r, T* p)
       : std::shared_ptr<T>(r.sliced(), p) {}
@@ -83,9 +80,9 @@ public:
   SharedPtr& operator=(SharedPtr&&) = default;
 
   template<typename M = T, std::enable_if_t<!std::is_void_v<M>, bool> = true>
-  T* operator->() const;
-  template<typename M = T, std::enable_if_t<!std::is_void_v<M>, bool> = true>
   M& operator*() const;
+  template<typename M = T, std::enable_if_t<!std::is_void_v<M>, bool> = true>
+  T* operator->() const;
 
   // TODO: funny story...
   // I want, for convenience, automatic convertion to T&.
@@ -128,6 +125,9 @@ private:
   explicit SharedPtr(T* ptr) : std::shared_ptr<T>(ptr) {}
   template <typename type_, typename... options>
   friend class pybind11::class_;
+
+  template <typename, typename>
+  friend class SharedPtr;
 };
 
 namespace std {
@@ -180,4 +180,4 @@ private:
   std::shared_ptr<void> lock;
 };
 
-#include "SharedPtr_impl.h"
+#include "SharedPtr.hpp"
