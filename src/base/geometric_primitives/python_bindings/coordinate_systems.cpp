@@ -39,9 +39,21 @@ using namespace NamingScheme;
 void init_geometric_primitives_coordinate_systems(py::module_& module)
 {
   /*
+   * Dummy base class: DeferenceableCoordinates.
+   */
+  py::class_<DeferenceableCoordinates, ExporterBase,
+             SharedPtr<DeferenceableCoordinates>>(
+      module, "DeferenceableCoordinates", py::multiple_inheritance(),
+      "Base class for coordinate systems that exports its parameters.")
+      .def("__repr__",
+           [](const DeferenceableCoordinateSystemXY&)
+           { return "<DEF_COORDINATESYSTEMS - BASE... (put info here)>"; });
+
+
+  /*
    * DeferenceableCoordinateSystem.
    */
-  py::class_<DeferenceableCoordinateSystemXY, ExporterBase,
+  py::class_<DeferenceableCoordinateSystemXY, DeferenceableCoordinates,
              SharedPtr<DeferenceableCoordinateSystemXY>>(
       module, "DeferenceableCoordinateSystemXY", py::multiple_inheritance(),
       "A coordinate system that exports its parameters.")
@@ -58,7 +70,7 @@ void init_geometric_primitives_coordinate_systems(py::module_& module)
   /*
    * DeferenceableCoordinatePoints.
    */
-  py::class_<DeferenceableCoordinatePointsXY, ExporterBase,
+  py::class_<DeferenceableCoordinatePointsXY, DeferenceableCoordinates,
              SharedPtr<DeferenceableCoordinatePointsXY>>(
       module, "DeferenceableCoordinatePointsXY", py::multiple_inheritance(),
       "A coordinate system that exports its parameters.")

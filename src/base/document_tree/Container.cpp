@@ -216,8 +216,9 @@ Container::getCoordinates() const
 }
 
 SharedPtr<DeferenceableCoordinates>
-Container::setCoordinates(SharedPtr<DeferenceableCoordinates> coordinates)
+Container::setCoordinates(SharedPtr<Container> self, SharedPtr<DeferenceableCoordinates> coordinates)
 {
+  coordinates->getChangedSignal().setProxy(std::move(self), &Container::coordinate_modified_sig);
   return coordinate_system.setSharedPtr(std::move(coordinates));
 }
 

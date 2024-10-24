@@ -94,7 +94,7 @@ namespace Document
 
     SharedPtr<DeferenceableCoordinates> getCoordinates() const;
     SharedPtr<DeferenceableCoordinates>
-    setCoordinates(SharedPtr<DeferenceableCoordinates> coordinates);
+    setCoordinates(SharedPtr<Container> self, SharedPtr<DeferenceableCoordinates> coordinates);
 
 
     SharedPtr<ExporterBase>

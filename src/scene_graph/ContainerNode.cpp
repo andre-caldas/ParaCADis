@@ -57,6 +57,8 @@ namespace SceneGraph
   ContainerNode::ContainerNode(const SharedPtr<SceneRoot>& scene_root)
       : sceneRootWeak(scene_root)
   {
+    auto* ogre_node = scene_root->sceneManager->createSceneNode();
+    ogreNodeWeak = SharedPtr{scene_root, ogre_node};
   }
 
   ContainerNode::~ContainerNode()
@@ -162,7 +164,7 @@ namespace SceneGraph
 
     { // Scoped lock.
       Threads::WriterGate gate{containerNodes};
-      auto [it, success] = gate->emplace(added_container.get(), std::move(new_node));
+      auto [it, success] = gate->emplace(added_container.get(), new_node);
       if(!success) {
         throw std::runtime_error("Container alredy a child of this node");
       }
@@ -180,7 +182,7 @@ namespace SceneGraph
   void ContainerNode::addContainer(SharedPtr<container_t> added_container)
   {
     CycleGuard<container_t> cycle_guard;
-    addContainerCycleGuard(cycle_guard, added_container);
+    addContainerCycleGuard(cycle_guard, std::move(added_container));
   }
 
   void ContainerNode::removeContainer(SharedPtr<container_t> removed_container)
