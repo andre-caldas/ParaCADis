@@ -26,8 +26,7 @@
  * already instantiated at "IExport.cpp".
  */
 
-#ifndef NamingScheme_IExport_impl_H
-#define NamingScheme_IExport_impl_H
+#pragma once
 
 #include "IExport.h"  // Just to make tools happy!
 
@@ -40,7 +39,6 @@
 
 namespace NamingScheme
 {
-
   template<typename T>
   ResultHolder<T> IExport<T>::resolve(const ResultHolder<ExporterBase>& current,
                                       token_iterator& tokens, T*)
@@ -97,10 +95,7 @@ namespace NamingScheme
            && "The exported structure must be provided by Exporter<...>.");
 
     auto& data = dynamic_cast<Exporter<DataStruct>&>(*this);
-    Threads::WriterGate gate{data};
-    return &((*gate).*localPtr);
+    Threads::ReaderGate gate{data};
+    return &(gate.getNonConst(data).*localPtr);
   }
-
 }  // namespace NamingScheme
-
-#endif

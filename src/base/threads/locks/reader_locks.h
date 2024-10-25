@@ -97,7 +97,7 @@ namespace Threads
      * like in case of IExport<T>::resolve().
      */
     template<C_MutexHolderWithGates Holder>
-     auto& getNonConst(Holder& holder) const;
+    auto& getNonConst(Holder& holder) const;
 
   private:
     SharedLock lock;
@@ -142,11 +142,8 @@ namespace Threads
      * because you do not want to change the data, while you sill
      * want a non-const pointer. Maybe you want to store it,
      * like in case of IExport<T>::resolve().
-     *
-     * @todo
-     * Is this really necessary?
      */
-     auto& getNonConst(Holder& holder) const;
+    auto& getNonConst(Holder& holder) const;
 
   private:
     SharedLock lock;

@@ -66,7 +66,6 @@ SharedPtr<const LinePointDirection::iga_curve_t> LinePointDirection::produceIgaC
  * There is no need to include NameSearch_impl.h for those.
  */
 #include <base/naming_scheme/IExport.h>
-#include <base/naming_scheme/IExport_impl.h>
 #include <base/naming_scheme/NameSearch.h>
 #include <base/naming_scheme/NameSearch_impl.h>
 

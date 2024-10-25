@@ -13,7 +13,7 @@ naming_scheme_includes = [
   'path_cache_policies.h',
   'Exporter.h',
   'IExport.h',
-  'IExport_impl.h',
+  'IExport.hpp',
   'NameAndUuid.h',
   'NameSearch.h',
   'NameSearch_impl.h',

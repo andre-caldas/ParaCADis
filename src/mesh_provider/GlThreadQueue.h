@@ -41,7 +41,7 @@ namespace Mesh
       : public Ogre::FrameListener
   {
   public:
-    bool frameRenderingQueued(const Ogre::FrameEvent& evt) override;
+    bool frameEnded(const Ogre::FrameEvent& evt) override;
     Threads::SafeStructs::ThreadSafeQueue<std::function<void()>> queue;
   };
 }

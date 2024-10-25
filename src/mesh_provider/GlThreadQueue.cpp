@@ -27,7 +27,7 @@
 
 namespace Mesh
 {
-  bool GlThreadQueue::frameRenderingQueued(const Ogre::FrameEvent& evt)
+  bool GlThreadQueue::frameEnded(const Ogre::FrameEvent& evt)
   {
     while(!queue.empty()) {
       auto callback = queue.pull();

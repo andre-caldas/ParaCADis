@@ -20,8 +20,7 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef NamingScheme_IExport_H
-#define NamingScheme_IExport_H
+#pragma once
 
 #include "ResultHolder.h"
 #include "types.h"
@@ -151,6 +150,4 @@ namespace NamingScheme
 }  // namespace NamingScheme
 
 // TODO: remove this and use modules.
-#include "IExport_impl.h"
-
-#endif
+#include "IExport.hpp"
