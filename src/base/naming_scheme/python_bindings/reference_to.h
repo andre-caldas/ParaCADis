@@ -24,8 +24,14 @@
 
 #include <pybind11/pybind11.h>
 
+#include <base/naming_scheme/ReferenceToObject.h>
+
 #include <python_bindings/types.h>
 
 namespace py = pybind11;
 
-py::module_ init_naming_scheme(py::module_& parent_module);
+template<typename T>
+py::class_<NamingScheme::ReferenceTo<T>, SharedPtr<NamingScheme::ReferenceTo<T>>>
+bind_reference_to(py::module_& m, std::string type_name);
+
+#include"reference_to.hpp"

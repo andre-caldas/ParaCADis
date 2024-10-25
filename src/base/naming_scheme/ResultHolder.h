@@ -20,15 +20,13 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef NamingScheme_ResultHolder_H
-#define NamingScheme_ResultHolder_H
+#pragma once
 
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/threads/locks/gates.h>
 
 namespace NamingScheme
 {
-
   /**
    * Access to resolved names must comply with the "gate paradigm",
    * so its access becomes thread-safe.
@@ -40,7 +38,6 @@ namespace NamingScheme
     friend class ResultHolder;
 
   private:
-    // TODO: Maybe use a global static mutex whose lock always succeeds.
     Threads::MutexVector mutex;
     SharedPtr<T>         data;
     WeakPtr<T>           data_weak;
@@ -133,11 +130,23 @@ namespace NamingScheme
     ResultHolder(Threads::MutexVector v, SharedPtr<T> d, WeakPtr<T> w)
         : mutex(std::move(v))
         , data(std::move(d)), data_weak(std::move(w)) {}
+
+  public:
+    /**
+     * ResultHolder is supposed to be accessed through a gate.
+     * However, even when we have a gate, python expects to get
+     * a SharedPtr and not a reference.
+     */
+    SharedPtr<T> _promiscuousGetShared() const
+    {
+      assert(data && "Are you supposed to call this in a released state?");
+      if(!data) {
+        return data_weak.lock();
+      }
+      return data;
+    }
   };
 
   static_assert(Threads::C_MutexHolderWithGates<ResultHolder<int>>,
                 "Result gates is 'with gates'.");
-
 }  // namespace NamingScheme
-
-#endif

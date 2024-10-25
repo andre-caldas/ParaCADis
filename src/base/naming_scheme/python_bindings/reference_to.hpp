@@ -24,7 +24,7 @@
 
 #include <pybind11/pybind11.h>
 
-#include "module.h"
+#include "reference_to.h"
 
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/naming_scheme/PathToken.h>
@@ -43,19 +43,29 @@ bind_reference_to(py::module_& m, std::string type_name)
 {
   // TODO: use string_view concatenation in c++26. :-)
 
-  using ReferenceTo = NamingScheme::ReferenceTo<T>;
+  using ReferenceTo  = NamingScheme::ReferenceTo<T>;
   using ResultHolder = NamingScheme::ResultHolder<T>;
-  using ReaderGate = Threads::ReaderGateKeeper<ResultHolder>;
-  using WriterGate = Threads::WriterGateKeeper<ResultHolder>;
+  using ReaderGate   = Threads::ReaderGateKeeper<ResultHolder>;
+  using WriterGate   = Threads::WriterGateKeeper<ResultHolder>;
+
+  std::string ref_to_name        = "ReferenceTo"  + type_name;
+  std::string reader_gate_name   = "ReaderGateTo" + type_name;
+  std::string writer_gate_name   = "WriterGateTo" + type_name;
+  std::string result_holder_name = "ResultHolder" + type_name;
 
   /*
-   *  A path so some object.
+   * ReferenceTo:
+   * A path so some object.
    */
   py::class_<ReferenceTo, SharedPtr<ReferenceTo>>
-  ref_to{m, "ReferenceTo" + type_name,
-         "A path that can be resolved and locked to access data."};
-  //ref_to.def(py::init<>());
+  ref_to(m, ref_to_name.c_str(),
+         "A path that can be resolved and locked to access data.");
+  ref_to.def(py::init<SharedPtr<ExporterBase>>());
+  ref_to.def(py::init<SharedPtr<ExporterBase>, std::string>());
+  ref_to.def(py::init<SharedPtr<ExporterBase>, std::string, std::string>());
+  ref_to.def(py::init<SharedPtr<ExporterBase>, std::string, std::string, std::string>());
   // construct. from base + strings. from path.
+
   ref_to.def("resolve", &ReferenceTo::resolve,
   R"(Searches the path and resolves the reference.
 
@@ -71,9 +81,10 @@ bind_reference_to(py::module_& m, std::string type_name)
   Returns
   =======
   A ResultHolder that:
-  1. Ensures the object does not get destructed while the ResultHolder is held.
-  2. Can be used to acquire a ReaderGate or a WriterGate that can be used
-     to access the object data.
+  1. Ensures the object does not get destructed while the ResultHolder
+     is held.
+  2. Can be used to acquire a ReaderGate or a WriterGate that can be
+     used to access the object data.
 )");
   ref_to.def("resolve_and_lock",
              [](SharedPtr<ReferenceTo> self){return WriterGate{self->resolve()};},
@@ -86,10 +97,11 @@ bind_reference_to(py::module_& m, std::string type_name)
 
 
   /*
+   * ReaderGate:
    * A gate that allows reading data from the resolved reference.
    */
   py::class_<ReaderGate, SharedPtr<ReaderGate>>
-  rgate{m, "ReaderGateTo" + type_name,
+  rgate(m, reader_gate_name.c_str(),
   R"(Locks the <" + type_name + "> for reading.
 
   A "gate" is necessary to access the resolved object.
@@ -103,36 +115,44 @@ bind_reference_to(py::module_& m, std::string type_name)
      to the referenced object to block.
      Therefore, one should not hold a gate for too long.
   3. Check out the "lock policy" to learn how to use locks and gates.
-)"};
+)");
   rgate.def(py::init<SharedPtr<ResultHolder>>(), "ResultHolder"_a,
   R"(Constructs a reader gate for the resolved object.)");
-  rgate.def("access", &ReaderGate::operator*,
+
+  rgate.def("access",
+  [](SharedPtr<ReaderGate> gate)
+  {
+    auto shared = gate->getHolder()._promiscuousGetShared();
+    return SharedPtr<const T>(std::move(shared), &**gate);
+  },
   R"(Accesses the referenced object
 
   Attention
   =========
   1. You are not supposed to save the object for later reference.
      Objects are only safe to be accessed while holding the gate.
-  2. Python will not forbid you to write to the object using a reader gate.
-     Of course, you are not supposed to do that. :-P
+  2. Python will not forbid you to write to the object using a reader
+     gate. Of course, you are not supposed to do that. :-P
 )");
   rgate.def("release", &ReaderGate::release,
   R"(Prematurelly releases the gate to avoid other tasks being blocked.
 
-  When the gate is garbage collected and is destructed, the associated locks
-  are automatically released. However to explicitelly releasing those locks
-  you can call this method.
+  When the gate is garbage collected and is destructed, the associated
+  locks are automatically released. However to explicitelly releasing
+  those locks you can call this method.
 )");
 
 
   /*
+   * WriterGate:
    * A gate that allows writing data to the resolved reference.
    */
   py::class_<WriterGate, SharedPtr<WriterGate>>
-  wgate{m, "WriterGateTo" + type_name,
+  wgate{m, writer_gate_name.c_str(),
   R"(Locks the <" + type_name + "> for writing.
 
-  A "writer gate" is necessary to exclusively access the resolved object.
+  A "writer gate" is necessary to exclusively access the resolved
+  object.
 
   Attention
   =========
@@ -145,7 +165,13 @@ bind_reference_to(py::module_& m, std::string type_name)
 )"};
   wgate.def(py::init<SharedPtr<ResultHolder>>(), "ResultHolder"_a,
   R"(Constructs an exclusive (write) gate for the resolved object.)");
-  wgate.def("access", &WriterGate::operator*,
+
+  wgate.def("access",
+  [](SharedPtr<WriterGate> gate)
+  {
+    auto shared = gate->getHolder()._promiscuousGetShared();
+    return SharedPtr<T>(std::move(shared), &**gate);
+  },
   R"(Accesses the referenced object
 
   Attention
@@ -156,17 +182,18 @@ bind_reference_to(py::module_& m, std::string type_name)
   wgate.def("release", &WriterGate::release,
   R"(Prematurelly releases the gate to avoid other tasks being blocked.
 
-  When the gate is garbage collected and is destructed, the associated locks
-  are automatically released. However to explicitelly releasing those locks
-  you can call this method.
+  When the gate is garbage collected and is destructed, the associated
+  locks are automatically released. However to explicitelly releasing
+  those locks you can call this method.
 )");
 
 
   /*
+   * ResultHolder:
    * Holds an instance for the resolved object.
    */
   py::class_<ResultHolder, SharedPtr<ResultHolder>>
-  holder{m, "ResultHolder" + type_name};
+  holder{m, result_holder_name.c_str()};
   //holder.def(py::init<>());
   holder.def("rgate",
              [](SharedPtr<ResultHolder> self){return ReaderGate{std::move(self)};},

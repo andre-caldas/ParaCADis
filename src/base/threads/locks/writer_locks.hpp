@@ -93,7 +93,7 @@ namespace Threads {
   }
 
   template<C_MutexHolderWithGates Holder>
-  const auto& WriterGateKeeper<Holder>::operator*() const
+  auto& WriterGateKeeper<Holder>::operator*() const
   {
     if(released) {
       throw std::runtime_error{"Accessing a released gate."};

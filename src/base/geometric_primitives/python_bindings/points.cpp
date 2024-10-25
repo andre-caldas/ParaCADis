@@ -28,6 +28,8 @@
 
 #include <base/geometric_primitives/deferenceables.h>
 #include <base/geometric_primitives/types.h>
+#include <base/naming_scheme/python_bindings/reference_to.h>
+
 #include <python_bindings/types.h>
 
 namespace py = pybind11;
@@ -67,6 +69,7 @@ void init_geometric_primitives_points(py::module_& module)
            [](const Real&){ return "<REAL... (put info here)>"; });
   py::implicitly_convertible<const int, Real>();
   py::implicitly_convertible<const double, Real>();
+  bind_reference_to<Real>(module, "Real");
 
   /*
    * Vector.
@@ -97,6 +100,7 @@ void init_geometric_primitives_points(py::module_& module)
       .def("__repr__",
            [](const DeferenceableVector&)
            { return "<DEFERENCEABLEVECTOR... (put info here)>"; });
+  bind_reference_to<DeferenceableVector>(module, "Vector");
 
   /*
    * Point.
@@ -124,4 +128,5 @@ void init_geometric_primitives_points(py::module_& module)
       .def("__repr__",
            [](const DeferenceablePoint&)
            { return "<DEFERENCEABLEPOINT... (put info here)>"; });
+  bind_reference_to<DeferenceablePoint>(module, "Point");
 }

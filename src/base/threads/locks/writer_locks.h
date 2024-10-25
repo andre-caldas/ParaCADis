@@ -149,13 +149,15 @@ namespace Threads
   public:
     WriterGateKeeper(Holder holder);
 
-    const auto& operator*() const;
-    const auto* operator->() const { return &**this; }
+    auto& operator*() const;
+    auto* operator->() const { return &**this; }
 
     /**
      * Prematurelly releases the gate.
      */
     void release();
+
+    const Holder& getHolder() const {return holder;}
 
   private:
     ExclusiveLock lock;

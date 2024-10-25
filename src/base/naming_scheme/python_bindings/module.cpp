@@ -24,7 +24,10 @@
 
 #include "module.h"
 
+#include <base/naming_scheme/Exporter.h>
 #include <base/naming_scheme/PathToken.h>
+
+#include <python_bindings/types.h>
 
 namespace py = pybind11;
 using namespace py::literals;

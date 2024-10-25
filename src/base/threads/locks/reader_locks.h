@@ -176,7 +176,12 @@ namespace Threads
     const auto& operator*() const;
     const auto* operator->() const { return &**this; }
 
+    /**
+     * Prematurelly releases the gate.
+     */
     void release();
+
+    const Holder& getHolder() const {return holder;}
 
   private:
     SharedLock lock;
