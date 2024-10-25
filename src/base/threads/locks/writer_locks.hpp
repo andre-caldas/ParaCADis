@@ -83,4 +83,31 @@ namespace Threads {
     lock.release();
     released = true;
   }
+
+
+  template<C_MutexHolderWithGates Holder>
+  WriterGateKeeper<Holder>::WriterGateKeeper(Holder holder)
+      : lock(getMutex(holder))
+      , holder(std::move(holder))
+  {
+  }
+
+  template<C_MutexHolderWithGates Holder>
+  const auto& WriterGateKeeper<Holder>::operator*() const
+  {
+    if(released) {
+      throw std::runtime_error{"Accessing a released gate."};
+    }
+    return Holder::GateInfo::getData(holder);
+  }
+
+  template<C_MutexHolderWithGates Holder>
+  void WriterGateKeeper<Holder>::release()
+  {
+    if(released) {
+      throw std::runtime_error{"Gate released twice."};
+    }
+    released = true;
+    lock.release();
+  }
 }

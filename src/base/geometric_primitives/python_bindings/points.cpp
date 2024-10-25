@@ -102,8 +102,7 @@ void init_geometric_primitives_points(py::module_& module)
    * Point.
    */
   py::class_<Point, SharedPtr<Point>>(
-      module, "Point",
-      "A point.")
+      module, "Point", "A point.")
       .def(py::init<>(), "Origin")
       .def(py::init<Real, Real, Real>(), "x"_a, "y"_a, "z"_a)
       .def(py::init(&new_from_vector<Point>))

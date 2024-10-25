@@ -54,7 +54,7 @@ namespace Threads
      * after the lock was released.
      *
      * @attention
-     * Selfom use this. Rethink your design... you probably ain't gonna need it.
+     * Seldom use this. Rethink your design... you probably ain't gonna need it.
      */
     void release();
     ~ExclusiveLock();
@@ -86,7 +86,7 @@ namespace Threads
      * after the lock was released.
      *
      * @attention
-     * Selfom use this. Rethink your design... you probably ain't gonna need it.
+     * Seldom use this. Rethink your design... you probably ain't gonna need it.
      */
     void release();
 
@@ -120,7 +120,7 @@ namespace Threads
      * after the lock was released.
      *
      * @attention
-     * Selfom use this. Rethink your design... you probably ain't gonna need it.
+     * Seldom use this. Rethink your design... you probably ain't gonna need it.
      */
     void release();
 
@@ -130,6 +130,37 @@ namespace Threads
 #ifndef NDEBUG
     bool released = false;
 #endif
+  };
+
+
+  /**
+   * Like a WriterGate class for one data,
+   * but it also keeps a private Holder.
+   *
+   * This is used for cases when you want a WriterGate
+   * for a temporary object or any object that might get
+   * destructed while we are using it.
+   *
+   * It is used in "unit tests" and python bindings.
+   */
+  template<C_MutexHolderWithGates Holder>
+  class WriterGateKeeper
+  {
+  public:
+    WriterGateKeeper(Holder holder);
+
+    const auto& operator*() const;
+    const auto* operator->() const { return &**this; }
+
+    /**
+     * Prematurelly releases the gate.
+     */
+    void release();
+
+  private:
+    ExclusiveLock lock;
+    Holder holder;
+    bool released = false;
   };
 }  // namespace Threads
 

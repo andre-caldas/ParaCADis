@@ -52,7 +52,7 @@ namespace Threads
      * after the lock was released.
      *
      * @attention
-     * Selfom use this. Rethink your design... you probably ain't gonna need it.
+     * Seldom use this. Rethink your design... you probably ain't gonna need it.
      */
     void release();
 
@@ -83,7 +83,7 @@ namespace Threads
      * after the lock was released.
      *
      * @attention
-     * Selfom use this. Rethink your design... you probably ain't gonna need it.
+     * Seldom use this. Rethink your design... you probably ain't gonna need it.
      */
     void release();
 
@@ -130,7 +130,7 @@ namespace Threads
      * after the lock was released.
      *
      * @attention
-     * Selfom use this. Rethink your design... you probably ain't gonna need it.
+     * Seldom use this. Rethink your design... you probably ain't gonna need it.
      */
     void release();
 
@@ -142,6 +142,9 @@ namespace Threads
      * because you do not want to change the data, while you sill
      * want a non-const pointer. Maybe you want to store it,
      * like in case of IExport<T>::resolve().
+     *
+     * @todo
+     * Is this really necessary?
      */
      auto& getNonConst(Holder& holder) const;
 
@@ -155,20 +158,30 @@ namespace Threads
 
 
   /**
-   * The ReaderGate class for one data.
+   * Like a ReaderGate class for one data,
+   * but it also keeps a private Holder.
+   *
+   * This is used for cases when you want a ReaderGate
+   * for a temporary object or any object that might get
+   * destructed while we are using it.
+   *
+   * It is used in "unit tests" and python bindings.
    */
   template<C_MutexHolderWithGates Holder>
   class ReaderGateKeeper
   {
   public:
-    ReaderGateKeeper(Holder&& holder);
+    ReaderGateKeeper(Holder holder);
 
     const auto& operator*() const;
     const auto* operator->() const { return &**this; }
 
+    void release();
+
   private:
     SharedLock lock;
     Holder holder;
+    bool released = false;
   };
   /// @}
 }  // namespace Threads

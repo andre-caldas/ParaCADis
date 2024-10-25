@@ -55,8 +55,6 @@ void init_document_tree(py::module_& parent_module)
            "Adds a nested container.");
   cont.def("add_element", &Container::addElement, "element"_a,
            "Adds an element to the container.");
-  cont.def("add_element", [](const Container& self, std::shared_ptr<ExporterBase>){}, "element"_a,
-           "Adds an element to the container.");
 #if 0
   cont.def("remove_element", &Container::removeElement, xxxxx,
            "Removes the corresponding element from the container.");

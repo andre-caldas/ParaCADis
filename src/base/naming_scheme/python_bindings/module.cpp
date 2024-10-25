@@ -35,15 +35,16 @@ py::module_ init_naming_scheme(py::module_& parent_module)
   auto m = parent_module.def_submodule("naming_scheme");
   m.doc() = "Implements object access through a name/path mechanism.";
 
-  py::class_<PathToken, SharedPtr<PathToken>>(m, "PathToken",
-                        "A token that composes a path to an object."
-                        " Usually it is a name or a path_token returned by some method.")
-      .def(py::init<std::string>())
-      .def("__repr__",
+  py::class_<PathToken, SharedPtr<PathToken>>
+  path(m, "PathToken",
+       "A token that composes a path to an object."
+       " Usually it is a name or a path_token returned by some method.");
+  path.def(py::init<std::string>());
+  path.def("__repr__",
            [](const PathToken&){ return "<PATHTOKEN... (put info here)>"; });
 
-  py::class_<ExporterBase, SharedPtr<ExporterBase>>(m, "ExporterBase",
-                           "Base class for types that export other types.");
+  py::class_<ExporterBase, SharedPtr<ExporterBase>>
+  exporter(m, "ExporterBase", "Base class for types that export other types.");
 
   return m;
 }

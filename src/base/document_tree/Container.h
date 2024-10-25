@@ -94,8 +94,7 @@ namespace Document
 
     SharedPtr<DeferenceableCoordinates> getCoordinates() const;
     SharedPtr<DeferenceableCoordinates>
-    setCoordinates(SharedPtr<Container> self, SharedPtr<DeferenceableCoordinates> coordinates);
-
+    setCoordinates(SharedPtr<Container> self, SharedPtr<DeferenceableCoordinates> coord);
 
     SharedPtr<ExporterBase>
     resolve_shared(token_iterator& tokens, ExporterBase* = nullptr) override;

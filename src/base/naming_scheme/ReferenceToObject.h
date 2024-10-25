@@ -40,7 +40,7 @@ namespace NamingScheme
   /**
    * A  PathToObject is not aware of the type of variable it points to.
    *
-   * Through the means of the templated  IExport<variable_type>,
+   * Through the means of the templated IExport<variable_type>,
    * objects can "export" the correct type to be referenced to by
    * ReferenceTo<variable_type>.
    *
@@ -58,6 +58,8 @@ namespace NamingScheme
     ReferenceTo(const ReferenceTo&)            = default;
     ReferenceTo& operator=(const ReferenceTo&) = default;
     ReferenceTo& operator=(ReferenceTo&&)      = default;
+
+    ReferenceTo(PathToObject path) : path(std::move(path)) {}
 
     template<typename ROOT, typename... Args>
     ReferenceTo(ROOT&& root, Args&&... args)

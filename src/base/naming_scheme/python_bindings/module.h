@@ -37,4 +37,4 @@ template<typename T>
 py::class_<NamingScheme::ReferenceTo<T>, SharedPtr<NamingScheme::ReferenceTo<T>>>
 bind_reference_to(py::module_& m, std::string_view type_name);
 
-#include"module_impl.h"
+#include"module.hpp"
