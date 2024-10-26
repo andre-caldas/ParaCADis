@@ -20,10 +20,53 @@
  *                                                                          *
  ***************************************************************************/
 
-#pragma once
-
 #include <pybind11/pybind11.h>
+#include <pybind11/operators.h>
+#include <pybind11/stl.h>
+
+#include "module.h"
+
+#include <base/geometric_primitives/deferenceables.h>
+#include <base/geometric_primitives/types.h>
+#include <base/naming_scheme/python_bindings/reference_to.h>
+
+#include <python_bindings/types.h>
 
 namespace py = pybind11;
+using namespace py::literals;
 
-void init_geometric_primitives_spheres(py::module_& module);
+using namespace NamingScheme;
+
+void init_geometric_primitives_vectors(py::module_& module)
+{
+  /*
+   * Vector.
+   */
+  py::class_<Vector, SharedPtr<Vector>>(
+      module, "Vector",
+      "A vector.")
+      .def(py::init<>(), "Zero vector")
+      .def(py::init<Real, Real, Real>(), "x"_a, "y"_a, "z"_a)
+      .def(py::init(&new_from_vector<Vector>))
+      .def(py::self + py::self)
+      .def(py::self - py::self)
+      .def("__repr__",
+           [](const Vector&){ return "<VECTOR... (put info here)>"; });
+  py::implicitly_convertible<py::list, Vector>();
+
+  /*
+   * DeferenceableVector.
+   */
+  py::class_<DeferenceableVector, ExporterBase,
+             SharedPtr<DeferenceableVector>>(
+      module, "DeferenceableVector", py::multiple_inheritance(),
+      "A vector that can be handled as a geometric object."
+      " It can be put inside containers and it exports its parameters.")
+      .def(py::init<>(), "Zero vector")
+      .def(py::init<Real, Real, Real>(), "x"_a, "y"_a, "z"_a)
+      .def(py::init<const Vector&>())
+      .def("__repr__",
+           [](const DeferenceableVector&)
+           { return "<DEFERENCEABLEVECTOR... (put info here)>"; });
+  bind_reference_to<DeferenceableVector>(module, "Vector");
+}

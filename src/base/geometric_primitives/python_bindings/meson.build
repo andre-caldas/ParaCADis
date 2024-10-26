@@ -1,8 +1,13 @@
 pybind_main_src += files(
   'module.cpp',
-  'circles.cpp',
-  'coordinate_systems.cpp',
-  'lines.cpp',
+
+  'reals.cpp',
   'points.cpp',
+  'vectors.cpp',
+
+  'lines.cpp',
+  'circles.cpp',
   'spheres.cpp',
+
+  'coordinate_systems.cpp',
 )

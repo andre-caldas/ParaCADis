@@ -22,12 +22,6 @@
 
 #include "module.h"
 
-#include "circles.h"
-#include "coordinate_systems.h"
-#include "lines.h"
-#include "points.h"
-#include "spheres.h"
-
 namespace py = pybind11;
 using namespace py::literals;
 

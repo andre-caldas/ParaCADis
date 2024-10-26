@@ -24,6 +24,26 @@
 
 #include <pybind11/pybind11.h>
 
+#include <base/expected_behaviour/SharedPtr.h>
+
 namespace py = pybind11;
 
 void init_geometric_primitives(py::module_& parent_module);
+
+void init_geometric_primitives_reals(py::module_& module);
+void init_geometric_primitives_points(py::module_& module);
+void init_geometric_primitives_vectors(py::module_& module);
+
+void init_geometric_primitives_lines(py::module_& module);
+void init_geometric_primitives_circles(py::module_& module);
+void init_geometric_primitives_spheres(py::module_& module);
+
+void init_geometric_primitives_coordinate_systems(py::module_& module);
+
+template<typename T, typename X = double>
+SharedPtr<T> new_from_vector(const std::vector<X>& v) {
+  return std::make_shared<T>(
+      (v.size() > 0)?v[0]:X(0),
+      (v.size() > 1)?v[1]:X(0),
+      (v.size() > 2)?v[2]:X(0));
+}
