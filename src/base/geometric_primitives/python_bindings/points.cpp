@@ -47,6 +47,9 @@ void init_geometric_primitives_points(py::module_& module)
       .def(py::init<>(), "Origin")
       .def(py::init<Real, Real, Real>(), "x"_a, "y"_a, "z"_a)
       .def(py::init(&new_from_vector<Point>))
+      .def("set",
+           [](SharedPtr<Point>& self, const Point& other) -> SharedPtr<Point>&
+           {*self = other; return self;})
       .def("__repr__",
            [](const Point&){ return "<POINT... (put info here)>"; });
   py::implicitly_convertible<py::list, Point>();

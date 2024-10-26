@@ -50,6 +50,9 @@ void init_geometric_primitives_vectors(py::module_& module)
       .def(py::init(&new_from_vector<Vector>))
       .def(py::self + py::self)
       .def(py::self - py::self)
+      .def("set",
+           [](SharedPtr<Vector>& self, const Vector& other) -> SharedPtr<Vector>&
+           {*self = other; return self;})
       .def("__repr__",
            [](const Vector&){ return "<VECTOR... (put info here)>"; });
   py::implicitly_convertible<py::list, Vector>();
