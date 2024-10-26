@@ -30,10 +30,13 @@ void init_geometric_primitives(py::module_& parent_module)
   auto m = parent_module.def_submodule("geometric_primitives");
   m.doc() = "Basic geometric objects used in ParaCADis.";
 
+  init_geometric_primitives_reals(m);
   init_geometric_primitives_points(m);
-  init_geometric_primitives_coordinate_systems(m);
+  init_geometric_primitives_vectors(m);
 
   init_geometric_primitives_lines(m);
   init_geometric_primitives_circles(m);
   init_geometric_primitives_spheres(m);
+
+  init_geometric_primitives_coordinate_systems(m);
 }
