@@ -61,6 +61,46 @@ void init_geometric_primitives_points(py::module_& module)
       .def(py::init<double>(),
            "Creates a real number from a double."
            " (attention: do not use double for calculations).")
+      .def("__float__", [](const SharedPtr<Real>& r){return CGAL::to_double(*r);})
+      .def("__iadd__",
+           [](SharedPtr<Real>& self, const SharedPtr<Real>& other) -> SharedPtr<Real>&
+           {*self += *other; return self;})
+      .def("__isub__",
+           [](SharedPtr<Real>& self, const SharedPtr<Real>& other) -> SharedPtr<Real>&
+           {*self -= *other; return self;})
+      .def("__imul__",
+           [](SharedPtr<Real>& self, const SharedPtr<Real>& other) -> SharedPtr<Real>&
+           {*self *= *other; return self;})
+      .def("__imatmul__",
+           [](SharedPtr<Real>& self, const SharedPtr<Real>& other) -> SharedPtr<Real>&
+           {py::set_error(PyExc_NotImplementedError, "Method not implemented"); return self;})
+      .def("__itruediv__",
+           [](SharedPtr<Real>& self, const SharedPtr<Real>& other) -> SharedPtr<Real>&
+           {*self /= *other; return self;})
+      .def("__ifloordiv__",
+           [](SharedPtr<Real>& self, const SharedPtr<Real>& other) -> SharedPtr<Real>&
+           {py::set_error(PyExc_NotImplementedError, "Method not implemented"); return self;})
+      .def("__imod__",
+           [](SharedPtr<Real>& self, const SharedPtr<Real>& other) -> SharedPtr<Real>&
+           {py::set_error(PyExc_NotImplementedError, "Method not implemented"); return self;})
+      .def("__ipow__",
+           [](SharedPtr<Real>& self, const SharedPtr<Real>& other) -> SharedPtr<Real>&
+           {py::set_error(PyExc_NotImplementedError, "Method not implemented"); return self;})
+      .def("__ilshift__",
+           [](SharedPtr<Real>& self, const SharedPtr<Real>& other) -> SharedPtr<Real>&
+           {py::set_error(PyExc_NotImplementedError, "Method not implemented"); return self;})
+      .def("__irshift__",
+           [](SharedPtr<Real>& self, const SharedPtr<Real>& other) -> SharedPtr<Real>&
+           {py::set_error(PyExc_NotImplementedError, "Method not implemented"); return self;})
+      .def("__iand__",
+           [](SharedPtr<Real>& self, const SharedPtr<Real>& other) -> SharedPtr<Real>&
+           {py::set_error(PyExc_NotImplementedError, "Method not implemented"); return self;})
+      .def("__ixor__",
+           [](SharedPtr<Real>& self, const SharedPtr<Real>& other) -> SharedPtr<Real>&
+           {py::set_error(PyExc_NotImplementedError, "Method not implemented"); return self;})
+      .def("__ior__",
+           [](SharedPtr<Real>& self, const SharedPtr<Real>& other) -> SharedPtr<Real>&
+           {py::set_error(PyExc_NotImplementedError, "Method not implemented"); return self;})
       .def(py::self + py::self)
       .def(py::self - py::self)
       .def(py::self * py::self)
