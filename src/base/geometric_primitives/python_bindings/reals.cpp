@@ -44,9 +44,12 @@ void init_geometric_primitives_reals(py::module_& module)
       "Real number used in ParaCADis."
       " In the future it will be an algebraic structure (field)"
       " at least with square root.")
+      .def(py::init<>(
+           []() -> SharedPtr<Real>
+           {return std::make_shared<Real>(0.);}),
+           "Creates a real number equals to 0.")
       .def(py::init<double>(),
-           "Creates a real number from a double."
-           " (attention: do not use double for calculations).")
+           "Creates a real number from a python number.")
       .def("set",
            [](SharedPtr<Real>& self, const Real& other) -> SharedPtr<Real>&
            {*self = other; return self;})
@@ -96,7 +99,11 @@ void init_geometric_primitives_reals(py::module_& module)
       .def(py::self * py::self)
       .def(py::self / py::self)
       .def("__repr__",
-           [](const Real&){ return "<REAL... (put info here)>"; });
+           [](const Real& self)
+           {
+             return std::format("<REAL... ({})>",
+             CGAL::to_double(self));
+           });
   py::implicitly_convertible<const int, Real>();
   py::implicitly_convertible<const double, Real>();
   bind_reference_to<Real>(module, "Real");
