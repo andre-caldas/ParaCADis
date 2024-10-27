@@ -32,6 +32,8 @@
 
 #include <python_bindings/types.h>
 
+#include <format>
+
 namespace py = pybind11;
 using namespace py::literals;
 
@@ -44,14 +46,35 @@ void init_geometric_primitives_points(py::module_& module)
    */
   py::class_<Point, SharedPtr<Point>>(
       module, "Point", "A point.")
-      .def(py::init<>(), "Origin")
+      .def(py::init<>(
+               []() -> SharedPtr<Point>
+               {return std::make_shared<Point>(0,0,0);}),
+           "The origin: (0, 0, 0).")
       .def(py::init<Real, Real, Real>(), "x"_a, "y"_a, "z"_a)
       .def(py::init(&new_from_vector<Point>))
       .def("set",
            [](SharedPtr<Point>& self, const Point& other) -> SharedPtr<Point>&
            {*self = other; return self;})
+      .def_property_readonly("x",
+           [](const Point& self) -> SharedPtr<Real>
+           {return std::make_shared<Real>(self.x());},
+           "The 'x' coordinate.")
+      .def_property_readonly("y",
+           [](const Point& self) -> SharedPtr<Real>
+           {return std::make_shared<Real>(self.y());},
+           "The 'y' coordinate.")
+      .def_property_readonly("z",
+           [](const Point& self) -> SharedPtr<Real>
+           {return std::make_shared<Real>(self.z());},
+           "The 'z' coordinate.")
       .def("__repr__",
-           [](const Point&){ return "<POINT... (put info here)>"; });
+           [](const Point& self)
+           {
+             return std::format("<POINT... ({}, {}, {})>",
+             CGAL::to_double(self.x()),
+             CGAL::to_double(self.y()),
+             CGAL::to_double(self.z()));
+           });
   py::implicitly_convertible<py::list, Point>();
 
   /*

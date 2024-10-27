@@ -32,6 +32,8 @@
 
 #include <python_bindings/types.h>
 
+#include <format>
+
 namespace py = pybind11;
 using namespace py::literals;
 
@@ -45,7 +47,10 @@ void init_geometric_primitives_vectors(py::module_& module)
   py::class_<Vector, SharedPtr<Vector>>(
       module, "Vector",
       "A vector.")
-      .def(py::init<>(), "Zero vector")
+      .def(py::init<>(
+               []() -> SharedPtr<Vector>
+               {return std::make_shared<Vector>(0,0,0);}),
+           "Zero vector: (0, 0, 0)")
       .def(py::init<Real, Real, Real>(), "x"_a, "y"_a, "z"_a)
       .def(py::init(&new_from_vector<Vector>))
       .def(py::self + py::self)
@@ -53,8 +58,26 @@ void init_geometric_primitives_vectors(py::module_& module)
       .def("set",
            [](SharedPtr<Vector>& self, const Vector& other) -> SharedPtr<Vector>&
            {*self = other; return self;})
+      .def_property_readonly("x",
+           [](const Vector& self) -> SharedPtr<Real>
+           {return std::make_shared<Real>(self.x());},
+           "The 'x' coordinate.")
+      .def_property_readonly("y",
+           [](const Vector& self) -> SharedPtr<Real>
+           {return std::make_shared<Real>(self.y());},
+           "The 'y' coordinate.")
+      .def_property_readonly("z",
+           [](const Vector& self) -> SharedPtr<Real>
+           {return std::make_shared<Real>(self.z());},
+           "The 'z' coordinate.")
       .def("__repr__",
-           [](const Vector&){ return "<VECTOR... (put info here)>"; });
+           [](const Vector& self)
+           {
+             return std::format("<VECTOR... ({}, {}, {})>",
+             CGAL::to_double(self.x()),
+             CGAL::to_double(self.y()),
+             CGAL::to_double(self.z()));
+           });
   py::implicitly_convertible<py::list, Vector>();
 
   /*
