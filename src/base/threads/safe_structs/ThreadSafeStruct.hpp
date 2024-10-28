@@ -20,14 +20,14 @@
  *                                                                          *
  ***************************************************************************/
 
+#pragma once
+
 #include "ThreadSafeStruct.h"
 
 namespace Threads::SafeStructs
 {
-
-template<typename Struct>
-ThreadSafeStruct<Struct>::ThreadSafeStruct(record_t&& record)
-    : theStruct(std::move(record))
-{}
-
-}  // namespace Threads::SafeStructs
+  template<typename Struct>
+  ThreadSafeStruct<Struct>::ThreadSafeStruct(record_t&& record)
+      : theStruct(std::move(record))
+  {}
+}

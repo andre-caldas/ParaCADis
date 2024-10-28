@@ -111,8 +111,9 @@ namespace Threads
     template<typename Holder, typename SIG>
     size_t setProxy(SharedPtr<Holder> holder, SIG Holder::* signal);
     template<typename Holder, typename SIG>
-    void removeProxy(SharedPtr<Holder> holder, SIG Holder::* signal);
+    void removeProxy(const SharedPtr<Holder>& holder, SIG Holder::* signal);
     void removeProxy(size_t key);
+    void removeProxy(void* key) { removeProxy((size_t)key); }
 
   private:
     std::atomic<int> id{0};

@@ -204,15 +204,15 @@ namespace Threads
 
   template<typename... Args>
   template<typename Holder, typename SIG>
-  void Signal<Args...>::removeProxy(SharedPtr<Holder> holder, SIG Holder::* signal)
+  void Signal<Args...>::removeProxy(const SharedPtr<Holder>& holder, SIG Holder::* signal)
   {
-    removeProxy(&(holder->*signal));
+    removeProxy(&(*holder).*signal);
   }
 
   template<typename... Args>
   void Signal<Args...>::removeProxy(size_t key)
   {
     WriterGate gate{proxies};
-    gate->remove(key);
+    gate->erase(key);
   }
 }

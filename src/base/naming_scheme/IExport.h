@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include "Exporter.h"
 #include "ResultHolder.h"
 #include "types.h"
 
@@ -33,9 +34,8 @@
 
 namespace NamingScheme
 {
-
   /**
-   * @brief Any class that exports some type T must subclass IExport<T>.
+   * Any class that exports some type T must subclass IExport<T>.
    *
    * @attention
    * In order for this class to be part of a chain of Exporter,
@@ -43,11 +43,10 @@ namespace NamingScheme
    * We opted for **not making** `IExport<T>` a public virtual
    * subclass of Exporter and instead giving the developer the
    * **responsibility** to subclass it.
-   * The optional template parameter may be used if you do not want
-   * your class to derive from Exporter.
    */
   template<typename T>
   class IExport
+      : public virtual ExporterBase
   {
   protected:
     IExport() = default;
@@ -103,6 +102,7 @@ namespace NamingScheme
   {
     constexpr TemplateString(const char (&str)[N])
     {
+      // TODO: temporary check. Remove in future.
       static_assert(N <= 20, "Exported variable's name is too long.");
       std::ranges::copy(str, string);
     }
@@ -135,18 +135,27 @@ namespace NamingScheme
   class IExportStruct : public IExport<T>
   {
   protected:
-    IExportStruct() = default;
-    IExportStruct(const IExportStruct&) = default;
-    IExportStruct& operator=(const IExportStruct&) = default;
-    using IExport<T>::IExport;
+    IExportStruct();
+    IExportStruct(IExportStruct&&);
+
+    /**
+     * Assignments and copy-constructor were disabled to avoid complications,
+     * because the modification signals need to be chained.
+     *
+     * Those could be enabled. But do we need to?
+     */
+    /// @{
+    IExportStruct(const IExportStruct&) = delete;
+    IExportStruct& operator=(IExportStruct&&) = delete;
+    IExportStruct& operator=(const IExportStruct&) = delete;
+    /// @}
 
     T* resolve_ptr(token_iterator& tokens, T* = nullptr) override;
 
   private:
     const std::map<std::string, T DataStruct::*> map
-        = {{dataInfo.name.string,dataInfo.local_ptr}...};
+        = {{dataInfo.name.string, dataInfo.local_ptr}...};
   };
-
 }  // namespace NamingScheme
 
 // TODO: remove this and use modules.

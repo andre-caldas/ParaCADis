@@ -21,14 +21,14 @@
  ***************************************************************************/
 
 /**
- * @brief Template implementation for the interface defined by "IExport.h".
+ * Template implementation for the interface defined by "IExport.h".
  * Users should not include this file if the exported type has its template
  * already instantiated at "IExport.cpp".
  */
 
 #pragma once
 
-#include "IExport.h"  // Just to make tools happy!
+#include "IExport.h"
 
 #include "exceptions.h"
 #include "Exporter.h"
@@ -36,6 +36,7 @@
 
 #include <base/threads/locks/MutexData.h>
 #include <base/threads/locks/LockPolicy.h>
+#include <base/threads/message_queue/Signal.h>
 
 namespace NamingScheme
 {
@@ -75,6 +76,46 @@ namespace NamingScheme
     return {};
   }
 
+
+  /*
+   * Recurrent templates to connect (assign proxy, actually) signals.
+   */
+  namespace {
+    template<typename Sig>
+    void connect_signals(SharedPtr<ExporterBase>&& to, Sig& sig)
+    { sig.setProxy(std::move(to), &ExporterBase::child_changed_sig); }
+
+    template<typename SigA, typename SigB, typename... Sigs>
+    void connect_signals(SharedPtr<ExporterBase>&& to, SigA& sig, SigB& sig2, Sigs&... sigs)
+    {
+        sig.setProxy(to, &ExporterBase::child_changed_sig);
+        connect_signals(std::move(to), sig2, sigs...);
+    }
+  }
+
+  template<typename T, class DataStruct, EachExportedData... dataInfo>
+  IExportStruct<T, DataStruct, dataInfo...>::IExportStruct()
+  {
+    static_assert(sizeof...(dataInfo) > 0, "Need at least an exported data.");
+
+    if constexpr(C_HasChangedSignal<T>) {
+      ExporterBase& ebase = dynamic_cast<ExporterBase&>(*this);
+      auto my_shared_sig = ebase.getSelfShared();
+
+      assert(dynamic_cast<Exporter<DataStruct>*>(this)
+             && "The exported structure must be provided by Exporter<...>.");
+
+      auto& data = dynamic_cast<Exporter<DataStruct>&>(*this);
+      auto& unprotected = data.safeData._unsafeStructAccess();
+      connect_signals(std::move(my_shared_sig),
+                      (unprotected.*(dataInfo.local_ptr)).getChangedSignal()...);
+    }
+  }
+
+  template<typename T, class DataStruct, EachExportedData... dataInfo>
+  IExportStruct<T, DataStruct, dataInfo...>::IExportStruct(IExportStruct&&)
+      : IExportStruct()
+  {}
 
   template<typename T, class DataStruct, EachExportedData... dataInfo>
   T* IExportStruct<T, DataStruct, dataInfo...>::resolve_ptr(token_iterator& tokens, T*)

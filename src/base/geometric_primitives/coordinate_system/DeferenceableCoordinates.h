@@ -30,5 +30,5 @@
 #include <base/naming_scheme/Exporter.h>
 
 class DeferenceableCoordinates
-    : public NamingScheme::ExporterBase
+    : public virtual NamingScheme::ExporterBase
 {};

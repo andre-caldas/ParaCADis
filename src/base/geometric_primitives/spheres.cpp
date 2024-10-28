@@ -33,7 +33,7 @@ using namespace Document;
  * SphereCenterRadius2
  */
 SphereCenterRadius2::SphereCenterRadius2(Point center, Real radius2)
-    : Exporter{{std::move(center), std::move(radius2)}}
+    : Exporter(std::move(center), std::move(radius2))
 {
 }
 
@@ -62,7 +62,7 @@ SphereCenterRadius2::produceIgaSurface() const
 
 SphereCenterSurfacePoint::SphereCenterSurfacePoint
     (Point center, Point surface_point)
-    : Exporter{{std::move(center), std::move(surface_point)}}
+    : Exporter(std::move(center), std::move(surface_point))
 {
 }
 

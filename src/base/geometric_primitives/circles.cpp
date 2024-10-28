@@ -79,7 +79,7 @@ namespace {
 }
 
 CirclePointRadius2Normal::CirclePointRadius2Normal(Point center, Real radius2, Vector normal)
-    : Exporter{{std::move(center), std::move(normal), std::move(radius2)}}
+    : Exporter(std::move(center), std::move(normal), std::move(radius2))
 {
 }
 
@@ -107,7 +107,7 @@ CirclePointRadius2Normal::produceIgaCurve() const
 
 
 Circle3Points::Circle3Points(Point a, Point b, Point c)
-    : Exporter{{std::move(a), std::move(b), std::move(c)}}
+    : Exporter(std::move(a), std::move(b), std::move(c))
 {
 }
 

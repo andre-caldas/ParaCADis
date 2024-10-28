@@ -28,14 +28,14 @@
 
 template<CoordinateSystem::AxisOrder order, TemplateString name_p1, TemplateString name_p2>
 DeferenceableCoordinatePoints<order, name_p1, name_p2>::DeferenceableCoordinatePoints(Point origin)
-    : Exporter{{std::move(origin)}}
+    : Exporter(std::move(origin))
 {
 }
 
 template<CoordinateSystem::AxisOrder order, TemplateString name_p1, TemplateString name_p2>
 DeferenceableCoordinatePoints<order, name_p1, name_p2>::DeferenceableCoordinatePoints(
   Point origin, Point p1, Point p2)
-    : Exporter{{std::move(origin), std::move(p1), std::move(p2)}}
+    : Exporter(std::move(origin), std::move(p1), std::move(p2))
 {
 }
 

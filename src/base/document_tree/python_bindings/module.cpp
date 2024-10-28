@@ -61,10 +61,7 @@ void init_document_tree(py::module_& parent_module)
   cont.def("move_element_to", &Container::moveElementTo, xxxxx,
            "Moves an element from one container to some other container.");
 #endif
-  cont.def("set_coordinates",
-           [](SharedPtr<Container> self, SharedPtr<DeferenceableCoordinates> coord)
-           { return self->setCoordinates(std::move(self), std::move(coord)); },
-           "coordinate_system"_a,
+  cont.def("set_coordinates", &Container::setCoordinates, "coordinate_system"_a,
            "Sets a deferenceable coordinate systema as the coordinate system for this container.");
   cont.def("__repr__",
            [](const Container& c){ return "<CONTAINER... (put info here)>"; });

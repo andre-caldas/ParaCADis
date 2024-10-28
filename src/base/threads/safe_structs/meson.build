@@ -13,6 +13,6 @@ threads_includes += files(
   'ThreadSafeSharedPtr.h',
   'ThreadSafeSharedPtr.hpp',
   'ThreadSafeStruct.h',
-  'ThreadSafeStruct_inl.h',
+  'ThreadSafeStruct.hpp',
   'ThreadSafeVector.h',
 )

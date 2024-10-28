@@ -20,17 +20,16 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef BASE_Threads_ThreadSafeStruct_H
-#define BASE_Threads_ThreadSafeStruct_H
+#pragma once
 
 #include <base/threads/locks/reader_locks.h>
 #include <base/threads/locks/writer_locks.h>
 
 #include <thread>
+#include <utility>
 
 namespace Threads::SafeStructs
 {
-
   /**
    * @brief Encapsulates a struct/class to use SharedLock and ExclusiveLock.
    */
@@ -56,6 +55,11 @@ namespace Threads::SafeStructs
     ThreadSafeStruct(ThreadSafeStruct&& other)
         : theStruct(std::move(other.theStruct)) {}
 
+    template<typename... T>
+    ThreadSafeStruct(T&&... t)
+        : theStruct(std::forward<T>(t)...) {}
+
+
     // We could have a copy constructor.
     // But... do we want to?
 //    ThreadSafeStruct(const ThreadSafeStruct& other);
@@ -65,12 +69,16 @@ namespace Threads::SafeStructs
     using GateInfo = Threads::LocalGateInfo<&self_t::theStruct,
                                             &self_t::mutex>;
 
-  public:
     constexpr auto& getMutexLike() const { return mutex; }
+
+    /**
+     * Direct access to the (un)protected structure.
+     *
+     * This can be used when you are totally sure the object is not shared, yet.
+     * For example, during construction.
+     */
+    constexpr Struct& _unsafeStructAccess() { return theStruct; }
   };
+}
 
-}  // namespace Threads::SafeStructs
-
-#include "ThreadSafeStruct_inl.h"
-
-#endif
+#include "ThreadSafeStruct.hpp"

@@ -38,8 +38,7 @@
 namespace Document
 {
   class Container
-      : public NamingScheme::ExporterBase
-      , public NamingScheme::IExport<Container>
+      : public NamingScheme::IExport<Container>
       , public NamingScheme::IExport<DeferenceableCoordinates>
       , public NamingScheme::Chainables<Container, DeferenceableCoordinates>
   {
@@ -94,7 +93,7 @@ namespace Document
 
     SharedPtr<DeferenceableCoordinates> getCoordinates() const;
     SharedPtr<DeferenceableCoordinates>
-    setCoordinates(SharedPtr<Container> self, SharedPtr<DeferenceableCoordinates> coord);
+    setCoordinates(SharedPtr<DeferenceableCoordinates> coord);
 
     SharedPtr<ExporterBase>
     resolve_shared(token_iterator& tokens, ExporterBase* = nullptr) override;

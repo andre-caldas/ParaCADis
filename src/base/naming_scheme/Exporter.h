@@ -20,25 +20,32 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef NamingScheme_Exporter_H
-#define NamingScheme_Exporter_H
+#pragma once
 
 #include "NameAndUuid.h"
 #include "types.h"
 
+#include <base/expected_behaviour/SelfShared.h>
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/threads/locks/LockPolicy.h>
 #include <base/threads/locks/MutexData.h>
 #include <base/threads/message_queue/MutexSignal.h>
 #include <base/threads/safe_structs/ThreadSafeStruct.h>
 
+#include <concepts>
 #include <string>
+#include <utility>
 
 namespace NamingScheme
 {
-
   template<typename T>
   class IExport;
+
+  template<typename T>
+  concept C_HasChangedSignal = requires(T a) {
+    a.getChangedSignal();
+    {a.getChangedSignal()} -> std::same_as<Threads::Signal<>&>;
+  };
 
   /**
    * A ExporterBase is an object that can be queried to resolve the next step in a path.
@@ -47,10 +54,10 @@ namespace NamingScheme
    * @attention Probably you do not want to derive from this class.
    * You should probably derive from IExport<X> or Chainable.
    */
-  class ExporterBase
+  class ExporterBase : public SelfShared<ExporterBase>
   {
   public:
-    // In IExport<> generates ambiguity, so we put it here.
+    // In IExport<>, generates ambiguity, so we put it here.
     using token_iterator = NamingScheme::token_iterator;
 
     ExporterBase()               = default;
@@ -59,9 +66,16 @@ namespace NamingScheme
     /// Do not really copy anything, because copies
     /// must have a different id and probably should have
     /// a different name.
-    ExporterBase(const ExporterBase&) {}
+    ExporterBase(const ExporterBase&) : ExporterBase() {}
 
     virtual ~ExporterBase() = default;
+
+    /**
+     * To be signaled when an exported child object changes.
+     * Child modified_sig are chained to this signal by the
+     * IExport<> constructor.
+     */
+    mutable Threads::Signal<> child_changed_sig;
 
     /**
      * Descendants of ExporterBase must implement a deepCopyExporter() method.
@@ -106,9 +120,7 @@ namespace NamingScheme
     static void registerUuid(SharedPtr<ExporterBase> shared_ptr);
 
     /**
-     * When serializing, uuids are saved as strings.
-     * When unserializing, the string can be used
-     * to get a pointer to ExporterBase.
+     * Search registered object by uuid.
      *
      * @param uuid - string representation of the uuid.
      * @return A shared_ptr to the referenced object.
@@ -116,7 +128,8 @@ namespace NamingScheme
     static SharedPtr<ExporterBase> getByUuid(std::string uuid);
 
     /**
-     * @brief Same as above.
+     * Search registered object by uuid.
+     *
      * @param uuid - the uuid.
      * @return A shared_ptr to the referenced object.
      */
@@ -127,19 +140,22 @@ namespace NamingScheme
   };
 
 
-  template<typename DataStruct, typename BASE = ExporterBase>
-  class Exporter : public BASE
+  template<typename DataStruct>
+  class Exporter
+      : public virtual ExporterBase
   {
+  public:
     using data_t        = DataStruct;
     using safe_struct_t = Threads::SafeStructs::ThreadSafeStruct<data_t>;
 
-  public:
-    Exporter()           = default;
-    Exporter(Exporter&&) = default;
-    Exporter(data_t&& data)
-        : safeData(std::move(data))
-    {
-    }
+    safe_struct_t safeData;
+
+    Exporter() = default;
+
+    template<typename... T>
+    Exporter(T&&... t)
+        : safeData(std::forward<T>(t)...)
+    {}
 
     Threads::Signal<>& getChangedSignal() const override
     { return modified_sig; }
@@ -149,11 +165,11 @@ namespace NamingScheme
      */
     constexpr auto& getMutexLike() const { return safeData.getMutexLike(); }
 
-  private:
-    safe_struct_t safeData;
+    /**
+     * Signaled when exclusive (write) mutex is released.
+     */
     mutable Threads::MutexSignal modified_sig{getMutexLike()};
 
-  public:
     using GateInfo = Threads::LocalBridgeInfo<&Exporter::safeData>;
   };
 
@@ -165,6 +181,7 @@ namespace NamingScheme
       Threads::C_MutexHolder<Exporter<detail::test>>,
       "Exporter should implement C_MutexHolder.");
 
+  static_assert(
+      C_HasChangedSignal<ExporterBase>,
+      "ExporterBase must signalize changes.");
 }  // namespace NamingScheme
-
-#endif
