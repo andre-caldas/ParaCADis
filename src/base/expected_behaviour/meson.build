@@ -5,6 +5,8 @@ expected_behaviour_src = [
 expected_behaviour_includes = [
   'CycleGuard.h',
   'CycleGuard.hpp',
+  'SelfShared.h',
+  'SelfShared.hpp',
   'SharedPtr.h',
   'SharedPtr.hpp',
 ]
