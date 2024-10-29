@@ -100,14 +100,14 @@ namespace NamingScheme
 
     if constexpr(C_HasChangedSignal<T>) {
       ExporterBase& ebase = dynamic_cast<ExporterBase&>(*this);
-      auto my_shared_sig = ebase.getSelfShared();
+      auto shared_ebase = ebase.getSelfShared();
 
       assert(dynamic_cast<Exporter<DataStruct>*>(this)
              && "The exported structure must be provided by Exporter<...>.");
 
       auto& data = dynamic_cast<Exporter<DataStruct>&>(*this);
       auto& unprotected = data.safeData._unsafeStructAccess();
-      connect_signals(std::move(my_shared_sig),
+      connect_signals(std::move(shared_ebase),
                       (unprotected.*(dataInfo.local_ptr)).getChangedSignal()...);
     }
   }
