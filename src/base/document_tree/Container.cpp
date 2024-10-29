@@ -146,7 +146,7 @@ void Container::moveElementTo(uuid_type uuid, const SharedPtr<Container>& to)
   { // lock context
     Threads::WriterGate gate{non_containers, to->non_containers};
     if(gate[to->non_containers].contains(uuid)) {
-      throw Exception::ElementAlreadyInContainer(uuid, to);
+      throw Exception::ElementAlreadyInContainer(uuid, *to);
     }
 
     if(gate[non_containers].contains(uuid)) {
@@ -174,7 +174,7 @@ void Container::moveContainerTo(uuid_type uuid, const SharedPtr<Container>& to)
     move_container_sig.emit_signal(std::move(e_shptr), to);
     return;
   }
-  throw Exception::ElementNotInContainer(uuid, to);
+  throw Exception::ElementNotInContainer(uuid, *to);
 }
 
 

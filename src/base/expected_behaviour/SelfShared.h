@@ -24,7 +24,7 @@
 
 #include <memory>
 
-template<typename, typename>
+template<typename>
 class SharedPtr;
 
 template<typename>

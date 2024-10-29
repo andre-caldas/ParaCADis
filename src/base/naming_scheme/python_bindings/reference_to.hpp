@@ -116,7 +116,7 @@ bind_reference_to(py::module_& m, std::string type_name)
      Therefore, one should not hold a gate for too long.
   3. Check out the "lock policy" to learn how to use locks and gates.
 )");
-  rgate.def(py::init<SharedPtr<ResultHolder>>(), "ResultHolder"_a,
+  rgate.def(py::init<ResultHolder>(), "ResultHolder"_a,
   R"(Constructs a reader gate for the resolved object.)");
 
   rgate.def("access",
@@ -163,7 +163,7 @@ bind_reference_to(py::module_& m, std::string type_name)
      Therefore, one should not hold a gate for too long.
   3. Check out the "lock policy" to learn how to use locks and gates.
 )"};
-  wgate.def(py::init<SharedPtr<ResultHolder>>(), "ResultHolder"_a,
+  wgate.def(py::init<ResultHolder>(), "ResultHolder"_a,
   R"(Constructs an exclusive (write) gate for the resolved object.)");
 
   wgate.def("access",
@@ -196,10 +196,12 @@ bind_reference_to(py::module_& m, std::string type_name)
   holder{m, result_holder_name.c_str()};
   //holder.def(py::init<>());
   holder.def("rgate",
-             [](SharedPtr<ResultHolder> self){return ReaderGate{std::move(self)};},
+             [](ResultHolder& self) -> SharedPtr<ReaderGate>
+             {return std::make_shared<ReaderGate>(self);},
              "Locks for reading and provides a gate to access the object.");
   holder.def("wlock",
-             [](SharedPtr<ResultHolder> self){return WriterGate{std::move(self)};},
+             [](ResultHolder& self) -> SharedPtr<WriterGate>
+             {return std::make_shared<WriterGate>(self);},
              "Locks for writing and provides a gate to access the object.");
 
   return ref_to;

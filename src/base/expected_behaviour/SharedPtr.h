@@ -53,8 +53,7 @@ class WeakPtr;
  * }
  * ptr->doStuff();
  */
-template<typename T,
-         typename NotBool = std::conditional_t<std::is_class_v<T>, T, int>>
+template<typename T>
 class SharedPtr : private std::shared_ptr<T>
 {
 public:
@@ -83,13 +82,6 @@ public:
   M& operator*() const;
   template<typename M = T, std::enable_if_t<!std::is_void_v<M>, bool> = true>
   T* operator->() const;
-
-  // TODO: funny story...
-  // I want, for convenience, automatic convertion to T&.
-  // Except when T = bool. What is the best way to implement it?
-  // The other option would be having a SharedPtrBase,
-  // subclass with automatic conversion and specialize without it!
-  operator NotBool&() const;
 
   template<typename... Args>
   static SharedPtr<T> make_shared(Args&&... args)
@@ -126,7 +118,7 @@ private:
   template <typename type_, typename... options>
   friend class pybind11::class_;
 
-  template <typename, typename>
+  template <typename>
   friend class SharedPtr;
 };
 

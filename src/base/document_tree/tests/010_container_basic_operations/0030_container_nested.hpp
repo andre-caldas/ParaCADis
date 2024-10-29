@@ -39,26 +39,26 @@ SCENARIO("Nested containers", "[simple]")
       c->addElement(d);
       THEN("they actually belong to their 'parent' container")
       {
-        REQUIRE(a->contains(b));
-        REQUIRE(b->contains(c));
-        REQUIRE(c->contains(d));
+        REQUIRE(a->contains(*b));
+        REQUIRE(b->contains(*c));
+        REQUIRE(c->contains(*d));
 
-        REQUIRE_FALSE(a->contains(a));
-        REQUIRE_FALSE(a->contains(c));
-        REQUIRE_FALSE(a->contains(d));
+        REQUIRE_FALSE(a->contains(*a));
+        REQUIRE_FALSE(a->contains(*c));
+        REQUIRE_FALSE(a->contains(*d));
 
-        REQUIRE_FALSE(b->contains(a));
-        REQUIRE_FALSE(b->contains(b));
-        REQUIRE_FALSE(b->contains(d));
+        REQUIRE_FALSE(b->contains(*a));
+        REQUIRE_FALSE(b->contains(*b));
+        REQUIRE_FALSE(b->contains(*d));
 
-        REQUIRE_FALSE(c->contains(a));
-        REQUIRE_FALSE(c->contains(b));
-        REQUIRE_FALSE(c->contains(c));
+        REQUIRE_FALSE(c->contains(*a));
+        REQUIRE_FALSE(c->contains(*b));
+        REQUIRE_FALSE(c->contains(*c));
 
-        REQUIRE_FALSE(d->contains(a));
-        REQUIRE_FALSE(d->contains(b));
-        REQUIRE_FALSE(d->contains(c));
-        REQUIRE_FALSE(d->contains(d));
+        REQUIRE_FALSE(d->contains(*a));
+        REQUIRE_FALSE(d->contains(*b));
+        REQUIRE_FALSE(d->contains(*c));
+        REQUIRE_FALSE(d->contains(*d));
       }
       THEN("even when they are disguised as 'ExporterBase'")
       {
@@ -76,19 +76,19 @@ SCENARIO("Nested containers", "[simple]")
         a->addElement(d);
         THEN("even when they are disguised as 'ExporterBase'")
         {
-          REQUIRE(a->contains(b));
-          REQUIRE(a->contains(c));
-          REQUIRE(a->contains(d));
+          REQUIRE(a->contains(*b));
+          REQUIRE(a->contains(*c));
+          REQUIRE(a->contains(*d));
 
-          REQUIRE_FALSE(a->contains(a));
+          REQUIRE_FALSE(a->contains(*a));
 
-          REQUIRE_FALSE(b->contains(a));
-          REQUIRE_FALSE(b->contains(d));
+          REQUIRE_FALSE(b->contains(*a));
+          REQUIRE_FALSE(b->contains(*d));
 
-          REQUIRE_FALSE(d->contains(a));
-          REQUIRE_FALSE(d->contains(b));
-          REQUIRE_FALSE(d->contains(c));
-          REQUIRE_FALSE(d->contains(d));
+          REQUIRE_FALSE(d->contains(*a));
+          REQUIRE_FALSE(d->contains(*b));
+          REQUIRE_FALSE(d->contains(*c));
+          REQUIRE_FALSE(d->contains(*d));
         }
         AND_WHEN("even when we introduce loops")
         {
@@ -98,18 +98,18 @@ SCENARIO("Nested containers", "[simple]")
           d->addElement(d);
           THEN("loops are introduced normally")
           {
-            REQUIRE(a->contains(b));
-            REQUIRE(b->contains(c));
-            REQUIRE(c->contains(d));
+            REQUIRE(a->contains(*b));
+            REQUIRE(b->contains(*c));
+            REQUIRE(c->contains(*d));
 
-            REQUIRE(d->contains(a));
-            REQUIRE(d->contains(b));
-            REQUIRE(d->contains(c));
-            REQUIRE(d->contains(d));
+            REQUIRE(d->contains(*a));
+            REQUIRE(d->contains(*b));
+            REQUIRE(d->contains(*c));
+            REQUIRE(d->contains(*d));
 
-            REQUIRE_FALSE(b->contains(a));
-            REQUIRE_FALSE(b->contains(b));
-            REQUIRE_FALSE(b->contains(d));
+            REQUIRE_FALSE(b->contains(*a));
+            REQUIRE_FALSE(b->contains(*b));
+            REQUIRE_FALSE(b->contains(*d));
           }
         }
       }

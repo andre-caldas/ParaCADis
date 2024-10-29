@@ -29,75 +29,63 @@
 #include <optional>
 #include <type_traits>
 
-template<typename T, typename NotBool>
-SharedPtr<T> SharedPtr<T, NotBool>::from_pointer(T* ptr)
+template<typename T>
+SharedPtr<T> SharedPtr<T>::from_pointer(T* ptr)
 {
   return std::shared_ptr<T>(ptr);
 }
 
-template<typename T, typename NotBool>
-SharedPtr<T, NotBool>::SharedPtr(std::shared_ptr<T> shared)
+template<typename T>
+SharedPtr<T>::SharedPtr(std::shared_ptr<T> shared)
     : std::shared_ptr<T>(std::move(shared))
 {
 }
 
-template<typename T, typename NotBool>
-SharedPtr<T, NotBool>::SharedPtr(std::unique_ptr<T>&& unique)
+template<typename T>
+SharedPtr<T>::SharedPtr(std::unique_ptr<T>&& unique)
     : std::shared_ptr<T>(std::move(unique))
 {
 }
 
-template<typename T, typename NotBool>
+template<typename T>
 template<class X, typename M> requires(!std::is_void_v<M>)
-SharedPtr<T, NotBool>::SharedPtr(SharedPtr<X> shared, M X::* localPointer)
+SharedPtr<T>::SharedPtr(SharedPtr<X> shared, M X::* localPointer)
     : std::shared_ptr<T>(std::move(shared), &((*shared).*localPointer))
 {
 }
 
-template<typename T, typename NotBool>
+template<typename T>
 template<typename M, std::enable_if_t<!std::is_void_v<M>, bool>>
-T* SharedPtr<T, NotBool>::operator->() const
+T* SharedPtr<T>::operator->() const
 {
   if (!*this) { throw std::bad_optional_access{}; }
   return std::shared_ptr<T>::operator->();
 }
 
-template<typename T, typename NotBool>
+template<typename T>
 template<typename M, std::enable_if_t<!std::is_void_v<M>, bool>>
-M& SharedPtr<T, NotBool>::operator*() const
+M& SharedPtr<T>::operator*() const
 {
   if (!*this) { throw std::bad_optional_access{}; }
   return std::shared_ptr<T>::operator*();
 }
 
-template<typename T, typename NotBool>
-SharedPtr<T, NotBool>::operator NotBool&() const
-{
-  if constexpr(std::is_same_v<NotBool, int>) {
-    static int x = 0;
-    return x;
-  } else {
-    return **this;
-  }
-}
-
-
-template<typename T, typename NotBool>
-WeakPtr<T> SharedPtr<T, NotBool>::getWeakPtr() const
+template<typename T>
+WeakPtr<T> SharedPtr<T>::getWeakPtr() const
 {
   return {sliced_nothrow()};
 }
 
-template<typename T, typename NotBool>
-const std::shared_ptr<T>& SharedPtr<T, NotBool>::sliced() const
+template<typename T>
+const std::shared_ptr<T>& SharedPtr<T>::sliced() const
 {
   if (!*this) { throw std::bad_optional_access{}; }
   return *this;
 }
 
-template<typename T, typename NotBool>
+template<typename T>
 template<typename S>
-SharedPtr<S> SharedPtr<T, NotBool>::cast() const
+SharedPtr<S> SharedPtr<T>::cast() const
 {
   if constexpr(std::is_same_v<T,S>) {
     return *this;
@@ -108,9 +96,9 @@ SharedPtr<S> SharedPtr<T, NotBool>::cast() const
   }
 }
 
-template<typename T, typename NotBool>
+template<typename T>
 template<typename S>
-SharedPtr<S> SharedPtr<T, NotBool>::cast_nothrow() const
+SharedPtr<S> SharedPtr<T>::cast_nothrow() const
 {
   if constexpr(std::is_same_v<T,S>) {
     return *this;

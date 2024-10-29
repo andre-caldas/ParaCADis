@@ -44,7 +44,7 @@ SCENARIO("Populate a with simple objects", "[simple]")
       a->addElement(line);
       a->addElement(circle);
 
-      THEN("they do belong to the container")
+      THEN("they do belong to the container (using uuid)")
       {
         REQUIRE(a->contains(p->getUuid()));
         REQUIRE(a->contains(v->getUuid()));
@@ -52,17 +52,12 @@ SCENARIO("Populate a with simple objects", "[simple]")
         REQUIRE(a->contains(circle->getUuid()));
         REQUIRE_FALSE(a->contains(outside->getUuid()));
       }
-      THEN("we can search by their uuid")
+      THEN("we can search by reference")
       {
-        REQUIRE(a->contains(p));
         REQUIRE(a->contains(*p));
-        REQUIRE(a->contains(v));
         REQUIRE(a->contains(*v));
-        REQUIRE(a->contains(line));
         REQUIRE(a->contains(*line));
-        REQUIRE(a->contains(circle));
         REQUIRE(a->contains(*circle));
-        REQUIRE_FALSE(a->contains(outside));
         REQUIRE_FALSE(a->contains(*outside));
       }
       AND_WHEN("we set a name")
