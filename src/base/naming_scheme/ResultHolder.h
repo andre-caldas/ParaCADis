@@ -88,13 +88,13 @@ namespace NamingScheme
     template<typename S>
       requires Threads::C_MutexHolder<T>
     ResultHolder(ResultHolder<S> parent, T* ptr)
-        : ResultHolder(SharedPtr{parent.data, ptr})
+        : ResultHolder(parent.data.append(ptr))
     { assert(parent.data); }
 
     template<typename S>
       requires (!Threads::C_MutexHolder<T>)
     ResultHolder(ResultHolder<S> parent, T* ptr)
-        : ResultHolder(SharedPtr{parent.data, ptr}, parent.mutex)
+        : ResultHolder(parent.data.append(ptr), parent.mutex)
     { assert(parent.data); }
 
     template<typename S>
@@ -139,6 +139,7 @@ namespace NamingScheme
      */
     SharedPtr<T> _promiscuousGetShared() const
     {
+      // TODO: if this assert is kept, remove the if and return const SharedPtr<T>&.
       assert(data && "Are you supposed to call this in a released state?");
       if(!data) {
         return data_weak.lock();

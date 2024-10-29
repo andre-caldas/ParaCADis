@@ -120,10 +120,12 @@ bind_reference_to(py::module_& m, std::string type_name)
   R"(Constructs a reader gate for the resolved object.)");
 
   rgate.def("access",
-  [](SharedPtr<ReaderGate> gate)
+  [](SharedPtr<ReaderGate> gate) -> SharedPtr<const T>
   {
     auto shared = gate->getHolder()._promiscuousGetShared();
-    return SharedPtr<const T>(std::move(shared), &**gate);
+// TODO: if this is always true, simply return shared.
+assert(shared.get() == &**gate);
+    return std::move(shared).append(&**gate);
   },
   R"(Accesses the referenced object
 
@@ -134,6 +136,7 @@ bind_reference_to(py::module_& m, std::string type_name)
   2. Python will not forbid you to write to the object using a reader
      gate. Of course, you are not supposed to do that. :-P
 )");
+
   rgate.def("release", &ReaderGate::release,
   R"(Prematurelly releases the gate to avoid other tasks being blocked.
 
@@ -167,10 +170,12 @@ bind_reference_to(py::module_& m, std::string type_name)
   R"(Constructs an exclusive (write) gate for the resolved object.)");
 
   wgate.def("access",
-  [](SharedPtr<WriterGate> gate)
+  [](SharedPtr<WriterGate> gate) -> SharedPtr<T>
   {
     auto shared = gate->getHolder()._promiscuousGetShared();
-    return SharedPtr<T>(std::move(shared), &**gate);
+// TODO: if this is always true, simply return shared.
+assert(shared.get() == &**gate);
+    return std::move(shared).append(&**gate);
   },
   R"(Accesses the referenced object
 
@@ -179,6 +184,7 @@ bind_reference_to(py::module_& m, std::string type_name)
   You are not supposed to save the object for later reference.
   Objects are only safe to be accessed while holding the gate.
 )");
+
   wgate.def("release", &WriterGate::release,
   R"(Prematurelly releases the gate to avoid other tasks being blocked.
 

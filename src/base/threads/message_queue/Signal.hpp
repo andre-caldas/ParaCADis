@@ -192,9 +192,9 @@ namespace Threads
 
   template<typename... Args>
   template<typename Holder, typename SIG>
-  size_t Signal<Args...>::setProxy(SharedPtr<Holder> holder, SIG Holder::* signal)
+  size_t Signal<Args...>::setProxy(const SharedPtr<Holder>& holder, SIG Holder::* signal)
   {
-    SharedPtr<signal_t> sig(std::move(holder), signal);
+    SharedPtr<signal_t> sig = holder.appendLocal(signal);
     size_t key = (size_t)sig.get();
 
     WriterGate gate{proxies};

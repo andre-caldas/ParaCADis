@@ -63,11 +63,11 @@ public:
   SharedPtr(SharedPtr&&) = default;
   SharedPtr(std::shared_ptr<T> shared);
   SharedPtr(std::unique_ptr<T>&& unique);
-  template<class X, typename M = T> requires(!std::is_void_v<M>)
-  SharedPtr(SharedPtr<X> shared, M X::* localPointer);
+
+  template<typename M, typename X>
+  SharedPtr<M> appendLocal(M X::* localPointer) const;
   template<typename X>
-  SharedPtr(const SharedPtr<X>& r, T* p)
-      : std::shared_ptr<T>(r.sliced(), p) {}
+  SharedPtr<X> append(X* p) const;
 
   using std::shared_ptr<T>::operator bool;
   using std::shared_ptr<T>::operator=;

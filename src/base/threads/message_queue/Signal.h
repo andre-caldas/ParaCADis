@@ -109,7 +109,7 @@ namespace Threads
     void disconnect(int id);
 
     template<typename Holder, typename SIG>
-    size_t setProxy(SharedPtr<Holder> holder, SIG Holder::* signal);
+    size_t setProxy(const SharedPtr<Holder>& holder, SIG Holder::* signal);
     template<typename Holder, typename SIG>
     void removeProxy(const SharedPtr<Holder>& holder, SIG Holder::* signal);
     void removeProxy(size_t key);

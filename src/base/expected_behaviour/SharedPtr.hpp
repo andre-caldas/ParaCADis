@@ -48,10 +48,17 @@ SharedPtr<T>::SharedPtr(std::unique_ptr<T>&& unique)
 }
 
 template<typename T>
-template<class X, typename M> requires(!std::is_void_v<M>)
-SharedPtr<T>::SharedPtr(SharedPtr<X> shared, M X::* localPointer)
-    : std::shared_ptr<T>(std::move(shared), &((*shared).*localPointer))
+template<typename M, typename X>
+SharedPtr<M> SharedPtr<T>::appendLocal(M X::* localPointer) const
 {
+  return std::shared_ptr<M>(sliced(), &((**this).*localPointer));
+}
+
+template<typename T>
+template<typename X>
+SharedPtr<X> SharedPtr<T>::append(X* p) const
+{
+  return std::shared_ptr<X>(sliced(), p);
 }
 
 template<typename T>

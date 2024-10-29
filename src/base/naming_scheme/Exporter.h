@@ -152,6 +152,15 @@ namespace NamingScheme
 
     Exporter() = default;
 
+    /**
+     * We disable copy and moving because of the signals to parent
+     * that we would have to disconnect.
+     */
+    /// @{
+    Exporter(Exporter&&) = delete;
+    Exporter(const Exporter&) = delete;
+    /// @}
+
     template<typename... T>
     Exporter(T&&... t)
         : safeData(std::forward<T>(t)...)

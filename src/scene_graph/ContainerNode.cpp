@@ -46,7 +46,7 @@ namespace SceneGraph
     result->self = result;
 
     auto* root_node = scene_root->sceneManager->getRootSceneNode();
-    result->ogreNodeWeak = SharedPtr{scene_root, root_node};
+    result->ogreNodeWeak = scene_root.append(root_node);
 
     CycleGuard<container_t> cycle_guard;
     result->populate(cycle_guard, document);
@@ -58,7 +58,7 @@ namespace SceneGraph
       : sceneRootWeak(scene_root)
   {
     auto* ogre_node = scene_root->sceneManager->createSceneNode();
-    ogreNodeWeak = SharedPtr{scene_root, ogre_node};
+    ogreNodeWeak = scene_root.append(ogre_node);
   }
 
   ContainerNode::~ContainerNode()
