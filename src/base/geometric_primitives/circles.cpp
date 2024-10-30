@@ -97,9 +97,9 @@ CirclePointRadius2Normal::produceIgaCurve() const
   Vector normal;
   {
     Threads::ReaderGate gate{*this};
-    center = gate->center;
+    center  = gate->center;
     radius2 = CGAL::to_double(gate->radius2);
-    normal = gate->normal;
+    normal  = gate->normal;
   }
   K::Circle_3 cgal_circle{center, radius2, normal};
   return nurbs_circle(cgal_circle);

@@ -34,9 +34,9 @@
  * DataStruct for orthogonal coordinate system.
  */
 struct CartesianCoordinateSystemData {
-  DeferenceablePoint  origin = {0, 0, 0};
-  DeferenceableVector v1     = {1, 0, 0};
-  DeferenceableVector v2     = {0, 1, 0};
+  SharedPtrWrap<DeferenceablePoint>  origin = {0, 0, 0};
+  SharedPtrWrap<DeferenceableVector> v1     = {1, 0, 0};
+  SharedPtrWrap<DeferenceableVector> v2     = {0, 1, 0};
 };
 
 template<CoordinateSystem::AxisOrder order, TemplateString name_v1, TemplateString name_v2>

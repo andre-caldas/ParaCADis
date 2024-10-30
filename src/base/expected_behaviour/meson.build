@@ -9,6 +9,7 @@ expected_behaviour_includes = [
   'SelfShared.hpp',
   'SharedPtr.h',
   'SharedPtr.hpp',
+  'SharedPtrWrap.h',
 ]
 
 install_headers(expected_behaviour_includes,

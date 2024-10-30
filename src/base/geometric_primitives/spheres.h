@@ -38,8 +38,8 @@
  * DataStruct for ShpereCenterRadius2.
  */
 struct SphereCenterRadius2Data {
-  DeferenceablePoint center;
-  Real               radius2;
+  SharedPtrWrap<DeferenceablePoint> center;
+  Real                              radius2;
 };
 
 /**
@@ -72,8 +72,8 @@ private:
  * DataStruct for SphereCenterSurfacePoint.
  */
 struct SphereCenterSurfacePointData {
-  DeferenceablePoint center;
-  DeferenceablePoint surface_point;
+  SharedPtrWrap<DeferenceablePoint> center;
+  SharedPtrWrap<DeferenceablePoint> surface_point;
 };
 
 /**

@@ -36,7 +36,7 @@ template<typename T>
 class WeakPtr;
 
 /**
- * @brief Safer to use shared_ptr.
+ * Safer to use shared_ptr.
  * Shall be used as the return value of a function
  * instead of a regular std::shared_ptr,
  * so the programmer (may, but) does not need to check

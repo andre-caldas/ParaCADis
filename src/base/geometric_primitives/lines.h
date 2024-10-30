@@ -36,8 +36,8 @@
  * DataStruct for Line2Points.
  */
 struct Line2PointsData {
-  DeferenceablePoint start;
-  DeferenceablePoint end;
+  SharedPtrWrap<DeferenceablePoint> start;
+  SharedPtrWrap<DeferenceablePoint> end;
   bool is_bounded_start;
   bool is_bounded_end;
 };
@@ -77,8 +77,8 @@ private:
  * DataStruct for Line2Points.
  */
 struct LinePointDirectionData {
-  DeferenceablePoint start;
-  DeferenceableVector direction;
+  SharedPtrWrap<DeferenceablePoint>  start;
+  SharedPtrWrap<DeferenceableVector> direction;
   bool is_bounded_start = true;
   bool is_bounded_end = true;
 };

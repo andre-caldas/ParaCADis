@@ -93,9 +93,15 @@ namespace NamingScheme
     }
   }
 
+
+  /*
+   * Local pointer to type T.
+   */
   template<typename T, class DataStruct, EachExportedData... dataInfo>
+  requires C_AllExportedDataOfType<T, T, decltype(dataInfo)...>
   IExportStruct<T, DataStruct, dataInfo...>::IExportStruct()
   {
+    static_assert(!std::is_base_of_v<ExporterBase, T>, "ExporterBase types need SharedPtrWrap.");
     static_assert(sizeof...(dataInfo) > 0, "Need at least an exported data.");
 
     if constexpr(C_HasChangedSignal<T>) {
@@ -113,30 +119,76 @@ namespace NamingScheme
   }
 
   template<typename T, class DataStruct, EachExportedData... dataInfo>
-  IExportStruct<T, DataStruct, dataInfo...>::IExportStruct(IExportStruct&&)
-      : IExportStruct()
-  {}
-
-  template<typename T, class DataStruct, EachExportedData... dataInfo>
+  requires C_AllExportedDataOfType<T, T, decltype(dataInfo)...>
   T* IExportStruct<T, DataStruct, dataInfo...>::resolve_ptr(token_iterator& tokens, T*)
   {
+    assert(dynamic_cast<Exporter<DataStruct>*>(this)
+           && "The exported structure must be provided by Exporter<...>.");
+
     if (!tokens) {
       assert(false && "Why is this being called? There are no more tokens!");
-      return nullptr;
+      return IExport<T>::resolve_ptr(tokens);
     }
 
     const auto& name = tokens.front().getName();
     if (!map.contains(name)) {
-      return nullptr;
+      return IExport<T>::resolve_ptr(tokens);
     }
+
     auto localPtr = map.at(name);
     tokens.advance(1);
-
-    assert(dynamic_cast<Exporter<DataStruct>*>(this)
-           && "The exported structure must be provided by Exporter<...>.");
 
     auto& data = dynamic_cast<Exporter<DataStruct>&>(*this);
     Threads::ReaderGate gate{data};
     return &(gate.getNonConst(data).*localPtr);
   }
-}  // namespace NamingScheme
+
+
+  /*
+   * Local pointer to type SharedPtrWrap<T>.
+   */
+  template<typename T, class DataStruct, EachExportedData... dataInfo>
+  requires C_AllExportedDataOfType<T, SharedPtrWrap<T>, decltype(dataInfo)...>
+  IExportStruct<T, DataStruct, dataInfo...>::IExportStruct()
+  {
+    static_assert(sizeof...(dataInfo) > 0, "Need at least an exported data.");
+
+    if constexpr(C_HasChangedSignal<T>) {
+      ExporterBase& ebase = dynamic_cast<ExporterBase&>(*this);
+      auto shared_ebase = ebase.getSelfShared();
+
+      assert(dynamic_cast<Exporter<DataStruct>*>(this)
+             && "The exported structure must be provided by Exporter<...>.");
+
+      auto& data = dynamic_cast<Exporter<DataStruct>&>(*this);
+      auto& unprotected = data.safeData._unsafeStructAccess();
+      connect_signals(std::move(shared_ebase),
+                      (unprotected.*(dataInfo.local_ptr)).getSharedPtr()->getChangedSignal()...);
+    }
+  }
+
+  template<typename T, class DataStruct, EachExportedData... dataInfo>
+  requires C_AllExportedDataOfType<T, SharedPtrWrap<T>, decltype(dataInfo)...>
+  SharedPtr<T> IExportStruct<T, DataStruct, dataInfo...>::resolve_shared(token_iterator& tokens, T*)
+  {
+    assert(dynamic_cast<Exporter<DataStruct>*>(this)
+           && "The exported structure must be provided by Exporter<...>.");
+
+    if (!tokens) {
+      assert(false && "Why is this being called? There are no more tokens!");
+      return IExport<T>::resolve_shared(tokens);
+    }
+
+    const auto& name = tokens.front().getName();
+    if (!map.contains(name)) {
+      return IExport<T>::resolve_shared(tokens);
+    }
+
+    auto localPtr = map.at(name);
+    tokens.advance(1);
+
+    auto& data = dynamic_cast<Exporter<DataStruct>&>(*this);
+    Threads::ReaderGate gate{data};
+    return (gate.getNonConst(data).*localPtr).getSharedPtr();
+  }
+}

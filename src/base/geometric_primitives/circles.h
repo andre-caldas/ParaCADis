@@ -26,6 +26,7 @@
 #include "DocumentGeometry.h"
 #include "types.h"
 
+#include <base/expected_behaviour/SharedPtrWrap.h>
 #include <base/naming_scheme/Chainables.h>
 #include <base/naming_scheme/IExport.h>
 
@@ -33,9 +34,9 @@
  * DataStruct for CircleRadius.
  */
 struct CirclePointRadius2NormalData {
-  DeferenceablePoint  center;
-  DeferenceableVector normal;
-  Real                radius2;
+  SharedPtrWrap<DeferenceablePoint>  center;
+  SharedPtrWrap<DeferenceableVector> normal;
+  Real                               radius2;
 };
 
 /**
@@ -71,9 +72,9 @@ private:
  * DataStruct for Circle3Points.
  */
 struct Circle3PointsData {
-  DeferenceablePoint a;
-  DeferenceablePoint b;
-  DeferenceablePoint c;
+  SharedPtrWrap<DeferenceablePoint> a;
+  SharedPtrWrap<DeferenceablePoint> b;
+  SharedPtrWrap<DeferenceablePoint> c;
 };
 
 /**
