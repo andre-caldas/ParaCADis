@@ -64,6 +64,17 @@ public:
   SharedPtr(std::shared_ptr<T> shared);
   SharedPtr(std::unique_ptr<T>&& unique);
 
+  /**
+   * The pybind11 library needs this constructor to support conversion
+   * of types managed by SharedPtr. For example, to pass a
+   * SharedPtr<DeferenceablePoint> to a method that takes a
+   * SharedPtr<ExporterBase>, this implicit conversion is necessary.
+   * The library only performs the conversion if SharedPtr implements
+   * this constructor.
+   */
+  template<typename X>
+  SharedPtr(const SharedPtr<X>& base, T* ptr) : std::shared_ptr<T>(base, ptr) {}
+
   template<typename M, typename X>
   SharedPtr<M> appendLocal(M X::* localPointer) const;
   template<typename X>
