@@ -23,16 +23,14 @@
 #pragma once
 
 #include "SelfShared.h"
-
 #include "SharedPtr.h"
+
+#include <concepts>
 
 template<typename T>
 SharedPtr<T> SelfShared<T>::getSelfShared()
 {
-  // Why do I need "this"???
-  auto shared = this->shared_from_this();
-  assert(shared && "This object is not managed by a SharedPtr.");
-  return shared;
+  return this->shared_from_this();
 }
 
 template<typename T>
@@ -49,11 +47,15 @@ template<typename T>
 template<typename X>
 SharedPtr<X> SelfShared<T>::getSelfShared()
 {
-  auto shared = this->shared_from_this();
-  assert(shared && "This object is not managed by a SharedPtr.");
-  auto casted = std::dynamic_pointer_cast<X>(shared);
-  assert(casted && "Could not dynamic cast. Maybe not a related type.");
-  return casted;
+  if constexpr(std::same_as<X,T>) {
+    return getSelfShared();
+  } else {
+    auto shared = this->shared_from_this();
+    assert(shared && "This object is not managed by a SharedPtr.");
+    auto casted = std::dynamic_pointer_cast<X>(shared);
+    assert(casted && "Could not dynamic cast. Maybe not a related type.");
+    return casted;
+  }
 }
 
 template<typename T>
