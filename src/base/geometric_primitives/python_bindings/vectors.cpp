@@ -88,9 +88,10 @@ void init_geometric_primitives_vectors(py::module_& module)
       module, "DeferenceableVector", py::multiple_inheritance(),
       "A vector that can be handled as a geometric object."
       " It can be put inside containers and it exports its parameters.")
-      .def(py::init<>(), "Zero vector")
-      .def(py::init<Real, Real, Real>(), "x"_a, "y"_a, "z"_a)
-      .def(py::init<const Vector&>())
+      .def(py::init(&SharedPtr<DeferenceableVector>::make_shared<>), "Zero vector")
+      .def(py::init(&SharedPtr<DeferenceableVector>::make_shared<Real&, Real&, Real&>),
+           "x"_a, "y"_a, "z"_a)
+      .def(py::init(&SharedPtr<DeferenceableVector>::make_shared<const Vector&>))
       .def("__repr__",
            [](const DeferenceableVector&)
            { return "<DEFERENCEABLEVECTOR... (put info here)>"; });

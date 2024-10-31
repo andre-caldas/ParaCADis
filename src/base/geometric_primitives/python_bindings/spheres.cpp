@@ -40,7 +40,7 @@ void init_geometric_primitives_spheres(py::module_& module)
   py::class_<SphereCenterRadius2, SharedPtr<SphereCenterRadius2>>(
       module, "SphereCenterRadius2",
       "A sphere determined by its center and squared radius.")
-      .def(py::init<Point, Real>(),
+      .def(py::init(&SharedPtr<SphereCenterRadius2>::make_shared<Point&, Real&>),
            "center"_a, "radius2"_a,
            "The sphere is determined by its 'center' and squared radius ('radius2').")
       .def("__repr__",
@@ -52,7 +52,7 @@ void init_geometric_primitives_spheres(py::module_& module)
              SharedPtr<SphereCenterSurfacePoint>>(
       module, "SphereCenterSurfacePoint", py::multiple_inheritance(),
       "A sphere determined by its center and one surface point.")
-      .def(py::init<Point, Point>(),
+      .def(py::init(&SharedPtr<SphereCenterSurfacePoint>::make_shared<Point&, Point&>),
            "center"_a, "surface_point"_a,
            "The sphere is determined by its 'center'"
            " and a 'surface_point'.")

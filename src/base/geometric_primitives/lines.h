@@ -26,6 +26,7 @@
 #include "DocumentGeometry.h"
 #include "types.h"
 
+#include <base/expected_behaviour/SharedPtrWrap.h>
 #include <base/naming_scheme/Chainables.h>
 #include <base/naming_scheme/Exporter.h>
 #include <base/naming_scheme/IExport.h>
@@ -60,12 +61,13 @@ class Line2Points
                                 {&Line2PointsData::is_bounded_end, "is_bounded_end"}>
     , public NamingScheme::Chainables<DeferenceablePoint>
 {
-public:
+  ONLY_SHAREDPTRWRAP()
   Line2Points(Point start, Point end,
               bool is_bounded_start = true, bool is_bounded_end = true);
 
-  std::unique_ptr<Line2Points> deepCopy() const;
-  std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
+public:
+  SharedPtr<Line2Points> deepCopy() const;
+  SharedPtr<NamingScheme::ExporterBase> deepCopyExporter() const override
   { return deepCopy(); }
 
 private:
@@ -102,12 +104,13 @@ class LinePointDirection
                                 {&LinePointDirectionData::is_bounded_end, "is_bounded_end"}>
     , public NamingScheme::Chainables<DeferenceablePoint, DeferenceableVector>
 {
-public:
+  ONLY_SHAREDPTRWRAP()
   LinePointDirection(Point start, Vector direction,
                      bool is_bounded_start = true, bool is_bounded_end = true);
 
-  std::unique_ptr<LinePointDirection> deepCopy() const;
-  std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
+public:
+  SharedPtr<LinePointDirection> deepCopy() const;
+  SharedPtr<NamingScheme::ExporterBase> deepCopyExporter() const override
   { return deepCopy(); }
 
 private:

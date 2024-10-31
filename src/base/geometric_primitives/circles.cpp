@@ -83,10 +83,10 @@ CirclePointRadius2Normal::CirclePointRadius2Normal(Point center, Real radius2, V
 {
 }
 
-std::unique_ptr<CirclePointRadius2Normal> CirclePointRadius2Normal::deepCopy() const
+SharedPtr<CirclePointRadius2Normal> CirclePointRadius2Normal::deepCopy() const
 {
   Threads::ReaderGate gate{*this};
-  return std::make_unique<CirclePointRadius2Normal>(gate->center, gate->radius2, gate->normal);
+  return SharedPtrWrap<CirclePointRadius2Normal>(gate->center, gate->radius2, gate->normal);
 }
 
 SharedPtr<const DocumentGeometry::iga_curve_t>
@@ -111,10 +111,10 @@ Circle3Points::Circle3Points(Point a, Point b, Point c)
 {
 }
 
-std::unique_ptr<Circle3Points> Circle3Points::deepCopy() const
+SharedPtr<Circle3Points> Circle3Points::deepCopy() const
 {
   Threads::ReaderGate gate{*this};
-  return std::make_unique<Circle3Points>(gate->a, gate->b, gate->c);
+  return SharedPtrWrap<Circle3Points>(gate->a, gate->b, gate->c);
 }
 
 SharedPtr<const DocumentGeometry::iga_curve_t>

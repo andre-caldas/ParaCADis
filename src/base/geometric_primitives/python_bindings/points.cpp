@@ -85,9 +85,10 @@ void init_geometric_primitives_points(py::module_& module)
       module, "DeferenceablePoint", py::multiple_inheritance(),
       "A point that can be handled as a geometric object."
       " It can be put inside containers and it exports its parameters.")
-      .def(py::init<>(), "Origin")
-      .def(py::init<Real, Real, Real>(), "x"_a, "y"_a, "z"_a)
-      .def(py::init<const Point&>())
+      .def(py::init(&SharedPtr<DeferenceablePoint>::make_shared<>), "Origin")
+      .def(py::init(&SharedPtr<DeferenceablePoint>::make_shared<Real&, Real&, Real&>),
+           "x"_a, "y"_a, "z"_a)
+      .def(py::init(&SharedPtr<DeferenceablePoint>::make_shared<const Point&>))
       .def("__repr__",
            [](const DeferenceablePoint&)
            { return "<DEFERENCEABLEPOINT... (put info here)>"; });

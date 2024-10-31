@@ -20,11 +20,11 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef GeometricPrimitives_deferenceables
-#define GeometricPrimitives_deferenceables
+#pragma once
 
 #include "types.h"
 
+#include <base/expected_behaviour/SharedPtrWrap.h>
 #include <base/naming_scheme/Exporter.h>
 #include <base/naming_scheme/IExport.h>
 
@@ -54,15 +54,16 @@ class DeferenceablePoint
                                        {&TripletStruct::y, "y"},
                                        {&TripletStruct::z, "z"}>
 {
-public:
+  ONLY_SHAREDPTRWRAP()
   DeferenceablePoint() = default;
   DeferenceablePoint(DeferenceablePoint&&) = default;
   DeferenceablePoint(const Point& p);
   DeferenceablePoint(Real x, Real y, Real z);
+public:
   operator Point() const noexcept;
 
-  std::unique_ptr<DeferenceablePoint> deepCopy() const;
-  std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
+  SharedPtr<DeferenceablePoint> deepCopy() const;
+  SharedPtr<NamingScheme::ExporterBase> deepCopyExporter() const override
   { return deepCopy(); }
 };
 
@@ -84,18 +85,17 @@ class DeferenceableVector
                                        {&TripletStruct::y, "y"},
                                        {&TripletStruct::z, "z"}>
 {
-public:
+  ONLY_SHAREDPTRWRAP()
   DeferenceableVector() = default;
   DeferenceableVector(DeferenceableVector&&) = default;
   DeferenceableVector(const Vector& v);
   DeferenceableVector(Real x, Real y, Real z);
+public:
   operator Vector() const noexcept;
 
-  std::unique_ptr<DeferenceableVector> deepCopy() const;
-  std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
+  SharedPtr<DeferenceableVector> deepCopy() const;
+  SharedPtr<NamingScheme::ExporterBase> deepCopyExporter() const override
   { return deepCopy(); }
 
 //  std::string toString() const override;
 };
-
-#endif

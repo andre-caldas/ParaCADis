@@ -28,7 +28,7 @@
 
 using namespace Document;
 
-std::unique_ptr<Container> Container::deepCopy() const
+SharedPtr<Container> Container::deepCopy() const
 {
   throw ::Exception::NotImplemented();
 }

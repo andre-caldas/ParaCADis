@@ -28,10 +28,10 @@ Line2Points::Line2Points(Point start, Point end,
 {
 }
 
-std::unique_ptr<Line2Points> Line2Points::deepCopy() const
+SharedPtr<Line2Points> Line2Points::deepCopy() const
 {
   Threads::ReaderGate gate{*this};
-  return std::make_unique<Line2Points>(gate->start, gate->end,
+  return SharedPtrWrap<Line2Points>(gate->start, gate->end,
                                        gate->is_bounded_start, gate->is_bounded_end);
 }
 
@@ -48,10 +48,10 @@ LinePointDirection::LinePointDirection(Point start, Vector direction,
 {
 }
 
-std::unique_ptr<LinePointDirection> LinePointDirection::deepCopy() const
+SharedPtr<LinePointDirection> LinePointDirection::deepCopy() const
 {
   Threads::ReaderGate gate{*this};
-  return std::make_unique<LinePointDirection>(gate->start, gate->direction,
+  return SharedPtrWrap<LinePointDirection>(gate->start, gate->direction,
                                               gate->is_bounded_start, gate->is_bounded_end);
 }
 

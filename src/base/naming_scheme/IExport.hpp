@@ -99,7 +99,7 @@ namespace NamingScheme
    */
   template<typename T, class DataStruct, EachExportedData... dataInfo>
   requires C_AllExportedDataOfType<T, T, decltype(dataInfo)...>
-  IExportStruct<T, DataStruct, dataInfo...>::IExportStruct()
+  void IExportStruct<T, DataStruct, dataInfo...>::init()
   {
     static_assert(!std::is_base_of_v<ExporterBase, T>, "ExporterBase types need SharedPtrWrap.");
     static_assert(sizeof...(dataInfo) > 0, "Need at least an exported data.");
@@ -149,7 +149,7 @@ namespace NamingScheme
    */
   template<typename T, class DataStruct, EachExportedData... dataInfo>
   requires C_AllExportedDataOfType<T, SharedPtrWrap<T>, decltype(dataInfo)...>
-  IExportStruct<T, DataStruct, dataInfo...>::IExportStruct()
+  void IExportStruct<T, DataStruct, dataInfo...>::init()
   {
     static_assert(sizeof...(dataInfo) > 0, "Need at least an exported data.");
 

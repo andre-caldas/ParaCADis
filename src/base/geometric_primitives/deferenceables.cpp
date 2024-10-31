@@ -40,9 +40,9 @@ DeferenceablePoint::operator Point() const noexcept
   return Point{gate->x, gate->y, gate->z};
 }
 
-std::unique_ptr<DeferenceablePoint> DeferenceablePoint::deepCopy() const
+SharedPtr<DeferenceablePoint> DeferenceablePoint::deepCopy() const
 {
-  return std::make_unique<DeferenceablePoint>(operator Point());
+  return SharedPtrWrap<DeferenceablePoint>(operator Point());
 }
 
 
@@ -62,9 +62,9 @@ DeferenceableVector::operator Vector() const noexcept
   return Vector{gate->x, gate->y, gate->z};
 }
 
-std::unique_ptr<DeferenceableVector> DeferenceableVector::deepCopy() const
+SharedPtr<DeferenceableVector> DeferenceableVector::deepCopy() const
 {
-  return std::make_unique<DeferenceableVector>(operator Vector());
+  return SharedPtrWrap<DeferenceableVector>(operator Vector());
 }
 
 

@@ -84,7 +84,7 @@ namespace NamingScheme
      * 1. Implement a deepCopy() specific for the derived type.
      * 2. Implement a deepCopyExporter() to return the result of deepCopy().
      */
-    virtual std::unique_ptr<ExporterBase> deepCopyExporter() const = 0;
+    virtual SharedPtr<ExporterBase> deepCopyExporter() const = 0;
 
     /**
      * The signal that indicates some change has happened.

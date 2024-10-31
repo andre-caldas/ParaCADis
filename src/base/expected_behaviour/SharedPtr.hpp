@@ -22,12 +22,21 @@
 
 #pragma once
 
-#include "SharedPtr.h"  // Just to make tools happy!
+#include "SharedPtr.h"
+
+#include "SharedPtrWrap.h"
 
 #include <cassert>
 #include <memory>
 #include <optional>
 #include <type_traits>
+
+template<typename T>
+template<typename... Args>
+SharedPtr<T> SharedPtr<T>::make_shared(Args&&... args)
+{
+  return SharedPtrWrap<T>(std::forward<Args>(args)...);
+}
 
 template<typename T>
 SharedPtr<T> SharedPtr<T>::from_pointer(T* ptr)

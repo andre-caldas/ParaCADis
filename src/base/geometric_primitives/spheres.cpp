@@ -37,10 +37,10 @@ SphereCenterRadius2::SphereCenterRadius2(Point center, Real radius2)
 {
 }
 
-std::unique_ptr<SphereCenterRadius2> SphereCenterRadius2::deepCopy() const
+SharedPtr<SphereCenterRadius2> SphereCenterRadius2::deepCopy() const
 {
   Threads::ReaderGate gate{*this};
-  return std::make_unique<SphereCenterRadius2>(gate->center, gate->radius2);
+  return SharedPtrWrap<SphereCenterRadius2>(gate->center, gate->radius2);
 }
 
 SharedPtr<const DocumentGeometry::iga_surface_t>
@@ -66,10 +66,10 @@ SphereCenterSurfacePoint::SphereCenterSurfacePoint
 {
 }
 
-std::unique_ptr<SphereCenterSurfacePoint> SphereCenterSurfacePoint::deepCopy() const
+SharedPtr<SphereCenterSurfacePoint> SphereCenterSurfacePoint::deepCopy() const
 {
   Threads::ReaderGate gate{*this};
-  return std::make_unique<SphereCenterSurfacePoint>(gate->center, gate->surface_point);
+  return SharedPtrWrap<SphereCenterSurfacePoint>(gate->center, gate->surface_point);
 }
 
 SharedPtr<const DocumentGeometry::iga_surface_t>

@@ -49,8 +49,8 @@ namespace Document
   public:
     using uuid_type = NamingScheme::Uuid::uuid_type;
 
-    std::unique_ptr<Container> deepCopy() const;
-    std::unique_ptr<ExporterBase> deepCopyExporter() const override
+    SharedPtr<Container> deepCopy() const;
+    SharedPtr<ExporterBase> deepCopyExporter() const override
     { return deepCopy(); }
 
     std::string toString() const override;

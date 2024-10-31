@@ -206,6 +206,7 @@ namespace NamingScheme
     IExportStruct& operator=(const IExportStruct&) = delete;
     /// @}
 
+    void init();
     T* resolve_ptr(token_iterator& tokens, T* = nullptr) override;
 
   private:
@@ -224,7 +225,7 @@ namespace NamingScheme
       : public IExport<T>
   {
   protected:
-    IExportStruct();
+    IExportStruct() {}
 
     /**
      * Assignments and copy/move constructors were disabled to avoid complications,
@@ -254,6 +255,7 @@ namespace NamingScheme
     IExportStruct& operator=(const IExportStruct&) = delete;
     /// @}
 
+    void init();
     SharedPtr<T> resolve_shared(token_iterator& tokens, T* = nullptr) override;
 
   private:

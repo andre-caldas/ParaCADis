@@ -49,7 +49,7 @@ void init_geometric_primitives_circles(py::module_& module)
       " applied to the normal vector"
       " (a right-hand holding the normal vector is such that the fingers"
       " point to the circle orientation).")
-      .def(py::init<Point, Real, Vector>(),
+      .def(py::init(&SharedPtr<CirclePointRadius2Normal>::make_shared<Point&, Real&, Vector&>),
            "center"_a, "radius2"_a, "normal"_a,
            "Creates the circle cetered at 'center', with squared radius 'radius2'"
            " and orientation given the the 'normal' vector.")
@@ -63,7 +63,7 @@ void init_geometric_primitives_circles(py::module_& module)
   py::class_<Circle3Points, SharedPtr<Circle3Points>>(
       module, "Circle3Points", py::multiple_inheritance(),
       "An oriented circle specified by three points.")
-      .def(py::init<Point, Point, Point>(),
+      .def(py::init(&SharedPtr<Circle3Points>::make_shared<Point&, Point&, Point&>),
            "a"_a, "b"_a, "c"_a,
            "The circle passes by the given points."
            " The orientation is determined by the sequence 'a->b->c'.")

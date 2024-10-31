@@ -56,11 +56,11 @@ class CirclePointRadius2Normal
                                 {&CirclePointRadius2NormalData::radius2, "r2"}>
     , public NamingScheme::Chainables<DeferenceablePoint, DeferenceableVector>
 {
-public:
+  ONLY_SHAREDPTRWRAP()
   CirclePointRadius2Normal(Point center, Real radius2, Vector normal = {1,0,0});
-
-  std::unique_ptr<CirclePointRadius2Normal> deepCopy() const;
-  std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
+public:
+  SharedPtr<CirclePointRadius2Normal> deepCopy() const;
+  SharedPtr<NamingScheme::ExporterBase> deepCopyExporter() const override
   { return deepCopy(); }
 
 private:
@@ -93,11 +93,11 @@ class Circle3Points
                                 {&Circle3PointsData::c, "p3"}>
     , public NamingScheme::Chainables<DeferenceablePoint>
 {
-public:
+  ONLY_SHAREDPTRWRAP()
   Circle3Points(Point a, Point b, Point c);
-
-  std::unique_ptr<Circle3Points> deepCopy() const;
-  std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
+public:
+  SharedPtr<Circle3Points> deepCopy() const;
+  SharedPtr<NamingScheme::ExporterBase> deepCopyExporter() const override
   { return deepCopy(); }
 
 private:

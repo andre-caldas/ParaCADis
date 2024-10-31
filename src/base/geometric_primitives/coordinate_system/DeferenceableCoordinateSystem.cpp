@@ -48,7 +48,7 @@ DeferenceableCoordinateSystem<order, name_v1, name_v2>::getCoordinateSystem() co
 }
 
 template<CoordinateSystem::AxisOrder order, TemplateString name_v1, TemplateString name_v2>
-std::unique_ptr<DeferenceableCoordinateSystem<order, name_v1, name_v2>>
+SharedPtr<DeferenceableCoordinateSystem<order, name_v1, name_v2>>
 DeferenceableCoordinateSystem<order, name_v1, name_v2>::deepCopy() const
 {
   using coordinate_t = DeferenceableCoordinateSystem<order, name_v1, name_v2>;
@@ -61,7 +61,7 @@ DeferenceableCoordinateSystem<order, name_v1, name_v2>::deepCopy() const
     v1 = gate->v1;
     v2 = gate->v2;
   }
-  return std::make_unique<coordinate_t>(std::move(origin), std::move(v1), std::move(v2));
+  return SharedPtrWrap<coordinate_t>(std::move(origin), std::move(v1), std::move(v2));
 }
 
 

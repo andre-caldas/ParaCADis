@@ -28,6 +28,7 @@
 #include "../deferenceables.h"
 #include "../types.h"
 
+#include <base/expected_behaviour/SharedPtrWrap.h>
 #include <base/naming_scheme/Chainables.h>
 
 /**
@@ -53,14 +54,15 @@ class DeferenceableCoordinateSystem
                                 {&CartesianCoordinateSystemData::v2, name_v2}>
     , public NamingScheme::Chainables<DeferenceablePoint, DeferenceableVector>
 {
-public:
+  ONLY_SHAREDPTRWRAP()
   DeferenceableCoordinateSystem() = default;
   DeferenceableCoordinateSystem(Point origin);
   DeferenceableCoordinateSystem(Point origin, Vector v1, Vector v2);
+public:
   CoordinateSystem getCoordinateSystem() const;
 
-  std::unique_ptr<DeferenceableCoordinateSystem> deepCopy() const;
-  std::unique_ptr<NamingScheme::ExporterBase> deepCopyExporter() const override
+  SharedPtr<DeferenceableCoordinateSystem> deepCopy() const;
+  SharedPtr<NamingScheme::ExporterBase> deepCopyExporter() const override
   { return deepCopy(); }
 };
 

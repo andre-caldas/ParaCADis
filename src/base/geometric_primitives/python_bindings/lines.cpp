@@ -43,7 +43,7 @@ void init_geometric_primitives_lines(py::module_& module)
   py::class_<Line2Points, ExporterBase, SharedPtr<Line2Points>>(
       module, "Line2Points", py::multiple_inheritance(),
       "An oriented straight line, half-line or segment specified by two points.")
-      .def(py::init<Point, Point, bool, bool>(),
+      .def(py::init(&SharedPtr<Line2Points>::make_shared<Point&, Point&, bool, bool>),
            "start"_a, "end"_a,
            "is_bounded_start"_a = true,
            "is_bounded_end"_a = true,
@@ -62,7 +62,7 @@ void init_geometric_primitives_lines(py::module_& module)
       module, "LinePointDirection", py::multiple_inheritance(),
       "An oriented straight line, half-line or segment specified by"
       " a starting point and a vector.")
-      .def(py::init<Point, Vector, bool, bool>(),
+      .def(py::init(&SharedPtr<LinePointDirection>::make_shared<Point&, Vector&, bool, bool>),
            "start"_a, "direction"_a,
            "is_bounded_start"_a = true,
            "is_bounded_end"_a = true,

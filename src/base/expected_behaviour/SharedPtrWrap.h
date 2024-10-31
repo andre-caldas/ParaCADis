@@ -24,32 +24,63 @@
 
 #include "SharedPtr.h"
 
+#include <concepts>
 #include <type_traits>
+
+template<class T>
+concept C_HasInit = requires (T& a) {
+  a.init();
+};
 
 /**
  * A "transparent" SharedPtr.
  *
  * This is a SharedPtr that constructs its pointed object
  * and can be treated as a reference to it.
+ *
+ * It also replaces std::make_shared. You can use the macro ONLY_SHAREDPTRWRAP()
+ * to make it a friend of T and then declare T's constructors private.
+ * A good thing is that this "make_shared" also calls an init() method
+ * if T has one. This is useful because when init() is called
+ * the object is totally constructed. For instance,
+ * getSelfSharedPtr() can be called.
  */
 template<typename T>
-class SharedPtrWrap : private SharedPtr<T>
+class SharedPtrWrap
+    : public SharedPtr<T>
 {
+private:
+//  SharedPtr<T> ptr;
+
 public:
   template<typename... Args>
   SharedPtrWrap(Args&&... args)
-      : SharedPtr<T>(std::make_shared<T>(std::forward<Args>(args)...))
-  {}
+      : SharedPtr<T>(std::shared_ptr<T>(new T(std::forward<Args>(args)...)))
+  {
+    if constexpr(C_HasInit<T>) {
+      (*this)->init();
+    }
+  }
 
   operator const T&() const { return **this; }
   operator       T&()       { return **this; }
 
-  template<typename Conv>
+  template<typename Conv> requires std::convertible_to<T, Conv>
   operator Conv() const { return **this; }
-  template<typename Conv>
+  template<typename Conv> requires std::convertible_to<T, Conv>
   operator Conv()       { return **this; }
 
-  const SharedPtr<T>& getSharedPtr() const { return *this; }
+  template<typename Conv> requires (!std::convertible_to<T, Conv>)
+  operator Conv() const { return *this; }
+  template<typename Conv> requires (!std::convertible_to<T, Conv>)
+  operator Conv()       { return *this; }
 
-  using SharedPtr<T>::operator SharedPtr<const T>;
+  const SharedPtr<T>& getSharedPtr() const { return *this; }
+  operator SharedPtr<T>() && { return std::move(*this); }
+  operator const SharedPtr<T>&() const& { return *this; }
+  operator SharedPtr<const T>() const { return *this; }
 };
+
+#define ONLY_SHAREDPTRWRAP(...)                    \
+  template<typename _ONLY_SHAREDPTRTYPE>           \
+  friend class SharedPtrWrap;

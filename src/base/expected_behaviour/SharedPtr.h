@@ -84,10 +84,7 @@ public:
   T* operator->() const;
 
   template<typename... Args>
-  static SharedPtr<T> make_shared(Args&&... args)
-  {
-    return std::make_shared<T>(std::forward<Args>(args)...);
-  }
+  static SharedPtr<T> make_shared(Args&&... args);
 
   static SharedPtr<T> from_pointer(T* ptr);
 

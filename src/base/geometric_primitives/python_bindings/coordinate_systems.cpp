@@ -57,9 +57,12 @@ void init_geometric_primitives_coordinate_systems(py::module_& module)
              SharedPtr<DeferenceableCoordinateSystemXY>>(
       module, "DeferenceableCoordinateSystemXY", py::multiple_inheritance(),
       "A coordinate system that exports its parameters.")
-      .def(py::init<>(), "Identity coordinate system.")
-      .def(py::init<const Point&>(), "A translated coordinate system.")
-      .def(py::init<const Point&, const Vector&, const Vector&>(),
+      .def(py::init(&SharedPtr<DeferenceableCoordinateSystemXY>::make_shared<>),
+           "Identity coordinate system.")
+      .def(py::init(&SharedPtr<DeferenceableCoordinateSystemXY>::make_shared<const Point&>),
+           "A translated coordinate system.")
+      .def(py::init(&SharedPtr<DeferenceableCoordinateSystemXY>::make_shared<
+                    const Point&, const Vector&, const Vector&>),
            "Translated coordinate system with axis."
            " The axis need to be orthonormal.")
       .def("__repr__",
@@ -74,9 +77,12 @@ void init_geometric_primitives_coordinate_systems(py::module_& module)
              SharedPtr<DeferenceableCoordinatePointsXY>>(
       module, "DeferenceableCoordinatePointsXY", py::multiple_inheritance(),
       "A coordinate system that exports its parameters.")
-      .def(py::init<>(), "Identity coordinate system.")
-      .def(py::init<const Point&>(), "A translated coordinate system.")
-      .def(py::init<const Point&, const Point&, const Point&>(),
+      .def(py::init(&SharedPtr<DeferenceableCoordinatePointsXY>::make_shared<>),
+           "Identity coordinate system.")
+      .def(py::init(&SharedPtr<DeferenceableCoordinatePointsXY>::make_shared<const Point&>),
+           "A translated coordinate system.")
+      .def(py::init(&SharedPtr<DeferenceableCoordinatePointsXY>::make_shared<
+                    const Point&, const Point&, const Point&>),
            "Translated coordinate system with axis."
            " The axis need to be orthonormal.")
       .def("__repr__",
