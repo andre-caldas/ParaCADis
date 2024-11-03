@@ -79,8 +79,9 @@ namespace NamingScheme
       gate.release();
 
       if(!next_exporter) {
-        // Fail.
-        cache.setExporter(next_exporter, tokens);
+        // New token is not an exporter.
+        // So, we leave it for the next step.
+        cache.setExporter(current, tokens);
         return;
       }
       next_chainable = next_exporter.template cast<IExport<ExporterBase>>();
