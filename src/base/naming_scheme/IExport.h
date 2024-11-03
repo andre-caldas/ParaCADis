@@ -52,8 +52,10 @@ namespace NamingScheme
   {
   protected:
     IExport() = default;
-    IExport(const IExport&) = default;
-    IExport& operator=(const IExport&) = default;
+    IExport(IExport&&) = delete;
+    IExport(const IExport&) = delete;
+    IExport& operator=(IExport&&) = delete;
+    IExport& operator=(const IExport&) = delete;
 
   public:
     /**
@@ -79,7 +81,7 @@ namespace NamingScheme
      * @attention To allow a class to derive from multiple IExport<T> classes,
      * we have added a T* to the end of the methods signature.
      *
-     * @todo Is is possible to REMOVE this T* = nullptr.
+     * @todo Is it possible to REMOVE this T* = nullptr.
      */
     virtual T* resolve_ptr(token_iterator& tokens, T* = nullptr);
 
@@ -162,21 +164,19 @@ namespace NamingScheme
   /**
    * Exports data managed by Exporter<DataStruct>.
    *
-   * If you are getting linker erros,
+   * If you are getting linker erros or incomplete type errors,
    * it probably means the exported data is inconsistent.
    */
   template<typename T, class DataStruct, EachExportedData... dataInfo>
-  class IExportStruct
-  {
-  };
+  class IExportStruct;
 
   template<typename T, class DataStruct, EachExportedData... dataInfo>
-  requires C_AllExportedDataOfType<T, T, decltype(dataInfo)...>
+  requires C_AllExportedDataOfType<T, T*, decltype(dataInfo)...>
   class IExportStruct<T, DataStruct, dataInfo...>
       : public IExport<T>
   {
   protected:
-    IExportStruct();
+    IExportStruct() = default;
 
     /**
      * Assignments and copy/move constructors were disabled to avoid complications,
@@ -225,7 +225,7 @@ namespace NamingScheme
       : public IExport<T>
   {
   protected:
-    IExportStruct() {}
+    IExportStruct() = default;
 
     /**
      * Assignments and copy/move constructors were disabled to avoid complications,

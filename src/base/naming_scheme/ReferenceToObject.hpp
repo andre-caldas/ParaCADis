@@ -20,30 +20,26 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef NamingScheme_ReferenceToObject_impl_H
-#define NamingScheme_ReferenceToObject_impl_H
+#pragma once
 
 #include "ReferenceToObject.h"
 
-namespace NamingScheme {
-
-template<typename T, std::derived_from<PathCachePolicyBase> CachePolicy>
-ResultHolder<T> ReferenceTo<T, CachePolicy>::resolve() const
+namespace NamingScheme
 {
-  auto result = searchResult.tryCache();
-  if(result) {
-    return result;
+  template<typename T, std::derived_from<PathCachePolicyBase<T>> CachePolicy>
+  ResultHolder<T> ReferenceTo<T, CachePolicy>::resolve() const
+  {
+    auto result = searchResult.tryCache();
+    if(result) {
+      return result;
+    }
+    return searchResult.resolve(path.getRoot(), path.getTokens());
   }
-  return searchResult.resolve(path.getRoot(), path.getTokens());
-}
 
-template<typename T, std::derived_from<PathCachePolicyBase> CachePolicy>
-PathToObject& ReferenceTo<T, CachePolicy>::getPath()
-{
-  searchResult.invalidate();
-  return path;
+  template<typename T, std::derived_from<PathCachePolicyBase<T>> CachePolicy>
+  PathToObject& ReferenceTo<T, CachePolicy>::getPath()
+  {
+    searchResult.invalidate();
+    return path;
+  }
 }
-
-}
-
-#endif

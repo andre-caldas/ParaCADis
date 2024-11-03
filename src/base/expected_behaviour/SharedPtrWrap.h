@@ -70,10 +70,10 @@ public:
   template<typename Conv> requires std::convertible_to<T, Conv>
   operator Conv()       { return **this; }
 
-  template<typename Conv> requires (!std::convertible_to<T, Conv>)
-  operator Conv() const { return *this; }
-  template<typename Conv> requires (!std::convertible_to<T, Conv>)
-  operator Conv()       { return *this; }
+//  template<typename Conv> requires (!std::convertible_to<T, Conv>)
+//  operator Conv() const { return *this; }
+//  template<typename Conv> requires (!std::convertible_to<T, Conv>)
+//  operator Conv()       { return *this; }
 
   const SharedPtr<T>& getSharedPtr() const { return *this; }
   operator SharedPtr<T>() && { return std::move(*this); }

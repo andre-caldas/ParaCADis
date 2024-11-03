@@ -220,7 +220,9 @@ Container::setCoordinates(SharedPtr<DeferenceableCoordinates> coordinates)
 {
   auto self = getSelfShared<Container>();
   auto old = coordinate_system.getSharedPtr();
-  old->getChangedSignal().removeProxy(&coordinate_modified_sig);
+  if(old) {
+    old->getChangedSignal().removeProxy(&coordinate_modified_sig);
+  }
   coordinates->getChangedSignal().setProxy(std::move(self), &Container::coordinate_modified_sig);
   return coordinate_system.setSharedPtr(std::move(coordinates));
 }

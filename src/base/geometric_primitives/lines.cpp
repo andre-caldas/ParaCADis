@@ -32,7 +32,7 @@ SharedPtr<Line2Points> Line2Points::deepCopy() const
 {
   Threads::ReaderGate gate{*this};
   return SharedPtrWrap<Line2Points>(gate->start, gate->end,
-                                       gate->is_bounded_start, gate->is_bounded_end);
+                                    gate->is_bounded_start, gate->is_bounded_end);
 }
 
 SharedPtr<const Line2Points::iga_curve_t> Line2Points::produceIgaCurve() const
@@ -67,7 +67,6 @@ SharedPtr<const LinePointDirection::iga_curve_t> LinePointDirection::produceIgaC
  */
 #include <base/naming_scheme/IExport.h>
 #include <base/naming_scheme/NameSearch.h>
-#include <base/naming_scheme/NameSearch_impl.h>
 
 using namespace NamingScheme;
 

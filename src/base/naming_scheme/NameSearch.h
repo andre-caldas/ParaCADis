@@ -20,8 +20,7 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef NamingScheme_NameSearch_H
-#define NamingScheme_NameSearch_H
+#pragma once
 
 #include "path_cache_policies.h"
 #include "ResultHolder.h"
@@ -34,8 +33,8 @@
 
 namespace NamingScheme
 {
-
   class ExporterBase;
+  template<typename T>
   class PathCachePolicyBase;
 
   /**
@@ -45,7 +44,7 @@ namespace NamingScheme
   class NameSearch
   {
   public:
-    NameSearch(PathCachePolicyBase& cache) : cache(cache) {}
+    NameSearch(PathCachePolicyBase<T>& cache) : cache(cache) {}
 
     /**
      * Resolves without trying the cache.
@@ -64,7 +63,7 @@ namespace NamingScheme
     /**
      * Invalidates the cache.
      */
-    void invalidateCache() { data_weak = {}; cache.invalidate(); }
+    void invalidateCache() { cache.invalidate(); }
 
   protected:
     void            resolveExporter(void);
@@ -80,14 +79,9 @@ namespace NamingScheme
     } status = not_resolved_yet;
 
   private:
-    /// Cache for the "chainable" part of the path.
-    PathCachePolicyBase&  cache;
-    /// Cache for the path final node (that might not be chainable).
-    ResultHolder<T>       data_weak;
+    /// Cache for the search.
+    PathCachePolicyBase<T>& cache;
   };
+}
 
-}  // namespace NamingScheme
-
-#include "NameSearch_impl.h"
-
-#endif
+#include "NameSearch.hpp"

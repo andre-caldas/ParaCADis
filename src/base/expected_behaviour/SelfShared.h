@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <concepts>
 #include <memory>
 
 template<typename>
@@ -60,6 +61,12 @@ public:
    */
   template<typename X, typename C>
   SharedPtr<X> getLocalShared(X C::* local);
+};
+
+template<typename T>
+concept C_HasSharedPtr = requires(T& a) {
+  a.getSelfShared();
+  {a.getSelfShared().get()} -> std::same_as<decltype((&a))>;
 };
 
 #include "SelfShared.hpp"

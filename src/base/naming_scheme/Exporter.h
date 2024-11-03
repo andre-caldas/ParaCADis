@@ -60,14 +60,16 @@ namespace NamingScheme
     // In IExport<>, generates ambiguity, so we put it here.
     using token_iterator = NamingScheme::token_iterator;
 
+  protected:
     ExporterBase()               = default;
     ExporterBase(ExporterBase&&) = default;
 
     /// Do not really copy anything, because copies
     /// must have a different id and probably should have
     /// a different name.
-    ExporterBase(const ExporterBase&) : ExporterBase() {}
+    ExporterBase(const ExporterBase&) = delete;
 
+  public:
     virtual ~ExporterBase() = default;
 
     /**
@@ -150,22 +152,6 @@ namespace NamingScheme
 
     safe_struct_t safeData;
 
-    Exporter() = default;
-
-    /**
-     * We disable copy and moving because of the signals to parent
-     * that we would have to disconnect.
-     */
-    /// @{
-    Exporter(Exporter&&) = delete;
-    Exporter(const Exporter&) = delete;
-    /// @}
-
-    template<typename... T>
-    Exporter(T&&... t)
-        : safeData(std::forward<T>(t)...)
-    {}
-
     Threads::Signal<>& getChangedSignal() const override
     { return modified_sig; }
 
@@ -179,6 +165,26 @@ namespace NamingScheme
      */
     mutable Threads::MutexSignal modified_sig{getMutexLike()};
 
+  protected:
+    Exporter() = default;
+
+    /**
+     * We disable copy and moving because of the signals to parent
+     * that we would have to disconnect.
+     */
+    /// @{
+    Exporter(Exporter&&) = delete;
+    Exporter(const Exporter&) = delete;
+    Exporter& operator=(Exporter&&) = delete;
+    Exporter& operator=(const Exporter&) = delete;
+    /// @}
+
+    template<typename... T>
+    Exporter(T&&... t)
+        : safeData(std::forward<T>(t)...)
+    {}
+
+  public:
     using GateInfo = Threads::LocalBridgeInfo<&Exporter::safeData>;
   };
 

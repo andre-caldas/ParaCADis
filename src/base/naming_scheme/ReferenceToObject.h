@@ -45,12 +45,12 @@ namespace NamingScheme
    * ReferenceTo<variable_type>.
    *
    * @example
-   * ReferenceTo<double, TimedWeakChain> ref(root, "start point", "x");
+   * ReferenceTo<double, TimedWeakChain<double>> ref(root, "start point", "x");
    *
    * @see  IExport<>.
    */
   template<typename T,
-           std::derived_from<PathCachePolicyBase> CachePolicy = TimedWeakChain>
+           std::derived_from<PathCachePolicyBase<T>> CachePolicy = TimedWeakChain<T>>
   class ReferenceTo
   {
   public:
@@ -86,6 +86,6 @@ namespace NamingScheme
 
 }  // namespace NamingScheme
 
-#include "ReferenceToObject_impl.h"
+#include "ReferenceToObject.hpp"
 
 #endif

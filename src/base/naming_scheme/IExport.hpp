@@ -34,6 +34,7 @@
 #include "Exporter.h"
 #include "PathToken.h"
 
+#include <base/expected_behaviour/SelfShared.h>
 #include <base/threads/locks/MutexData.h>
 #include <base/threads/locks/LockPolicy.h>
 #include <base/threads/message_queue/Signal.h>
@@ -53,11 +54,15 @@ namespace NamingScheme
     assert(token.isName());
 
     auto shared = resolve_shared(tokens);
-    if (shared) { return ResultHolder<T>{shared}; }
+    if (shared) { return ResultHolder<T>{std::move(shared)}; }
 
+    // TODO: do not call resolve_ptr if derived from SharedPtr.
+    // At least, not in production build.
     auto ptr = resolve_ptr(tokens);
     if (ptr)
     {
+      assert(!C_HasSharedPtr<T>
+             && "Use resolve_shared() for types that inherit form SharedPtr");
       return {current, ptr};
     }
 
@@ -98,7 +103,7 @@ namespace NamingScheme
    * Local pointer to type T.
    */
   template<typename T, class DataStruct, EachExportedData... dataInfo>
-  requires C_AllExportedDataOfType<T, T, decltype(dataInfo)...>
+  requires C_AllExportedDataOfType<T, T*, decltype(dataInfo)...>
   void IExportStruct<T, DataStruct, dataInfo...>::init()
   {
     static_assert(!std::is_base_of_v<ExporterBase, T>, "ExporterBase types need SharedPtrWrap.");
@@ -119,7 +124,7 @@ namespace NamingScheme
   }
 
   template<typename T, class DataStruct, EachExportedData... dataInfo>
-  requires C_AllExportedDataOfType<T, T, decltype(dataInfo)...>
+  requires C_AllExportedDataOfType<T, T*, decltype(dataInfo)...>
   T* IExportStruct<T, DataStruct, dataInfo...>::resolve_ptr(token_iterator& tokens, T*)
   {
     assert(dynamic_cast<Exporter<DataStruct>*>(this)

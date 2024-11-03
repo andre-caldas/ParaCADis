@@ -60,7 +60,7 @@ namespace NamingScheme
      * needs a mutex or not. If std::enable_shared_from this() succeeds,
      * it means we do not need a mutex.
      */
-    explicit ResultHolder(SharedPtr<T> data)
+    ResultHolder(SharedPtr<T> data)
         : data(std::move(data)), data_weak(this->data) {}
 
     /**
@@ -75,14 +75,14 @@ namespace NamingScheme
      *
      * @example
      * SharedPtr<T> sub_object{std::shared_ptr<T>(parent, child)};
-     * ResultHolder result{sub_object, parent};
+     * ResultHolder result{parent.mutex, sub_object};
      *
      * @todo Use std::enable_shared_from_this to determine if @a data
      * needs a mutex or not. If std::enable_shared_from this() fails,
      * it means we do need a mutex.
      */
     template<Threads::C_MutexLike Mutex>
-    ResultHolder(SharedPtr<T> data, Mutex& m)
+    ResultHolder(Mutex& m, SharedPtr<T> data)
         : mutex(m), data(std::move(data)), data_weak(this->data) {}
 
     template<typename S>
@@ -94,12 +94,32 @@ namespace NamingScheme
     template<typename S>
       requires (!Threads::C_MutexHolder<T>)
     ResultHolder(ResultHolder<S> parent, T* ptr)
-        : ResultHolder(parent.data.append(ptr), parent.mutex)
+        : ResultHolder(parent.mutex, parent.data.append(ptr))
     { assert(parent.data); }
 
     template<typename S>
     ResultHolder<S> cast() const
-    { return ResultHolder<S>{mutex, data.template cast<S>(), data_weak.template cast<S>()}; }
+    {
+      if(data) {
+        auto cast_data = data.template cast<S>();
+        if(!cast_data) {
+          return {};
+        }
+        return ResultHolder<S>{mutex, cast_data, cast_data};
+      }
+
+      auto lock = data_weak.lock();
+      if(!lock) {
+        return {};
+      }
+
+      auto cast_data = lock.template cast<S>();
+      if(!cast_data) {
+        return {};
+      }
+
+      return ResultHolder<S>{mutex, {}, std::move(cast_data)};
+    }
 
     operator bool() const { return bool(data); }
     bool operator==(const ResultHolder& other) const
@@ -111,6 +131,12 @@ namespace NamingScheme
                                             &ResultHolder::mutex>;
 
     void releaseShared() { data.reset(); }
+    bool lockShared()
+    {
+      if(data) { return true; }
+      data = data_weak.lock();
+      return bool(data);
+    }
 
     ResultHolder getReleasedShared() const
     {

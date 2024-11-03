@@ -102,7 +102,6 @@ public:
   template<typename S>
   bool operator==(const SharedPtr<S>& other) const noexcept
   {
-    // TODO: Why do I need "this"??? Try to remove in the future.
     return dynamic_cast<void*>(this->get()) == dynamic_cast<void*>(other.get());
   }
 

@@ -28,7 +28,6 @@
  */
 #include <base/naming_scheme/IExport.h>
 #include <base/naming_scheme/NameSearch.h>
-#include <base/naming_scheme/NameSearch_impl.h>
 
 using namespace NamingScheme;
 

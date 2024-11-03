@@ -20,8 +20,7 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef NamingScheme_PathCachePolicies_H
-#define NamingScheme_PathCachePolicies_H
+#pragma once
 
 #include "ResultHolder.h"
 #include "types.h"
@@ -30,9 +29,11 @@
 
 namespace NamingScheme
 {
-
   class ExporterBase;
+  template<typename T>
+  class IExport;
 
+  template<typename T>
   class PathCachePolicyBase
   {
   public:
@@ -40,37 +41,38 @@ namespace NamingScheme
      * An opportunity to reserve cache space once you know the tokens.
      */
     virtual void prepare(token_iterator& tokens) = 0;
-    virtual token_iterator topTokens() const = 0;
-    virtual const ResultHolder<ExporterBase>& topExporter() const = 0;
-    virtual void pushExporter(ResultHolder<ExporterBase>&& exporter, token_iterator tokens) = 0;
+
+    /**
+     * Tokens that were not processed yet.
+     */
+    virtual token_iterator getTopTokens() const = 0;
+    virtual ResultHolder<IExport<ExporterBase>> getTopChainable() const = 0;
+    virtual const ResultHolder<ExporterBase>& getLastExporter() const = 0;
+
+    /**
+     * The final result, if not expired.
+     */
+    virtual ResultHolder<T> getFinalResult() const = 0;
+
+    virtual void setFinalResult(ResultHolder<T> result) = 0;
+    virtual void setExporter(ResultHolder<ExporterBase> exporter, token_iterator tokens) = 0;
+    virtual void pushChainable(
+        ResultHolder<IExport<ExporterBase>> exporter, token_iterator tokens) = 0;
     virtual void invalidate() = 0;
 
     /**
-     * Removes the last resolved ExporterBase.
-     *
-     * This may be used to:
-     * 1. Discard part of the cache, according to policy.
-     * 2. Discard the last ExporterBase, to treat it as the "final pointer".
-     */
-    virtual ResultHolder<ExporterBase> pop() = 0;
-
-    /**
      * Discards part of the cache according to the policy.
-     * @return True when the cache is still usable, meaning that
+     *
+     * @returns
+     * True when the cache is still usable, meaning that
      * you may call NameSearch::resolveExporter().
      */
     virtual bool pruneCache() = 0;
-
-    /**
-     * The cache holds a chain of ExporterBase. It does not hold
-     * the final pointer. This method indicates wheter the cache
-     * determines whether the final pointer must be discarded or not.
-     */
-    virtual bool hasPartiallyExpired() const = 0;
   };
 
 
-  class TimedWeakChain : public PathCachePolicyBase
+  template<typename T>
+  class TimedWeakChain : public PathCachePolicyBase<T>
   {
     using seconds_t    = std::chrono::seconds;
     using time_point_t = std::chrono::steady_clock::time_point;
@@ -81,31 +83,43 @@ namespace NamingScheme
 
     void prepare(token_iterator& tokens) override;
     void invalidate() override;
-    token_iterator topTokens() const override;
-    const ResultHolder<ExporterBase>& topExporter() const override;
-    void pushExporter(ResultHolder<ExporterBase>&& exporter,
-                      token_iterator tokens) override;
+
+    token_iterator getTopTokens() const override;
+    ResultHolder<IExport<ExporterBase>> getTopChainable() const override;
+    const ResultHolder<ExporterBase>& getLastExporter() const override;
+    ResultHolder<T> getFinalResult() const override;
+
+    void setFinalResult(ResultHolder<T> final) override;
+    void setExporter(ResultHolder<ExporterBase> exporter, token_iterator tokens) override;
+    void pushChainable(
+        ResultHolder<IExport<ExporterBase>> exporter, token_iterator tokens) override;
 
     bool pruneCache() override;
-    ResultHolder<ExporterBase> pop() override;
-    bool hasPartiallyExpired() const override;
+    bool hasPartiallyExpired() const;
 
   private:
     const seconds_t layer_duration{600};
     time_point_t    start;
 
+    template<typename X>
     struct exporter_info_t
     {
-      exporter_info_t(const ResultHolder<ExporterBase>& h,
-                      token_iterator t) noexcept
-          : weak_result(h.getReleasedShared()), tokens(t) {}
-      ResultHolder<ExporterBase> weak_result;
-      token_iterator             tokens;
+      exporter_info_t() = default;
+      exporter_info_t(ResultHolder<X> h, token_iterator t) noexcept
+          : tokens(t), holder(std::move(h))
+      {}
+
+      token_iterator  tokens;
+      ResultHolder<X> holder;
+
+      void reset() { holder = {}; tokens = {}; }
+      operator bool() const { return holder; }
     };
-    std::vector<exporter_info_t> exporters;
-    ResultHolder<ExporterBase>   top_exporter;
+
+    std::vector<exporter_info_t<IExport<ExporterBase>>> chainables;
+    exporter_info_t<ExporterBase>                       last_exporter;
+    ResultHolder<T>                                     final_result;
   };
+}
 
-}  // namespace NamingScheme
-
-#endif
+#include "path_cache_policies.hpp"
