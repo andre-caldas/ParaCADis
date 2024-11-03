@@ -120,12 +120,10 @@ bind_reference_to(py::module_& m, std::string type_name)
   R"(Constructs a reader gate for the resolved object.)");
 
   rgate.def("access",
-  [](SharedPtr<ReaderGate> gate) -> SharedPtr<const T>
+  [](SharedPtr<ReaderGate> gate) -> SharedPtr<T>
   {
     auto shared = gate->getHolder()._promiscuousGetShared();
-// TODO: if this is always true, simply return shared.
-assert(shared.get() == &**gate);
-    return std::move(shared).append(&**gate);
+    return shared;
   },
   R"(Accesses the referenced object
 
@@ -173,9 +171,7 @@ assert(shared.get() == &**gate);
   [](SharedPtr<WriterGate> gate) -> SharedPtr<T>
   {
     auto shared = gate->getHolder()._promiscuousGetShared();
-// TODO: if this is always true, simply return shared.
-assert(shared.get() == &**gate);
-    return std::move(shared).append(&**gate);
+    return shared;
   },
   R"(Accesses the referenced object
 
