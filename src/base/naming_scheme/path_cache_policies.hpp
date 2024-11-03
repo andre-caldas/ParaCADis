@@ -94,8 +94,6 @@ ResultHolder<T> TimedWeakChain<T>::getFinalResult() const
   }
 
   auto result = final_result.getLockedShared();
-  assert(result
-         && "The method getFinalResult() can only be called after a successful search.");
   return result;
 }
 
