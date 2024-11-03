@@ -33,6 +33,7 @@
 #include <iostream>
 
 #include <OGRE/OgreEntity.h>
+#include <OGRE/OgreQuaternion.h>
 #include <OGRE/OgreSceneManager.h>
 
 namespace SceneGraph
@@ -77,22 +78,24 @@ namespace SceneGraph
     auto cycle_sentinel = cycle_guard.sentinel(my_container.get());
     if(!cycle_sentinel.success()) {
       // TODO: remove output. Not a bug.
-      std::cerr << "Cycle detected!";
+      std::cerr << "Cycle detected!" << std::endl;
       return;
     }
 
     auto scene_root = sceneRootWeak.lock();
-    if(!scene_root) { return; }
+    if(!scene_root) {
+      std::cerr << "SceneRoot was already destroyed. Aborting populate()." << std::endl;
+      return;
+    }
 
     auto self_lock = self.lock();
     assert(self_lock);
     assert(self_lock.get() == this && "Pointer 'self' must be myself!");
     auto& queue = scene_root->getQueue();
     assert(queue);
-    if(!queue) { return; }
 
     std::vector<SharedPtr<container_t>> new_containers;
-    { // Lock
+    { // Locked scope.
       // The containers in my_container will not change till the end of this block.
       // Suposedly, no messagens relative to those containers will be queued.
       auto view_lock = my_container->containersView();
@@ -158,9 +161,13 @@ namespace SceneGraph
     if(!scene_root) {
       return;
     }
+    auto& queue = scene_root->getQueue();
+    assert(queue);
 
     auto new_node = SharedPtr<ContainerNode>::from_pointer(new ContainerNode(scene_root));
     new_node->self = new_node;
+    added_container->coordinate_modified_sig.connect(
+        added_container, queue, new_node, &ContainerNode::updateCoordinates);
 
     { // Scoped lock.
       Threads::WriterGate gate{containerNodes};
@@ -176,6 +183,9 @@ namespace SceneGraph
     auto ogre_new_node = new_node->ogreNodeWeak.lock();
     assert(ogre_node);
     assert(ogre_new_node);
+
+    // Adds to the scene only at the very end,
+    // so we do not keep messing with the scene while it is beeing processed.
     ogre_node->addChild(ogre_new_node.get());
   }
 
@@ -307,5 +317,35 @@ namespace SceneGraph
     Threads::WriterGate gate{scene_root->meshNodes};
     auto nh = gate->extract(geo.get());
     assert(nh && "Nothing extracted.ß");
+  }
+
+  namespace {
+    float tod(const Real& v)
+    {
+      return CGAL::to_double(v);
+    }
+  }
+
+  void ContainerNode::updateCoordinates(SharedPtr<container_t> my_container)
+  {
+    auto coordinates = my_container->getCoordinates();
+    auto cs = coordinates->getCoordinateSystem();
+    auto& o = cs.origin();
+    auto& x = cs.x_axis();
+    auto& y = cs.y_axis();
+    auto& z = cs.z_axis();
+    Ogre::Vector3 oo = {tod(o.x()), tod(o.y()), tod(o.z())};
+    Ogre::Vector3 ox = {tod(x.x()), tod(x.y()), tod(x.z())};
+    Ogre::Vector3 oy = {tod(y.x()), tod(y.y()), tod(y.z())};
+    Ogre::Vector3 oz = {tod(z.x()), tod(z.y()), tod(z.z())};
+    Ogre::Quaternion ogre_rotation(ox, oy, oz);
+
+    auto ogre_node = ogreNodeWeak.lock();
+    assert(ogre_node);
+    if(!ogre_node) {
+      return;
+    }
+    ogre_node->setPosition(oo);
+    ogre_node->setOrientation(ogre_rotation);
   }
 }

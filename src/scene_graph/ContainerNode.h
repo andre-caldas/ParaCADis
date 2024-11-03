@@ -48,17 +48,6 @@ namespace SceneGraph
     create_root_node(const SharedPtr<SceneRoot>& scene_root,
                      const SharedPtr<document_t>& document);
 
-    /**
-     * Creates a new ContainerNode, to be attached to @a parent.
-     *
-     * @param parent - Parent ContainerNode.
-     * @param self_container - the actual Document::Container this node represents.
-     */
-    static SharedPtr<ContainerNode>
-    create(CycleGuard<container_t>& cycle_guard,
-           const SharedPtr<ContainerNode>& parent,
-           const SharedPtr<container_t>& self_container);
-
     void addContainerCycleGuard(CycleGuard<container_t>& cycle_guard,
                                 SharedPtr<container_t> added_container);
     void addContainer(SharedPtr<container_t> added_container);
@@ -73,6 +62,8 @@ namespace SceneGraph
 
     void addMesh(SharedPtr<geometry_t> geo);
     void removeMesh(SharedPtr<geometry_t> geo);
+
+    void updateCoordinates(SharedPtr<container_t> my_container);
 
   protected:
     ContainerNode(const SharedPtr<SceneRoot>& scene_root);

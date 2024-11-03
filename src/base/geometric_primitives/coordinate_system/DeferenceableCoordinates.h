@@ -31,4 +31,7 @@
 
 class DeferenceableCoordinates
     : public virtual NamingScheme::ExporterBase
-{};
+{
+public:
+  virtual CoordinateSystem getCoordinateSystem() const = 0;
+};

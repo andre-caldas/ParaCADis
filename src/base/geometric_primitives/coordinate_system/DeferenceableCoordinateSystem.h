@@ -59,7 +59,7 @@ class DeferenceableCoordinateSystem
   DeferenceableCoordinateSystem(Point origin);
   DeferenceableCoordinateSystem(Point origin, Vector v1, Vector v2);
 public:
-  CoordinateSystem getCoordinateSystem() const;
+  CoordinateSystem getCoordinateSystem() const override;
 
   SharedPtr<DeferenceableCoordinateSystem> deepCopy() const;
   SharedPtr<NamingScheme::ExporterBase> deepCopyExporter() const override

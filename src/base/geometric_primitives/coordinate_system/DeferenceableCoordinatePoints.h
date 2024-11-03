@@ -58,7 +58,7 @@ class DeferenceableCoordinatePoints
   DeferenceableCoordinatePoints(Point origin);
   DeferenceableCoordinatePoints(Point origin, Point p1, Point p2);
 public:
-  CoordinateSystem getCoordinateSystem() const;
+  CoordinateSystem getCoordinateSystem() const override;
 
   SharedPtr<DeferenceableCoordinatePoints> deepCopy() const;
   SharedPtr<NamingScheme::ExporterBase> deepCopyExporter() const override

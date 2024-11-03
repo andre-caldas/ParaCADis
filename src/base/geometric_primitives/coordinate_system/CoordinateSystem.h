@@ -80,8 +80,8 @@ public:
 
   const Point&  origin() const {return _origin;}
   const Vector& x_axis() const {return bx;}
-  const Vector& y_axis() const {return bx;}
-  const Vector& z_axis() const {return bx;}
+  const Vector& y_axis() const {return by;}
+  const Vector& z_axis() const {return bz;}
 
 private:
   Point  _origin = {0,0,0,1};
