@@ -73,6 +73,18 @@ namespace NamingScheme
     virtual ~ExporterBase() = default;
 
     /**
+     * Works as a bridge so that ExporterBase
+     * can have access to its derived's getMutexLike(),
+     * so that ExporterBase is a Threads::C_MutexHolder.
+     *
+     * Could not decide between making a generic templated getMutex
+     * or a virtual class... ended up doing both. :-(
+     */
+    virtual constexpr Threads::MutexVector getMutexVector() const = 0;
+    constexpr Threads::MutexVector getMutexLike() const
+    { return getMutexVector(); }
+
+    /**
      * To be signaled when an exported child object changes.
      * Child modified_sig are chained to this signal by the
      * IExport<> constructor.
@@ -159,11 +171,13 @@ namespace NamingScheme
      * Must satisfy `Threads::C_MutexHolder`.
      */
     constexpr auto& getMutexLike() const { return safeData.getMutexLike(); }
+    constexpr Threads::MutexVector getMutexVector() const override
+    { return getMutexLike(); }
 
     /**
      * Signaled when exclusive (write) mutex is released.
      */
-    mutable Threads::MutexSignal modified_sig{getMutexLike()};
+    mutable Threads::MutexSignal modified_sig{Exporter::getMutexLike()};
 
   protected:
     Exporter() = default;

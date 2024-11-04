@@ -83,7 +83,8 @@ namespace NamingScheme
      *
      * @todo Is it possible to REMOVE this T* = nullptr.
      */
-    virtual T* resolve_ptr(token_iterator& tokens, T* = nullptr);
+    virtual T* resolve_ptr(token_iterator& /* tokens */, T* = nullptr)
+    /* requires (!Threads::C_MutexHolder<T>) */ { return nullptr; }
 
     /**
      * Implement, to return a ResultHolder to object managed by a SharedPtr<T>.
@@ -98,7 +99,8 @@ namespace NamingScheme
      *
      * @todo Is is possible to REMOVE this T* = nullptr.
      */
-    virtual SharedPtr<T> resolve_shared(token_iterator& tokens, T* = nullptr);
+    virtual SharedPtr<T> resolve_shared(token_iterator& tokens, T* = nullptr)
+    /* requires (Threads::C_MutexHolder<T>) */ { return {}; }
   };
 
   template<std::size_t N>
@@ -220,7 +222,8 @@ namespace NamingScheme
    * Template specialization that exports SharedPtr data managed by Exporter<DataStruct>.
    */
   template<typename T, class DataStruct, EachExportedData... dataInfo>
-  requires C_AllExportedDataOfType<T, SharedPtrWrap<T>, decltype(dataInfo)...>
+  requires (C_AllExportedDataOfType<T, SharedPtrWrap<T>, decltype(dataInfo)...>
+            && Threads::C_MutexHolder<T>)
   class IExportStruct<T, DataStruct, dataInfo...>
       : public IExport<T>
   {

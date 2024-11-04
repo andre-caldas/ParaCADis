@@ -201,7 +201,7 @@ bind_reference_to(py::module_& m, std::string type_name)
              [](ResultHolder& self) -> SharedPtr<ReaderGate>
              {return std::make_shared<ReaderGate>(self);},
              "Locks for reading and provides a gate to access the object.");
-  holder.def("wlock",
+  holder.def("wgate",
              [](ResultHolder& self) -> SharedPtr<WriterGate>
              {return std::make_shared<WriterGate>(self);},
              "Locks for writing and provides a gate to access the object.");

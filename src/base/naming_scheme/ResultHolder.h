@@ -25,6 +25,8 @@
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/threads/locks/gates.h>
 
+#include <concepts>
+
 namespace NamingScheme
 {
   /**
@@ -46,56 +48,41 @@ namespace NamingScheme
     ResultHolder() = default;
 
     /**
-     * ResultHolder for data that do not need a mutex.
-     *
-     * The nuance here is that it might be true that the managed data
-     * might be different from the stored pointer in a SharedPtr<T>.
-     * You may use this constructor if those two are not different.
-     *
-     * @example
-     * SharedPtr<T> object = std::make_shared<T>();
-     * ResultHolder result{object};
-     *
-     * @todo Use std::enable_shared_from_this to determine if @a data
-     * needs a mutex or not. If std::enable_shared_from this() succeeds,
-     * it means we do not need a mutex.
+     * ResultHolder for data that holds a mutex.
      */
     ResultHolder(SharedPtr<T> data)
-        : data(std::move(data)), data_weak(this->data) {}
+    requires Threads::C_MutexHolder<T>
+        : mutex(data->getMutexLike())
+        , data(std::move(data)), data_weak(this->data) {}
 
     /**
-     * ResultHolder for data and mutexes
-     *
-     * The nuance here is that it might be true that the managed data
-     * might be different from the stored pointer in a SharedPtr<T>.
-     * If you have a "standalone" SharedPtr<T>, you do not need a mutex
-     * to acces the SharedPtr<T>::get() pointer. However, when
-     * SharedPtr<T>::get() is some piece of data inside some mutex protected
-     * object, then you might need a lock before accessing it.
-     *
-     * @example
-     * SharedPtr<T> sub_object{std::shared_ptr<T>(parent, child)};
-     * ResultHolder result{parent.mutex, sub_object};
-     *
-     * @todo Use std::enable_shared_from_this to determine if @a data
-     * needs a mutex or not. If std::enable_shared_from this() fails,
-     * it means we do need a mutex.
+     * ResultHolder for data and an explicit mutex.
      */
     template<Threads::C_MutexLike Mutex>
     ResultHolder(Mutex& m, SharedPtr<T> data)
         : mutex(m), data(std::move(data)), data_weak(this->data) {}
 
+    /**
+     * ResultHolder for data that holds a mutex
+     * but is not managed by a SharedPtr.
+     */
     template<typename S>
       requires Threads::C_MutexHolder<T>
     ResultHolder(ResultHolder<S> parent, T* ptr)
-        : ResultHolder(parent.data.append(ptr))
-    { assert(parent.data); }
+        : mutex(ptr->getMutexLike())
+        , data(parent.data.append(ptr)), data_weak(data)
+    {}
 
+    /**
+     * ResultHolder for data that depends on some (parent) object
+     * to provide a mutex and a SharedPtr.
+     */
     template<typename S>
       requires (!Threads::C_MutexHolder<T>)
     ResultHolder(ResultHolder<S> parent, T* ptr)
-        : ResultHolder(parent.mutex, parent.data.append(ptr))
-    { assert(parent.data); }
+        : mutex(parent.mutex)
+        , data(parent.data.append(ptr)), data_weak(data)
+    {}
 
     template<typename S>
     ResultHolder<S> cast() const
@@ -147,7 +134,7 @@ namespace NamingScheme
 
     ResultHolder getLockedShared() const
     {
-      ResultHolder result = *this;
+      ResultHolder result{*this};
       result.data = data_weak.lock();
       return result;
     }

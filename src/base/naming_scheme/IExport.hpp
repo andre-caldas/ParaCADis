@@ -53,31 +53,21 @@ namespace NamingScheme
     const auto& token = tokens.front();
     assert(token.isName());
 
-    auto shared = resolve_shared(tokens);
-    if (shared) { return ResultHolder<T>{std::move(shared)}; }
-
-    // TODO: do not call resolve_ptr if derived from SharedPtr.
-    // At least, not in production build.
-    auto ptr = resolve_ptr(tokens);
-    if (ptr)
-    {
+    if constexpr (Threads::C_MutexHolder<T>) {
+      auto shared = resolve_shared(tokens);
+      if (shared) {
+        return ResultHolder<T>{std::move(shared)};
+      }
+    } else {
+      auto ptr = resolve_ptr(tokens);
+      if (!ptr)
+      {
+        return {};
+      }
       assert(!C_HasSharedPtr<T>
              && "Use resolve_shared() for types that inherit form SharedPtr");
       return {current, ptr};
     }
-
-    return {};
-  }
-
-  template<typename T>
-  T* IExport<T>::resolve_ptr(token_iterator& /* token_list */, T*)
-  {
-    return nullptr;
-  }
-
-  template<typename T>
-  SharedPtr<T> IExport<T>::resolve_shared(token_iterator& /* token_list */, T*)
-  {
     return {};
   }
 
@@ -153,7 +143,8 @@ namespace NamingScheme
    * Local pointer to type SharedPtrWrap<T>.
    */
   template<typename T, class DataStruct, EachExportedData... dataInfo>
-  requires C_AllExportedDataOfType<T, SharedPtrWrap<T>, decltype(dataInfo)...>
+  requires (C_AllExportedDataOfType<T, SharedPtrWrap<T>, decltype(dataInfo)...>
+            && Threads::C_MutexHolder<T>)
   void IExportStruct<T, DataStruct, dataInfo...>::init()
   {
     static_assert(sizeof...(dataInfo) > 0, "Need at least an exported data.");
@@ -173,7 +164,8 @@ namespace NamingScheme
   }
 
   template<typename T, class DataStruct, EachExportedData... dataInfo>
-  requires C_AllExportedDataOfType<T, SharedPtrWrap<T>, decltype(dataInfo)...>
+  requires (C_AllExportedDataOfType<T, SharedPtrWrap<T>, decltype(dataInfo)...>
+            && Threads::C_MutexHolder<T>)
   SharedPtr<T> IExportStruct<T, DataStruct, dataInfo...>::resolve_shared(token_iterator& tokens, T*)
   {
     assert(dynamic_cast<Exporter<DataStruct>*>(this)

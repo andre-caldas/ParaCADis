@@ -125,6 +125,8 @@ namespace Document
 
   public:
     constexpr auto& getMutexLike() const { return mutex; }
+    constexpr Threads::MutexVector getMutexVector() const override
+    { return getMutexLike(); }
 
     Threads::Signal<>& getChangedSignal() const override
     { return modified_sig; }
