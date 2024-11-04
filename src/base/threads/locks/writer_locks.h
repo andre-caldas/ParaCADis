@@ -148,7 +148,6 @@ namespace Threads
   {
   public:
     WriterGateKeeper(Holder holder);
-~WriterGateKeeper() {}
 
     auto& operator*() const;
     auto* operator->() const { return &**this; }
