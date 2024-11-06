@@ -60,7 +60,8 @@ void init_geometric_primitives_circles(py::module_& module)
   /*
    * Circle3Points.
    */
-  py::class_<Circle3Points, SharedPtr<Circle3Points>>(
+  py::class_<Circle3Points, ExporterBase,
+             SharedPtr<Circle3Points>>(
       module, "Circle3Points", py::multiple_inheritance(),
       "An oriented circle specified by three points.")
       .def(py::init(&SharedPtr<Circle3Points>::make_shared<Point&, Point&, Point&>),
