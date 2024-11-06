@@ -45,14 +45,19 @@ namespace Mesh
    * This class contains an Ogre::Mesh and a mesh loader that
    * converts the G+Smo geometry to the Ogre::Mesh.
    */
-  class OgreGismoMesh : public Ogre::ManualResourceLoader
+  class OgreGismoMesh
+      : public Ogre::ManualResourceLoader
+      , public std::enable_shared_from_this<OgreGismoMesh>
   {
   public:
     OgreGismoMesh(std::shared_ptr<const iga_geometry_t> iga_geometry);
+    void init();
+
     void resetIgaGeometry(SharedPtr<const iga_geometry_t> iga_geometry);
     const SharedPtr<Ogre::Mesh>& getOgreMesh() const {return mesh;}
 
   protected:
+    void justPrepare();
     void prepareResource(Ogre::Resource* resource) override;
     void loadResource(Ogre::Resource* resource) override;
 
@@ -60,19 +65,30 @@ namespace Mesh
     SharedPtr<Ogre::Mesh> mesh;
     std::atomic<std::shared_ptr<const iga_geometry_t>> igaGeometry;
 
+    std::mutex mutex;
+
     // Prepared data.
-    std::mutex mutex_for_swapping_data;
     std::vector<float> vertex;
     std::vector<Ogre::uint16> indexes;
     Ogre::Vector3 min_bound;
     Ogre::Vector3 max_bound;
 
-    int vertexEntriesPerPoint() const;
+    // Buffers.
+    int dimension = 0;
+    size_t vblock_size = 0;
+    size_t index_buffer_size = 0;
+    size_t vertex_buffer_size = 0;
 
-    void prepareCurve();
-    void prepareSurface();
+    Ogre::HardwareVertexBufferSharedPtr vbuf;
+    Ogre::HardwareIndexBufferSharedPtr ibuf;
 
-    void loadCurve();
-    void loadSurface();
+    size_t vertexEntriesPerPoint() const;
+
+    void setVertexData();
+
+    void prepareCurve(const std::shared_ptr<const iga_geometry_t>& igaGeo);
+    void prepareSurface(const std::shared_ptr<const iga_geometry_t>& igaGeo);
+
+    void prepareHardwareBuffers();
   };
 }

@@ -51,78 +51,111 @@ namespace {
   }
 }
 
+
 OgreGismoMesh::OgreGismoMesh(std::shared_ptr<const iga_geometry_t> iga_geometry)
     : igaGeometry(std::move(iga_geometry))
 {
   using namespace Ogre;
+
   static std::atomic<unsigned int> counter = 0;
   mesh = MeshManager::getSingleton().createManual(
       std::format("Gismo Geometry - {:05}", counter++), // Name
       RGN_DEFAULT,                                      // Group
       this                                              // Loader
   );
+  mesh->setBackgroundLoaded(true);
+}
 
-  mesh->load();
+void OgreGismoMesh::init()
+{
+  mesh->prepare();
 }
 
 void OgreGismoMesh::resetIgaGeometry(SharedPtr<const iga_geometry_t> iga_geometry)
 {
   igaGeometry = std::move(iga_geometry.sliced());
-  mesh->reload();
+  justPrepare();
+
+  auto lambda = [weak_self = weak_from_this()]{
+    auto self = weak_self.lock();
+    if(!self) {
+      return;
+    }
+    self->loadResource(self->mesh.get());
+    self->mesh->_dirtyState();
+  };
+  get_queue().push(lambda);
 }
 
 
-int OgreGismoMesh::vertexEntriesPerPoint() const
+size_t OgreGismoMesh::vertexEntriesPerPoint() const
 {
-  auto igaGeo = igaGeometry.load();
-  assert(igaGeo && "IgA geometry must be defined");
-  return ((igaGeo->parDim() == 1) ? 3 : 6);
+  assert(dimension && "The dimension was supposed to be set.");
+  return ((dimension == 1) ? 3 : 6);
 }
+
 
 void OgreGismoMesh::prepareResource(Ogre::Resource*)
+{
+  justPrepare();
+
+  auto lambda = [weak_self = weak_from_this()]{
+    auto self = weak_self.lock();
+    if(!self) {
+      return;
+    }
+      self->mesh->escalateLoading();
+  };
+  get_queue().push(lambda);
+}
+
+void OgreGismoMesh::justPrepare()
 {
   auto igaGeo = igaGeometry.load();
   if(!igaGeo) {
     return;
   }
+  dimension = igaGeo->parDim();
 
-  if(igaGeo->parDim() == 1) {
-    prepareCurve();
+  if(dimension == 1) {
+    prepareCurve(igaGeo);
+  } else if(dimension == 2) {
+    prepareSurface(igaGeo);
+  } else {
+    assert(false && "Must be a curve or a surface.");
     return;
   }
-  if(igaGeo->parDim() == 2) {
-    prepareSurface();
-    return;
-  }
-  assert(false && "Must be a curve or a surface.");
 }
 
 void OgreGismoMesh::loadResource(Ogre::Resource*)
 {
-  auto igaGeo = igaGeometry.load();
-  if(!igaGeo) {
-    return;
-  }
+  using namespace Ogre;
+  std::scoped_lock lock{mutex};
+  assert(dimension != 0 && "Parameter dimension not set.");
+  assert(dimension < 3 && "Must be a curve or a surface.");
 
-  if(igaGeo->parDim() == 1) {
-    loadCurve();
-    return;
+  mesh->_setBounds(AxisAlignedBox(min_bound, max_bound));
+
+  if(!mesh->sharedVertexData) {
+    setVertexData();
   }
-  if(igaGeo->parDim() == 2) {
-    loadSurface();
-    return;
-  }
-  assert(false && "Must be a curve or a surface.");
+  prepareHardwareBuffers();
+
+  assert(!mesh->getSubMeshes().empty());
+
+  SubMesh* sub = mesh->getSubMeshes()[0];
+  sub->operationType = (dimension == 1) ? RenderOperation::OT_LINE_STRIP
+                                        : RenderOperation::OT_TRIANGLE_STRIP;
+  //    sub->useSharedVertices = true;
+  sub->indexData->indexBuffer = ibuf;
+  sub->indexData->indexStart = 0;
+  sub->indexData->indexCount = indexes.size();
 }
 
 
-void OgreGismoMesh::prepareCurve()
+void OgreGismoMesh::prepareCurve(const std::shared_ptr<const iga_geometry_t>& igaGeo)
 {
   using namespace Ogre;
-  auto igaGeo = igaGeometry.load();
-  if(!igaGeo) {
-    return;
-  }
 
   const gsMatrix<real_t> param = igaGeo->parameterRange();
   // TODO: decide sample size according to some precise mathematical criteria.
@@ -161,20 +194,16 @@ void OgreGismoMesh::prepareCurve()
     local_indexes.push_back(i);
   }
 
-  std::scoped_lock lock{mutex_for_swapping_data};
+  std::scoped_lock lock{mutex};
   vertex  = std::move(positions);
   indexes = std::move(local_indexes);
   min_bound = local_min_bound;
   max_bound = local_max_bound;
 }
 
-void OgreGismoMesh::prepareSurface()
+void OgreGismoMesh::prepareSurface(const std::shared_ptr<const iga_geometry_t>& igaGeo)
 {
   using namespace Ogre;
-  auto igaGeo = igaGeometry.load();
-  if(!igaGeo) {
-    return;
-  }
 
   gsNormalField<real_t> normal_field{*igaGeo};
 
@@ -245,7 +274,7 @@ void OgreGismoMesh::prepareSurface()
     }
   }
 
-  std::scoped_lock lock{mutex_for_swapping_data};
+  std::scoped_lock lock{mutex};
   vertex  = std::move(positions_normals);
   indexes = std::move(triangles);
   min_bound = local_min_bound;
@@ -253,83 +282,89 @@ void OgreGismoMesh::prepareSurface()
 }
 
 
-void OgreGismoMesh::loadCurve()
+void OgreGismoMesh::setVertexData()
 {
   using namespace Ogre;
-  assert(igaGeometry.load() && "Should not be called when IgA geometry is unset");
 
-  auto lambda = [this]
-  {
-    std::scoped_lock lock{mutex_for_swapping_data};
-    mesh->_setBounds(AxisAlignedBox(min_bound, max_bound));
+  assert(dimension && "The dimension was supposed to be set.");
 
-    mesh->createVertexData();
-    mesh->sharedVertexData->vertexCount = vertexEntriesPerPoint();
-    auto* decl = mesh->sharedVertexData->vertexDeclaration;
-    auto* bind = mesh->sharedVertexData->vertexBufferBinding;
+  assert(mesh);
 
-    size_t offset = 0;
-    offset += decl->addElement(0, offset, VET_FLOAT3, VES_POSITION).getSize();
+  assert(mesh->getSubMeshes().empty());
+  mesh->createSubMesh();
 
-    auto vbuf =
-      HardwareBufferManager::getSingleton().createVertexBuffer(
-        offset, vertex.size()/vertexEntriesPerPoint(), HBU_GPU_ONLY);
-    vbuf->writeData(0, vbuf->getSizeInBytes(), vertex.data(), true);
-    bind->setBinding(0, vbuf);
+  assert(!mesh->sharedVertexData);
+  mesh->createVertexData();
 
-    auto ibuf =
-      HardwareBufferManager::getSingleton().createIndexBuffer(
-        HardwareIndexBuffer::IT_16BIT, indexes.size(), HBU_GPU_ONLY);
-    ibuf->writeData(0, ibuf->getSizeInBytes(), indexes.data(), true);
+  auto* vdata = mesh->sharedVertexData;
+  auto* decl = vdata->vertexDeclaration;
+  vdata->vertexCount = vertexEntriesPerPoint();
 
-    SubMesh* sub = mesh->createSubMesh();
-    sub->operationType = RenderOperation::OT_LINE_STRIP;
-//    sub->useSharedVertices = true;
-    sub->indexData->indexBuffer = ibuf;
-    sub->indexData->indexStart = 0;
-    sub->indexData->indexCount = indexes.size();
-  };
-
-  get_queue().push(lambda);
+  assert(vblock_size == 0 && "VertexData can only be set once.");
+  vblock_size += decl->addElement(0, vblock_size, VET_FLOAT3, VES_POSITION).getSize();
+  if(dimension == 2) {
+    vblock_size += decl->addElement(0, vblock_size, VET_FLOAT3, VES_NORMAL).getSize();
+  }
 }
 
-void OgreGismoMesh::loadSurface()
+
+void OgreGismoMesh::prepareHardwareBuffers()
 {
   using namespace Ogre;
-  assert(igaGeometry.load() && "Should not be called when IgA geometry is unset");
 
-  auto lambda = [this]
-  {
-    std::scoped_lock lock{mutex_for_swapping_data};
-    mesh->_setBounds(AxisAlignedBox(min_bound, max_bound));
+  // Vertexes.
+  bool need_vertex_buffer = false;
 
-    mesh->createVertexData();
-    mesh->sharedVertexData->vertexCount = vertexEntriesPerPoint();
-    auto* decl = mesh->sharedVertexData->vertexDeclaration;
-    auto* bind = mesh->sharedVertexData->vertexBufferBinding;
+  if(vertex_buffer_size <= 0) {
+    need_vertex_buffer = true;
+    vertex_buffer_size = 1;
+  }
 
-    size_t offset = 0;
-    offset += decl->addElement(0, offset, VET_FLOAT3, VES_POSITION).getSize();
-    offset += decl->addElement(0, offset, VET_FLOAT3, VES_NORMAL).getSize();
+  auto needed_vertex_size = std::max(vertex.size(), vertexEntriesPerPoint());
+  while(vertex_buffer_size < needed_vertex_size) {
+    need_vertex_buffer = true;
+    vertex_buffer_size *= 2;
+  }
+  while(vertex_buffer_size > 4*needed_vertex_size) {
+    need_vertex_buffer = true;
+    vertex_buffer_size /= 2;
+  }
 
-    auto vbuf =
-      HardwareBufferManager::getSingleton().createVertexBuffer(
-        offset, vertex.size()/vertexEntriesPerPoint(), HBU_GPU_ONLY);
-    vbuf->writeData(0, vbuf->getSizeInBytes(), vertex.data(), true);
+  if(need_vertex_buffer) {
+    auto* vdata = mesh->sharedVertexData;
+    auto* bind = vdata->vertexBufferBinding;
+
+    vbuf = HardwareBufferManager::getSingleton().createVertexBuffer(
+        vblock_size, vertex_buffer_size/vertexEntriesPerPoint(), HBU_GPU_ONLY);
     bind->setBinding(0, vbuf);
+  }
+  auto vbyte_count = vblock_size*vertex.size()/vertexEntriesPerPoint();
+  assert(vbyte_count <= vbuf->getSizeInBytes());
+  vbuf->writeData(0, sizeof(float)*vertex.size(), vertex.data(), true);
 
-    auto ibuf =
-      HardwareBufferManager::getSingleton().createIndexBuffer(
-        HardwareIndexBuffer::IT_16BIT, indexes.size(), HBU_GPU_ONLY);
-    ibuf->writeData(0, ibuf->getSizeInBytes(), indexes.data(), true);
 
-    SubMesh* sub = mesh->createSubMesh();
-    sub->operationType = RenderOperation::OT_TRIANGLE_LIST;
-//    sub->useSharedVertices = true;
-    sub->indexData->indexBuffer = ibuf;
-    sub->indexData->indexStart = 0;
-    sub->indexData->indexCount = indexes.size();
-  };
+  // Indexes
+  bool need_index_buffer = false;
+  if(index_buffer_size <= 0) {
+    need_index_buffer = true;
+    index_buffer_size = 1;
+  }
 
-  get_queue().push(lambda);
+  auto needed_index_size = std::max(indexes.size(), (size_t)1);
+  while(index_buffer_size < needed_index_size) {
+    need_index_buffer = true;
+    index_buffer_size *= 2;
+  }
+
+  while(index_buffer_size > 4*needed_index_size) {
+    need_index_buffer = true;
+    index_buffer_size /= 2;
+  }
+
+  if(need_index_buffer) {
+    ibuf = HardwareBufferManager::getSingleton().createIndexBuffer(
+        HardwareIndexBuffer::IT_16BIT, index_buffer_size, HBU_GPU_ONLY);
+  }
+  assert(sizeof(Ogre::uint16)*indexes.size() <= ibuf->getSizeInBytes());
+  ibuf->writeData(0, sizeof(Ogre::uint16)*indexes.size(), indexes.data(), true);
 }

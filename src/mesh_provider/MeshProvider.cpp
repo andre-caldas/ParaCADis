@@ -56,5 +56,5 @@ MeshProvider::make_shared(SharedPtr<IgaProvider> iga_provider,
 
 void MeshProvider::slotUpdate()
 {
-  mesh.resetIgaGeometry(igaProvider->getIgaGeometry());
+  mesh->resetIgaGeometry(igaProvider->getIgaGeometry());
 }
