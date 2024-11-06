@@ -73,7 +73,7 @@ void OgreGismoMesh::init()
 
 void OgreGismoMesh::resetIgaGeometry(SharedPtr<const iga_geometry_t> iga_geometry)
 {
-  igaGeometry = std::move(iga_geometry.sliced());
+  igaGeometry = iga_geometry.sliced();
   justPrepare();
 
   auto lambda = [weak_self = weak_from_this()]{
