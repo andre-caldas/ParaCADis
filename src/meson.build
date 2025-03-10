@@ -5,6 +5,7 @@ add_project_arguments('-DCGAL_HAS_THREADS', language : 'cpp')
 deps = [
   dependency('CGAL'),
   dependency('gismo'),
+  dependency('openmp'),
   dependency('gmpxx'),
   dependency('mpfr'),
 ]
