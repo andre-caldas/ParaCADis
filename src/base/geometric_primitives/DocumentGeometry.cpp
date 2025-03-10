@@ -47,7 +47,7 @@ SharedPtr<const DocumentGeometry::iga_curve_t>
 DocumentCurve::getIgaCurve() const
 {
   auto loaded = gismoGeometry.load();
-  if(!loaded) {
+  if(true/*!loaded*/) {
     // Not really thread-safe because if the geometry changes while
     // it is being produced, two produceIgaCurve() will be called
     // concurrently. Even if they are thread-safe,
@@ -70,7 +70,7 @@ SharedPtr<const DocumentGeometry::iga_surface_t>
 DocumentSurface::getIgaSurface() const
 {
   auto loaded = gismoGeometry.load();
-  if(!loaded) {
+  if(true/*!loaded*/) {
     // Not really thread-safe because if the geometry changes while
     // it is being produced, two produceIgaSurface() will be called
     // concurrently. Even if they are thread-safe,
