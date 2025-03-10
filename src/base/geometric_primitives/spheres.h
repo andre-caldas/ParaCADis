@@ -33,7 +33,7 @@
 #include <base/naming_scheme/Chainables.h>
 #include <base/naming_scheme/IExport.h>
 
-#include <gismo/gsNurbs/gsTensorNurbs.h>
+#include <gismo/gismo.h>
 
 /**
  * DataStruct for ShpereCenterRadius2.

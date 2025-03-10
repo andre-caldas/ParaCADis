@@ -25,8 +25,7 @@
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/geometric_primitives/DocumentGeometry.h>
 
-#include <gismo/gsCore/gsFieldCreator.h>
-#include <gismo/gsCore/gsGeometry.h>
+#include <gismo/gismo.h>
 
 #include <OGRE/OgreMesh.h>
 #include <OGRE/OgreResource.h>

@@ -24,14 +24,12 @@
 
 #include "types.h"
 
-#include <gismo/gsNurbs/gsBSpline.h>
-#include <gismo/gsNurbs/gsNurbs.h>
+#include <gismo/gismo.h>
 
-using namespace gismo;
 using namespace Document;
 
 namespace {
-  SharedPtr<gsNurbs<real_t>>
+  SharedPtr<gismo::gsNurbs<real_t>>
   nurbs_circle(const K::Circle_3& circle)
   {
     auto radius = CGAL::approximate_sqrt(circle.squared_radius());
@@ -50,8 +48,8 @@ namespace {
     double ydiry = CGAL::to_double(ydir.y());
     double ydirz = CGAL::to_double(ydir.z());
 
-    gsKnotVector<real_t> KV2 (0,1,3,3,2) ;
-    gsMatrix<real_t> C(9,3) ;
+    gismo::gsKnotVector<real_t> KV2 (0,1,3,3,2) ;
+    gismo::gsMatrix<real_t> C(9,3) ;
     C <<
       xdirx,       xdiry,       xdirz,
       xdirx+ydirx, xdiry+ydiry, xdirz+ydirz,
@@ -67,14 +65,14 @@ namespace {
     C.col(1).array() += CGAL::to_double(center.y());
     C.col(2).array() += CGAL::to_double(center.z());
 
-    gsMatrix<real_t> ww(9,1) ;
+    gismo::gsMatrix<real_t> ww(9,1) ;
     ww <<
       1, 0.707106781186548,
       1, 0.707106781186548,
       1, 0.707106781186548,
       1, 0.707106781186548, 1;
 
-    return std::make_shared<gsNurbs<real_t>>(KV2, give(ww), give(C));
+    return std::make_shared<gismo::gsNurbs<real_t>>(KV2, give(ww), give(C));
   }
 }
 

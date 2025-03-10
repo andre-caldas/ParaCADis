@@ -34,7 +34,6 @@
 #include <format>
 
 using namespace Mesh;
-using namespace gismo;
 
 namespace {
   GlThreadQueue& register_queue()
@@ -157,9 +156,9 @@ void OgreGismoMesh::prepareCurve(const std::shared_ptr<const iga_geometry_t>& ig
 {
   using namespace Ogre;
 
-  const gsMatrix<real_t> param = igaGeo->parameterRange();
+  const gismo::gsMatrix<real_t> param = igaGeo->parameterRange();
   // TODO: decide sample size according to some precise mathematical criteria.
-  gsGridIterator<real_t, CUBE> pIter(param, 100);
+  gismo::gsGridIterator<real_t, gismo::CUBE> pIter(param, 100);
 
   const auto np = pIter.numPointsCwise();
   const auto npoints = np[0];
@@ -205,11 +204,11 @@ void OgreGismoMesh::prepareSurface(const std::shared_ptr<const iga_geometry_t>& 
 {
   using namespace Ogre;
 
-  gsNormalField<real_t> normal_field{*igaGeo};
+  gismo::gsNormalField<real_t> normal_field{*igaGeo};
 
-  const gsMatrix<real_t> param = igaGeo->parameterRange();
+  const gismo::gsMatrix<real_t> param = igaGeo->parameterRange();
   // TODO: decide sample size according to some precise mathematical criteria.
-  gsGridIterator<real_t, CUBE> pIter(param, 1000);
+  gismo::gsGridIterator<real_t, gismo::CUBE> pIter(param, 1000);
 
   const auto np = pIter.numPointsCwise();
   const auto npoints = np[0] * np[1];

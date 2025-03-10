@@ -25,9 +25,7 @@
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/threads/message_queue/Signal.h>
 
-#include <gismo/gsCore/gsCurve.h>
-#include <gismo/gsCore/gsSurface.h>
-
+#include <gismo/gismo.h>
 
 namespace Document
 {

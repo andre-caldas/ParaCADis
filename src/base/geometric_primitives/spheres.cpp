@@ -22,11 +22,8 @@
 
 #include "spheres.h"
 
-#include <gismo/gsNurbs/gsBSpline.h>
-#include <gismo/gsNurbs/gsNurbs.h>
-#include <gismo/gsNurbs/gsNurbsCreator.h>
+#include <gismo/gismo.h>
 
-using namespace gismo;
 using namespace Document;
 
 /*
@@ -56,7 +53,7 @@ SphereCenterRadius2::produceIgaSurface() const
   real_t x = CGAL::to_double(center.x());
   real_t y = CGAL::to_double(center.y());
   real_t z = CGAL::to_double(center.z());
-  return SharedPtr{gsNurbsCreator<real_t>::NurbsSphere(std::sqrt(radius2), x, y, z)};
+  return SharedPtr{gismo::gsNurbsCreator<real_t>::NurbsSphere(std::sqrt(radius2), x, y, z)};
 }
 
 
@@ -86,7 +83,7 @@ SphereCenterSurfacePoint::produceIgaSurface() const
   real_t x = CGAL::to_double(center.x());
   real_t y = CGAL::to_double(center.y());
   real_t z = CGAL::to_double(center.z());
-  return SharedPtr{gsNurbsCreator<real_t>::NurbsSphere(std::sqrt(radius2), x, y, z)};
+  return SharedPtr{gismo::gsNurbsCreator<real_t>::NurbsSphere(std::sqrt(radius2), x, y, z)};
 }
 
 

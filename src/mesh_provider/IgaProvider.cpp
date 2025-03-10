@@ -24,7 +24,7 @@
 
 #include <cassert>
 
-#include <gismo/gsHSplines/gsTHBSpline.h>
+#include <gismo/gismo.h>
 
 using namespace Mesh;
 
