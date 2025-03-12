@@ -91,7 +91,7 @@ namespace NamingScheme
       }
 
       assert(n_tokens != tokens.size() && "Resolution is not consuming tokens.");
-      cache.pushChainable(std::move(next_chainable), tokens);
+      cache.pushChainable(next_chainable, tokens);
     }
 
     if(next_chainable) {
