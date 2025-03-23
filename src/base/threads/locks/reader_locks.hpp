@@ -36,10 +36,27 @@ namespace Threads {
     lock();
   }
 
+  template<C_MutexLike... Mutex>
+  SharedLock::SharedLock(std::try_to_lock_t, Mutex&... mutex)
+      : LockPolicy(false, mutex...)
+  {
+    try_lock();
+  }
+
 
   template<C_MutexHolderWithGates ... Holders>
   ReaderGate<Holders...>::ReaderGate(const Holders&... holders)
       : lock{getMutex(holders)...}
+#ifndef NDEBUG
+      , all_holders{&holders...}
+#endif
+  {
+  }
+
+
+  template<C_MutexHolderWithGates ... Holders>
+  ReaderGate<Holders...>::ReaderGate(std::try_to_lock_t, const Holders&... holders)
+      : lock{std::try_to_lock, getMutex(holders)...}
 #ifndef NDEBUG
       , all_holders{&holders...}
 #endif
@@ -59,7 +76,9 @@ namespace Threads {
   void ReaderGate<Holders...>::release()
   {
     lock.release();
+#ifndef NDEBUG
     released = true;
+#endif
   }
 
   template<C_MutexHolderWithGates ... Holders>
@@ -80,6 +99,13 @@ namespace Threads {
   }
 
   template<C_MutexHolderWithGates Holder>
+  ReaderGate<Holder>::ReaderGate(std::try_to_lock_t, const Holder& holder)
+      : lock(std::try_to_lock, getMutex(holder))
+      , holder(holder)
+  {
+  }
+
+  template<C_MutexHolderWithGates Holder>
   const auto& ReaderGate<Holder>::operator*() const
   {
     assert(!released && "Accessing data with released lock!");
@@ -90,7 +116,9 @@ namespace Threads {
   void ReaderGate<Holder>::release()
   {
     lock.release();
+#ifndef NDEBUG
     released = true;
+#endif
   }
 
   template<C_MutexHolderWithGates Holder>

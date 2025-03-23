@@ -36,10 +36,26 @@ namespace Threads {
     lock();
   }
 
+  template<C_MutexLike... Mutex>
+  ExclusiveLock::ExclusiveLock(std::try_to_lock_t, Mutex&... mutexes)
+      : LockPolicy(true, mutexes...)
+  {
+    try_lock();
+  }
+
 
   template<C_MutexHolderWithGates ... Holders>
   WriterGate<Holders...>::WriterGate(Holders&... holders)
       : lock(getMutex(holders)...)
+#ifndef NDEBUG
+      , all_holders{&holders...}
+#endif
+  {
+  }
+
+  template<C_MutexHolderWithGates ... Holders>
+  WriterGate<Holders...>::WriterGate(std::try_to_lock_t, Holders&... holders)
+      : lock{std::try_to_lock, getMutex(holders)...}
 #ifndef NDEBUG
       , all_holders{&holders...}
 #endif
@@ -66,6 +82,13 @@ namespace Threads {
   template<C_MutexHolderWithGates Holder>
   WriterGate<Holder>::WriterGate(Holder& holder)
       : lock(getMutex(holder))
+      , holder(holder)
+  {
+  }
+
+  template<C_MutexHolderWithGates Holder>
+  WriterGate<Holder>::WriterGate(std::try_to_lock_t, Holder& holder)
+      : lock(std::try_to_lock, getMutex(holder))
       , holder(holder)
   {
   }

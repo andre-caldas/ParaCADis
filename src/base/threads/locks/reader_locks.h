@@ -42,6 +42,9 @@ namespace Threads
     template<C_MutexLike... Mutex>
     [[nodiscard]]
     SharedLock(Mutex&... mutex);
+    template<C_MutexLike... Mutex>
+    [[nodiscard]]
+    SharedLock(std::try_to_lock_t, Mutex&... mutex);
 
     /**
      * Prematurely releases the lock.
@@ -59,6 +62,7 @@ namespace Threads
   private:
     std::vector<std::shared_lock<YesItIsAMutex>> locks;
     void lock();
+    bool try_lock();
   };
 
 
@@ -70,6 +74,7 @@ namespace Threads
   {
   public:
     ReaderGate(const Holders&... holders);
+    ReaderGate(std::try_to_lock_t, const Holders&... holders);
 
     template<C_MutexHolderWithGates Holder>
     auto& operator[](const Holder& holder) const;
@@ -116,6 +121,7 @@ namespace Threads
   {
   public:
     ReaderGate(const Holder& holder);
+    ReaderGate(std::try_to_lock_t, const Holder& holder);
     ReaderGate(Holder&& holder) = delete;
 
     const auto& operator*() const;

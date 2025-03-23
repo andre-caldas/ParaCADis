@@ -29,6 +29,8 @@ namespace Threads
 
   void ExclusiveLock::lock()
   {
+    assert(locks.empty() && "Already locked!");
+
     // We mimic std::lock, which unfortunately:
     // 1. Demands two mutexes or more.
     // 2. Only works with templates, not with a dynamic set of mutexes.
@@ -63,6 +65,23 @@ namespace Threads
       }
     } while(current != first);
     assert(locks.size() == mutexes.size());
+  }
+
+  bool ExclusiveLock::try_lock()
+  {
+    assert(locks.empty() && "Already locked!");
+    auto& mutexes = getMutexes();
+
+    locks.reserve(mutexes.size());
+    for(auto m: mutexes) {
+      std::unique_lock temp_lock{m->mutex, std::try_to_lock};
+      if(!temp_lock.owns_lock()) {
+        release();
+        return false;
+      }
+      locks.emplace_back(std::move(temp_lock));
+    }
+    return true;
   }
 
   void ExclusiveLock::release()

@@ -44,6 +44,9 @@ namespace Threads
     template<C_MutexLike ...Mutex>
     [[nodiscard]]
     ExclusiveLock(Mutex&... mutex);
+    template<C_MutexLike ...Mutex>
+    [[nodiscard]]
+    ExclusiveLock(std::try_to_lock_t, Mutex&... mutex);
 
     /**
      * Prematurely releases the lock.
@@ -62,6 +65,7 @@ namespace Threads
   private:
     std::vector<std::unique_lock<YesItIsAMutex>> locks;
     void lock();
+    bool try_lock();
   };
 
 
@@ -73,6 +77,7 @@ namespace Threads
   {
   public:
     WriterGate(Holders&... holders);
+    WriterGate(std::try_to_lock_t, Holders&... holders);
 
     template<C_MutexHolderWithGates Holder>
     auto& operator[](Holder& holder) const;
@@ -107,6 +112,7 @@ namespace Threads
   {
   public:
     WriterGate(Holder& holder);
+    WriterGate(std::try_to_lock_t, Holder& holder);
 
     auto& operator*();
     auto* operator->() { return &**this; }

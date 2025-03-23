@@ -26,6 +26,8 @@ namespace Threads
 {
   void SharedLock::lock()
   {
+    assert(locks.empty() && "Already locked!");
+
     // We can simply lock, without further worries
     // if we lock the lower layers first.
     std::multimap<int, MutexData*> ordered_mutexes;
@@ -39,6 +41,24 @@ namespace Threads
     for(auto [l, m]: ordered_mutexes) {
       locks.emplace_back(m->mutex);
     }
+  }
+
+
+  bool SharedLock::try_lock()
+  {
+    assert(locks.empty() && "Already locked!");
+    auto& mutexes = getMutexes();
+
+    locks.reserve(mutexes.size());
+    for(auto m: mutexes) {
+      std::shared_lock temp_lock{m->mutex, std::try_to_lock};
+      if(!temp_lock.owns_lock()) {
+        release();
+        return false;
+      }
+      locks.emplace_back(std::move(temp_lock));
+    }
+    return true;
   }
 
 
