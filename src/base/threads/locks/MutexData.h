@@ -20,8 +20,7 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef Threads_MutexData_H
-#define Threads_MutexData_H
+#pragma once
 
 #include "YesItIsAMutex.h"
 
@@ -38,7 +37,6 @@
 
 namespace Threads
 {
-
   class MutexSignal;
 
   /**
@@ -197,28 +195,4 @@ namespace Threads
     a.getMutexLike();
     {a.getMutexLike()} -> C_MutexLike;
   };
-
-  /**
-   * Concept of a `MutexHolder` that implements access gates.
-   * The `MutexHolderWithGates` must:
-   * 1. Be a `MutexHolder`.
-   * 2. Define a MutexHolder::WriterGate class
-   *    that implements the container methods that demand ExclusiveLock.
-   * 3. Define a method that takes an ExclusiveLock as argument,
-   *    and returns a WriterGate instance.
-   */
-  template<typename T>
-  concept C_MutexHolderWithGates = C_MutexHolder<T> && requires(T a) {
-    // Type of the struct that holds the data for each record.
-//    typename T::record_t;
-
-    typename T::GateInfo;
-//    T::GateInfo::getData;
-//    T::GateInfo::getMutex;
-//    std::invoke<T::GateInfo::getData, ???>;
-//    std::invoke<T::GateInfo::getMutex, ???>;
-  };
-
 }  // namespace Threads
-
-#endif

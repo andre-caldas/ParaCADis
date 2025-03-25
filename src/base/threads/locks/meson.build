@@ -13,7 +13,6 @@ threads_includes += files(
   'LockedIterator.h',
   'LockPolicy.h',
   'LockPolicy.hpp',
-  'meson.build',
   'MutexData.h',
   'PolicyProxy.h',
   'PolicyProxy_inl.h',
@@ -21,5 +20,7 @@ threads_includes += files(
   'reader_locks.hpp',
   'writer_locks.h',
   'writer_locks.hpp',
+  'unreliable_mirror.h',
+  'unreliable_mirror.hpp',
   'YesItIsAMutex.h',
 )

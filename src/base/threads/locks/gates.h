@@ -20,8 +20,7 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef Threads_Gates_H
-#define Threads_Gates_H
+#pragma once
 
 #include "MutexData.h"
 
@@ -33,6 +32,50 @@
 
 namespace Threads
 {
+  /**
+   * Concept of a `GateInfo`.
+   * A "gate" gives access to some protected data.
+   * Usually, holding a "gate" implies having exclusive access
+   * or at least having warranties that data access will be done
+   * in a safe way, according to the designed access policy.
+   *
+   * @todo Check all the gates below.
+   */
+  template<typename T>
+  concept C_GateInfo = requires(T a) {
+    typename T::data_t;
+    typename T::holder_t;
+
+/*
+    requires requires(T::holder_t& holder) {
+      a.getData(holder);
+//      {a.getData(holder)} -> std::same_as<T::data_t&>;
+    };
+
+    requires requires(const T::holder_t& const_holder) {
+      a.getData(const_holder);
+//      {a.getData(const_holder)} -> std::same_as<const T::data_t&>;
+
+      a.getMutex(const_holder);
+      {a.getMutexLike(const_holder)} -> C_MutexLike;
+    };
+*/
+  };
+
+
+  /**
+   * Concept of a `MutexHolder` that implements access gates.
+   * The `MutexHolderWithGates` must:
+   * 1. Be a `MutexHolder`.
+   * 2. Define a MutexHolder::GateInfo class.
+   */
+  template<typename T>
+  concept C_MutexHolderWithGates = C_MutexHolder<T> && requires(T a) {
+    typename T::GateInfo;
+    requires C_GateInfo<typename T::GateInfo>;
+//    requires std::same_as<T, typename T::GateInfo::holder_t>;
+  };
+
 
   template<typename T>
   constexpr auto& getMutex(T& mutex)
@@ -66,6 +109,9 @@ namespace Threads
            typename M, M Holder::* localMutex>
   struct LocalGateInfo<localData, localMutex>
   {
+    using data_t = T;
+    using holder_t = Holder;
+
     static auto& getData(const Holder& holder)
     { return deferenceIfPossible(holder.*localData); }
 
@@ -73,7 +119,7 @@ namespace Threads
     { return deferenceIfPossible(holder.*localData); }
 
     static auto& getMutex(const Holder& holder)
-    { return getMutex(holder.*localMutex); }
+    { return Threads::getMutex(holder.*localMutex); }
   };
   /// @}
 
@@ -97,6 +143,9 @@ namespace Threads
            typename T, T Holder::* localHolder>
   struct LocalBridgeInfo<localHolder>
   {
+    using data_t = T;
+    using holder_t = Holder;
+
     static auto& getData(const Holder& holder)
     {
       auto& other_holder = deferenceIfPossible(holder.*localHolder);
@@ -119,7 +168,4 @@ namespace Threads
     }
   };
   /// @}
-
 }  // namespace Threads
-
-#endif
