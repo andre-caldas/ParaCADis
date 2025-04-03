@@ -34,7 +34,7 @@ namespace Threads
     scopes.emplace_back(strong_or_weak_ptr{std::move(scope), {}});
   }
 
-  void ScopeOfScopesData::execute()
+  void ScopeOfScopesData::execute() noexcept
   {
     auto it = scopes.begin();
     while(it != scopes.end()) {

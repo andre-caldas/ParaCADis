@@ -29,10 +29,16 @@ namespace Mesh
 {
   bool GlThreadQueue::frameStarted(const Ogre::FrameEvent& evt)
   {
+    // I know... queue.empty() is not thread safe.
+    // But we have no problems with spurious fail.
     while(!queue.empty()) {
-      auto callback = queue.pull();
+      // Does not block.
+      auto callback = queue.try_pull();
+      if(!callback) {
+        break;
+      }
       try {
-        callback();
+        (*callback)();
       } catch(const std::exception& e) {
         std::cerr << "Exception caught in rednering queue: " << e.what() << ".\n";
       } catch(...) {

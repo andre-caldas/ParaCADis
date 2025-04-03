@@ -27,7 +27,7 @@
 namespace Threads
 {
   template<typename ProtectedStruct>
-  void DedicatedThreadScopeT<ProtectedStruct>::execute()
+  void DedicatedThreadScopeT<ProtectedStruct>::execute() noexcept
   {
     DedicatedThreadScopeBase::execute();
     while(auto res = queue.try_pull())

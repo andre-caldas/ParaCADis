@@ -33,7 +33,7 @@ namespace Threads
   {
   public:
     virtual ~DedicatedThreadScopeBase() = default;
-    virtual void execute();
+    virtual void execute() noexcept;
 
   protected:
     using inner_callable_t = std::function<bool()>;
@@ -54,7 +54,7 @@ namespace Threads
     using struct_t = ProtectedStruct;
     using callable_t = std::function<bool(struct_t&)>;
 
-    void execute() override;
+    void execute() noexcept override;
     void newAction(callable_t callable);
 
   private:

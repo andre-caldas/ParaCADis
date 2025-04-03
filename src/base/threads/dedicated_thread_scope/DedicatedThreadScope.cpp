@@ -22,13 +22,23 @@
 
 #include "DedicatedThreadScope.h"
 
+#include <exception>
+#include <iostream>
+
 namespace Threads
 {
-  void DedicatedThreadScopeBase::execute()
+  void DedicatedThreadScopeBase::execute() noexcept
   {
     auto it = callables.begin();
     while(it != callables.end()) {
-      bool keep = (*it)();
+      bool keep = true;
+      try {
+        keep = (*it)();
+      } catch(const std::exception& e) {
+        std::cerr << "Exception caught in rednering queue: " << e.what() << ".\n";
+      } catch(...) {
+        std::cerr << "Unkown exception caught in rendering queue.\n";
+      }
       if(!keep) {
         it = callables.erase(it);
       } else {

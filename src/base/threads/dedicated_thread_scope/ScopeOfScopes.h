@@ -42,7 +42,7 @@ namespace Threads
 
   protected:
     friend class ScopeOfScopes;
-    void execute();
+    void execute() noexcept;
 
   private:
     std::vector<strong_or_weak_ptr> scopes;
