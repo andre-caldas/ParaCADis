@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2025 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,38 +20,47 @@
  *                                                                          *
  ***************************************************************************/
 
-//#include "config.h"
+#pragma once
 
-#include "SceneRoot.h"
+#include "../safe_structs/ThreadSafeQueue.h"
 
-#include "ContainerNode.h"
+#include <functional>
+#include <list>
 
-#include <cassert>
-
-#include <OGRE/OgreRoot.h>
-#include <OGRE/OgreSceneManager.h>
-
-#include <iostream>
-namespace SceneGraph
+namespace Threads
 {
-  SceneRoot::SceneRoot(Ogre::SceneManager& scene_manager)
-      : signalQueue(std::make_shared<Threads::SignalQueue>())
-      , renderingScope(std::make_shared<RenderingScope>())
-      , sceneManager(&scene_manager)
+  class DedicatedThreadScopeBase
   {
-    Ogre::Root::getSingleton().addFrameListener(renderingScope.get());
-  }
+  public:
+    virtual ~DedicatedThreadScopeBase() = default;
+    virtual void execute();
 
+  protected:
+    using inner_callable_t = std::function<bool()>;
+    using callable_list_t = std::list<inner_callable_t>;
+    using callable_iter_t = callable_list_t::const_iterator;
 
-  void SceneRoot::populate(const SharedPtr<SceneRoot>& self,
-                           const SharedPtr<Document::DocumentTree>& document)
+    void appendCallable(inner_callable_t callable);
+
+  private:
+    callable_list_t callables;
+  };
+
+  template<typename ProtectedStruct>
+  class DedicatedThreadScopeT
+    : protected DedicatedThreadScopeBase
   {
-    self->self = self;
-    self->rootContainer = ContainerNode::create_root_node(self, document);
-  }
+  public:
+    using struct_t = ProtectedStruct;
+    using callable_t = std::function<bool(struct_t&)>;
 
-  void SceneRoot::runQueue()
-  {
-    signalQueue->run_thread(signalQueue);
-  }
-}
+    void execute() override;
+    void newAction(callable_t callable);
+
+  private:
+    struct_t theStruct;
+    SafeStructs::ThreadSafeQueue<callable_t> queue;
+  };
+}  // namespace Threads
+
+#include "DedicatedThreadScope.hpp"

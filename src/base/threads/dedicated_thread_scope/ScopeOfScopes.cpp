@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2025 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,38 +20,57 @@
  *                                                                          *
  ***************************************************************************/
 
-//#include "config.h"
+#include "ScopeOfScopes.h"
 
-#include "SceneRoot.h"
-
-#include "ContainerNode.h"
-
-#include <cassert>
-
-#include <OGRE/OgreRoot.h>
-#include <OGRE/OgreSceneManager.h>
-
-#include <iostream>
-namespace SceneGraph
+namespace Threads
 {
-  SceneRoot::SceneRoot(Ogre::SceneManager& scene_manager)
-      : signalQueue(std::make_shared<Threads::SignalQueue>())
-      , renderingScope(std::make_shared<RenderingScope>())
-      , sceneManager(&scene_manager)
+  void ScopeOfScopesData::addScope(WeakPtr<DedicatedThreadScopeBase> scope)
   {
-    Ogre::Root::getSingleton().addFrameListener(renderingScope.get());
+    scopes.emplace_back(strong_or_weak_ptr{{}, std::move(scope)});
+  }
+
+  void ScopeOfScopesData::addScopeKeepAlive(SharedPtr<DedicatedThreadScopeBase> scope)
+  {
+    scopes.emplace_back(strong_or_weak_ptr{std::move(scope), {}});
+  }
+
+  void ScopeOfScopesData::execute()
+  {
+    auto it = scopes.begin();
+    while(it != scopes.end()) {
+      auto& [shared, weak] = *it;
+      if(shared) {
+        shared->execute();
+        ++it;
+        continue;
+      }
+
+      auto scope = weak.lock();
+      if(scope) {
+        scope->execute();
+        ++it;
+        continue;
+      }
+      it = scopes.erase(it);
+    }
   }
 
 
-  void SceneRoot::populate(const SharedPtr<SceneRoot>& self,
-                           const SharedPtr<Document::DocumentTree>& document)
+  void ScopeOfScopes::addScope(WeakPtr<DedicatedThreadScopeBase> scope)
   {
-    self->self = self;
-    self->rootContainer = ContainerNode::create_root_node(self, document);
+    auto lambda = [scope=std::move(scope)](ScopeOfScopesData& data){
+      data.addScope(std::move(scope));
+      return false;
+    };
+    newAction(lambda);
   }
 
-  void SceneRoot::runQueue()
+  void ScopeOfScopes::addScopeKeepAlive(SharedPtr<DedicatedThreadScopeBase> scope)
   {
-    signalQueue->run_thread(signalQueue);
+    auto lambda = [scope=std::move(scope)](ScopeOfScopesData& data){
+      data.addScopeKeepAlive(std::move(scope));
+      return false;
+    };
+    newAction(lambda);
   }
-}
+}  // namespace Threads

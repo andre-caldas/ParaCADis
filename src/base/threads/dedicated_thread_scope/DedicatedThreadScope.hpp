@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2025 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,38 +20,31 @@
  *                                                                          *
  ***************************************************************************/
 
-//#include "config.h"
+#pragma once
 
-#include "SceneRoot.h"
+#include "DedicatedThreadScope.h"
 
-#include "ContainerNode.h"
-
-#include <cassert>
-
-#include <OGRE/OgreRoot.h>
-#include <OGRE/OgreSceneManager.h>
-
-#include <iostream>
-namespace SceneGraph
+namespace Threads
 {
-  SceneRoot::SceneRoot(Ogre::SceneManager& scene_manager)
-      : signalQueue(std::make_shared<Threads::SignalQueue>())
-      , renderingScope(std::make_shared<RenderingScope>())
-      , sceneManager(&scene_manager)
+  template<typename ProtectedStruct>
+  void DedicatedThreadScopeT<ProtectedStruct>::execute()
   {
-    Ogre::Root::getSingleton().addFrameListener(renderingScope.get());
+    DedicatedThreadScopeBase::execute();
+    while(auto res = queue.try_pull())
+    {
+      bool keep = (*res)(theStruct);
+      if(keep) {
+        auto closure = [&theStruct = theStruct, f=std::move(*res)]{
+          return f(theStruct);
+        };
+        appendCallable(closure);
+      }
+    }
   }
 
-
-  void SceneRoot::populate(const SharedPtr<SceneRoot>& self,
-                           const SharedPtr<Document::DocumentTree>& document)
+  template<typename ProtectedStruct>
+  void DedicatedThreadScopeT<ProtectedStruct>::newAction(callable_t callable)
   {
-    self->self = self;
-    self->rootContainer = ContainerNode::create_root_node(self, document);
-  }
-
-  void SceneRoot::runQueue()
-  {
-    signalQueue->run_thread(signalQueue);
+    queue.push(std::move(callable));
   }
 }

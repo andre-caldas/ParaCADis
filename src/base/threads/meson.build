@@ -9,6 +9,7 @@ threads_includes = files(
 subdir('locks')
 subdir('safe_structs')
 subdir('message_queue')
+subdir('dedicated_thread_scope')
 
 
 install_headers(threads_includes,

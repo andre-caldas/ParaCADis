@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2025 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,38 +20,13 @@
  *                                                                          *
  ***************************************************************************/
 
-//#include "config.h"
+#include "RenderingScope.h"
 
-#include "SceneRoot.h"
-
-#include "ContainerNode.h"
-
-#include <cassert>
-
-#include <OGRE/OgreRoot.h>
-#include <OGRE/OgreSceneManager.h>
-
-#include <iostream>
 namespace SceneGraph
 {
-  SceneRoot::SceneRoot(Ogre::SceneManager& scene_manager)
-      : signalQueue(std::make_shared<Threads::SignalQueue>())
-      , renderingScope(std::make_shared<RenderingScope>())
-      , sceneManager(&scene_manager)
+  bool RenderingScope::frameRenderingQueued(const Ogre::FrameEvent&)
   {
-    Ogre::Root::getSingleton().addFrameListener(renderingScope.get());
-  }
-
-
-  void SceneRoot::populate(const SharedPtr<SceneRoot>& self,
-                           const SharedPtr<Document::DocumentTree>& document)
-  {
-    self->self = self;
-    self->rootContainer = ContainerNode::create_root_node(self, document);
-  }
-
-  void SceneRoot::runQueue()
-  {
-    signalQueue->run_thread(signalQueue);
+    execute();
+    return true;
   }
 }

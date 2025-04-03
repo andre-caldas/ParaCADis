@@ -1,12 +1,14 @@
 scene_graph_src = [
   'ContainerNode.cpp',
   'MeshNode.cpp',
+  'RenderingScope.cpp',
   'SceneRoot.cpp',
 ]
 
 scene_graph_includes = [
   'ContainerNode.h',
   'MeshNode.h',
+  'RenderingScope.h',
   'SceneRoot.h',
 ]
 

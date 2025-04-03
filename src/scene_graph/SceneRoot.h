@@ -23,6 +23,7 @@
 #pragma once
 
 #include "forwards.h"
+#include "RenderingScope.h"
 
 #include <base/document_tree/Container.h>
 #include <base/document_tree/DocumentTree.h>
@@ -65,6 +66,7 @@ namespace SceneGraph
   private:
     WeakPtr<SceneRoot>              self;
     SharedPtr<Threads::SignalQueue> signalQueue;
+    SharedPtr<RenderingScope>       renderingScope;
 
     SharedPtr<ContainerNode> rootContainer;
 
