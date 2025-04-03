@@ -48,6 +48,8 @@ namespace Threads
     [[nodiscard]]
     ExclusiveLock(std::try_to_lock_t, Mutex&... mutex);
 
+    bool hasTryLockFailed() const;
+
     /**
      * Prematurely releases the lock.
      *

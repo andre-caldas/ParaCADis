@@ -67,6 +67,12 @@ namespace Threads
     assert(locks.size() == mutexes.size());
   }
 
+  bool ExclusiveLock::hasTryLockFailed() const
+  {
+    auto& mutexes = getMutexes();
+    return locks.size() != mutexes.size();
+  }
+
   bool ExclusiveLock::try_lock()
   {
     assert(locks.empty() && "Already locked!");
