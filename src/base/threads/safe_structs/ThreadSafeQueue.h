@@ -20,18 +20,17 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef SafeStructs_ThreadSafeQueue_H
-#define SafeStructs_ThreadSafeQueue_H
+#pragma once
 
 #include <base/threads/locks/gates.h>
 #include <base/threads/locks/writer_locks.h>
 
 #include <deque>
+#include <optional>
 #include <semaphore>
 
 namespace Threads::SafeStructs
 {
-
   /**
    * Wraps an std::queue, into a mutex protected structure.
    *
@@ -78,9 +77,32 @@ namespace Threads::SafeStructs
       return result;
     }
 
+    /**
+     * Non-blocking pull operation.
+     *
+     * When you are repeatedly pulling and doing other things,
+     * like in a rendering loop, you can try_pull() and simply
+     * give up on failure.
+     */
+    std::optional<T> try_pull()
+    {
+      assert(!LockPolicy::hasAnyLock()
+             && "This call blocks, you cannot hold locks when you call it.");
+      if(!semaphore.try_acquire()) {
+        return {};
+      }
+
+      [[maybe_unused]]
+      ExclusiveLock l{std::try_to_lock, mutex};
+      if(l.hasTryLockFailed()) {
+        semaphore.release();
+        return {};
+      }
+      auto result = std::move(theDeque.front());
+      theDeque.pop_front();
+      return result;
+    }
+
     constexpr auto& getMutexLike() const { return mutex; }
   };
-
 }
-
-#endif
