@@ -67,7 +67,7 @@ namespace Threads
    * Be sure that the mirrored data is not expensive to compare and copy.
    */
   template<C_MutexHolderWithGates Holder>
-  class UnreliableMirrorGate<Holder>
+  class UnreliableMirrorGate
     : public UnreliableMirrorBase
   {
   public:
