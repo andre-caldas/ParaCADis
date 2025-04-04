@@ -47,6 +47,7 @@ using namespace SceneGraph;
 namespace {
   /**
    * A hack to extract an object form the SWIG wrapper.
+   * Probably introduces security issues.
    */
   template<typename T>
   T* extract_from_swig(py::handle swig_wrapper)
@@ -59,7 +60,7 @@ namespace {
 
     PyObject* pySwigThis = PyObject_GetAttrString(swig_wrapper.ptr(), "this");
     if(!pySwigThis) {
-      throw std::runtime_error("Passed object is not a SceneManager (I think!).");
+      throw std::runtime_error("Passed object is not SWIG (I think!).");
     }
     auto* swig = reinterpret_cast<SwigPyObject*>(pySwigThis);
     return reinterpret_cast<T*>(swig->ptr);

@@ -1,10 +1,10 @@
-base_src = [
+base_src = files(
   'exceptions.cpp',
-]
+)
 
-base_includes = [
+base_includes = files(
   'exceptions.h',
-]
+)
 
 base_lib = library(
   'base',

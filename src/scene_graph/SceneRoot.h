@@ -62,6 +62,7 @@ namespace SceneGraph
     void runQueue();
 
     const SharedPtr<Threads::SignalQueue>& getQueue() { return signalQueue; }
+    const SharedPtr<RenderingScope>& getRenderingScope() { return renderingScope; }
 
   private:
     WeakPtr<SceneRoot>              self;

@@ -27,7 +27,7 @@
 namespace py = pybind11;
 
 PYBIND11_MODULE(paracadis_scene_graph, m) {
-  m.doc() = "Python interface to display ParaCADis in 3D.";
+  m.doc() = "Python interface to display ParaCADis using Ogre3D.";
 
   py::module_::import("paracadis");
   init_scene(m);
