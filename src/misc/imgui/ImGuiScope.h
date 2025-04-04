@@ -25,12 +25,6 @@
 #include <base/threads/locks/unreliable_mirror.h>
 #include <base/threads/dedicated_thread_scope/DedicatedThreadScope.h>
 
-#include <OGRE/Bites/OgreImGuiInputListener.h>
-
-namespace OgreBites {
-  class InputListenerChain;
-}
-
 namespace ParacadisImGui
 {
   class ImGuiScope
@@ -47,13 +41,6 @@ namespace ParacadisImGui
 
     template<Threads::C_MutexHolderWithGates Holder>
     void addMirror(SharedPtr<Mirror<Holder>> mirror, std::function<bool(Mirror<Holder>&)> f);
-
-    /**
-     * Just to make python bindings easier.
-     * Probably we want to remove this in the future.
-     */
-    void addToInputListenerChain(OgreBites::InputListenerChain* chain);
-    OgreBites::ImGuiInputListener input_listener;
 
   protected:
     void execute() noexcept override;

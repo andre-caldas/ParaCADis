@@ -45,9 +45,6 @@ void init_imgui(py::module_& m)
       "Manipulates Dear ImGui's elements.")
       .def(py::init<>(),
            "Creates a ImGui scope to be executed inside the rendering loop.")
-      .def_readonly("input_listener", &ImGuiScope::input_listener,
-           "Ogre3D's InputListener."
-           " Probably, to be attached to an OgreBite's InputListenerChain.")
       .def("__repr__",
            [](const ImGuiScope&){ return "<ImGuiScope... (put info here)>"; });
 }
