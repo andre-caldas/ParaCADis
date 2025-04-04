@@ -30,5 +30,3 @@ mesh_provider_lib = library(
   link_with: libs_base,
   dependencies: [deps, mesh_provider_deps],
 )
-
-libs_upto_now += [mesh_provider_lib]
