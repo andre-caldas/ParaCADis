@@ -29,6 +29,7 @@ pybind_main_src = []
 subdir('base')
 subdir('mesh_provider')
 subdir('scene_graph')
+subdir('misc')
 subdir('python_bindings')
 
 paracadis_exec = executable('paracadis', 'paracadis.cpp',
