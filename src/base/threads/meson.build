@@ -27,3 +27,6 @@ threads_lib = library(
 )
 
 libs_upto_now += [threads_lib]
+
+subdir('python_bindings')
+#subdir('tests')

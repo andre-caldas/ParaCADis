@@ -22,45 +22,8 @@
 
 #pragma once
 
-#include "../safe_structs/ThreadSafeQueue.h"
+#include <pybind11/pybind11.h>
 
-#include <functional>
-#include <list>
+namespace py = pybind11;
 
-namespace Threads
-{
-  class DedicatedThreadScopeBase
-  {
-  public:
-    virtual ~DedicatedThreadScopeBase() = default;
-    virtual void execute() noexcept;
-
-  protected:
-    using inner_callable_t = std::function<bool()>;
-    using callable_list_t = std::list<inner_callable_t>;
-    using callable_iter_t = callable_list_t::const_iterator;
-
-    void appendCallable(inner_callable_t callable);
-
-  private:
-    callable_list_t callables;
-  };
-
-  template<typename ProtectedStruct>
-  class DedicatedThreadScopeT
-    : public DedicatedThreadScopeBase
-  {
-  public:
-    using struct_t = ProtectedStruct;
-    using callable_t = std::function<bool(struct_t&)>;
-
-    void execute() noexcept override;
-    void newAction(callable_t callable);
-
-  private:
-    struct_t theStruct;
-    SafeStructs::ThreadSafeQueue<callable_t> queue;
-  };
-}  // namespace Threads
-
-#include "DedicatedThreadScope.hpp"
+void init_thread_scope(py::module_& module);

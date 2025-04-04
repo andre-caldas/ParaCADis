@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2025 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2024-2025 André Caldas <andre.em.caldas@gmail.com>       *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,47 +20,14 @@
  *                                                                          *
  ***************************************************************************/
 
-#pragma once
+#include <pybind11/pybind11.h>
 
-#include "../safe_structs/ThreadSafeQueue.h"
+#include "thread_scope.h"
 
-#include <functional>
-#include <list>
+namespace py = pybind11;
 
-namespace Threads
-{
-  class DedicatedThreadScopeBase
-  {
-  public:
-    virtual ~DedicatedThreadScopeBase() = default;
-    virtual void execute() noexcept;
+PYBIND11_MODULE(paracadis_threads, m) {
+  m.doc() = "Python interface to thread policy and utilities.";
 
-  protected:
-    using inner_callable_t = std::function<bool()>;
-    using callable_list_t = std::list<inner_callable_t>;
-    using callable_iter_t = callable_list_t::const_iterator;
-
-    void appendCallable(inner_callable_t callable);
-
-  private:
-    callable_list_t callables;
-  };
-
-  template<typename ProtectedStruct>
-  class DedicatedThreadScopeT
-    : public DedicatedThreadScopeBase
-  {
-  public:
-    using struct_t = ProtectedStruct;
-    using callable_t = std::function<bool(struct_t&)>;
-
-    void execute() noexcept override;
-    void newAction(callable_t callable);
-
-  private:
-    struct_t theStruct;
-    SafeStructs::ThreadSafeQueue<callable_t> queue;
-  };
-}  // namespace Threads
-
-#include "DedicatedThreadScope.hpp"
+  init_thread_scope(m);
+}
