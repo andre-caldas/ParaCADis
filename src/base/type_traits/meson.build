@@ -9,6 +9,7 @@ type_traits_includes = [
   'record_items.h',
   'ReduceToRaw.h',
   'Utils.h',
+  'NamedMember.h',
 ]
 
 install_headers(type_traits_includes,

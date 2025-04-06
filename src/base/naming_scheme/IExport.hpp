@@ -93,7 +93,7 @@ namespace NamingScheme
    * Local pointer to type T.
    */
   template<typename T, class DataStruct, EachExportedData... dataInfo>
-  requires C_AllExportedDataOfType<T, T*, decltype(dataInfo)...>
+  requires TypeTraits::C_AllNamedDataOfType<T, T*, decltype(dataInfo)...>
   void IExportStruct<T, DataStruct, dataInfo...>::init()
   {
     static_assert(!std::is_base_of_v<ExporterBase, T>, "ExporterBase types need SharedPtrWrap.");
@@ -114,7 +114,7 @@ namespace NamingScheme
   }
 
   template<typename T, class DataStruct, EachExportedData... dataInfo>
-  requires C_AllExportedDataOfType<T, T*, decltype(dataInfo)...>
+  requires TypeTraits::C_AllNamedDataOfType<T, T*, decltype(dataInfo)...>
   T* IExportStruct<T, DataStruct, dataInfo...>::resolve_ptr(token_iterator& tokens, T*)
   {
     assert(dynamic_cast<Exporter<DataStruct>*>(this)
@@ -143,7 +143,7 @@ namespace NamingScheme
    * Local pointer to type SharedPtrWrap<T>.
    */
   template<typename T, class DataStruct, EachExportedData... dataInfo>
-  requires (C_AllExportedDataOfType<T, SharedPtrWrap<T>, decltype(dataInfo)...>
+  requires (TypeTraits::C_AllNamedDataOfType<T, SharedPtrWrap<T>, decltype(dataInfo)...>
             && Threads::C_MutexHolder<T>)
   void IExportStruct<T, DataStruct, dataInfo...>::init()
   {
@@ -164,7 +164,7 @@ namespace NamingScheme
   }
 
   template<typename T, class DataStruct, EachExportedData... dataInfo>
-  requires (C_AllExportedDataOfType<T, SharedPtrWrap<T>, decltype(dataInfo)...>
+  requires (TypeTraits::C_AllNamedDataOfType<T, SharedPtrWrap<T>, decltype(dataInfo)...>
             && Threads::C_MutexHolder<T>)
   SharedPtr<T> IExportStruct<T, DataStruct, dataInfo...>::resolve_shared(token_iterator& tokens, T*)
   {

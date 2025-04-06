@@ -26,7 +26,7 @@
 #include "ResultHolder.h"
 #include "types.h"
 
-#include <base/expected_behaviour/SharedPtrWrap.h>
+#include <base/type_traits/NamedMember.h>
 #include <base/threads/safe_structs/ThreadSafeStruct.h>
 
 #include <algorithm>
@@ -103,65 +103,8 @@ namespace NamingScheme
     /* requires (Threads::C_MutexHolder<T>) */ { return {}; }
   };
 
-  template<std::size_t N>
-  struct TemplateString
-  {
-    constexpr TemplateString(const char (&str)[N])
-    {
-      // TODO: temporary check. Remove in future.
-      static_assert(N <= 20, "Exported variable's name is too long.");
-      std::ranges::copy(str, string);
-    }
-    char string[N];
-  };
-
   template<typename T, class C, std::size_t N>
-  struct EachExportedData
-  {
-    constexpr EachExportedData(T C::* local_ptr, const char (&str)[N])
-        : local_ptr(local_ptr)
-        , name(str)
-    {}
-
-    constexpr EachExportedData(T C::* local_ptr, TemplateString<N> str)
-        : local_ptr(local_ptr)
-        , name(str)
-    {}
-
-    using data_type = T;
-    using pointer_to_type = T*;
-    T C::* local_ptr;
-    TemplateString<N> name;
-  };
-
-  template<typename T, class C, std::size_t N>
-  struct EachExportedData<SharedPtrWrap<T>, C, N>
-  {
-    constexpr EachExportedData(SharedPtrWrap<T> C::* local_ptr, const char (&str)[N])
-        : local_ptr(local_ptr)
-        , name(str)
-    {}
-
-    constexpr EachExportedData(SharedPtrWrap<T> C::* local_ptr, TemplateString<N> str)
-        : local_ptr(local_ptr)
-        , name(str)
-    {}
-
-    using data_type = T;
-    using pointer_to_type = SharedPtrWrap<T>;
-    SharedPtrWrap<T> C::* local_ptr;
-    TemplateString<N> name;
-  };
-
-  template<typename T, typename P, typename ExpData>
-  concept C_ExportedDataOfType =
-      (std::same_as<T, typename ExpData::data_type>)
-      &&
-      (std::same_as<P, typename ExpData::pointer_to_type>);
-
-  template<typename T, typename P, typename... ExpData>
-  concept C_AllExportedDataOfType = (C_ExportedDataOfType<T, P, ExpData> &&...);
-
+  using EachExportedData = TypeTraits::NamedMember<T,C,N>;
 
   /**
    * Exports data managed by Exporter<DataStruct>.
@@ -173,7 +116,7 @@ namespace NamingScheme
   class IExportStruct;
 
   template<typename T, class DataStruct, EachExportedData... dataInfo>
-  requires C_AllExportedDataOfType<T, T*, decltype(dataInfo)...>
+  requires TypeTraits::C_AllNamedDataOfType<T, T*, decltype(dataInfo)...>
   class IExportStruct<T, DataStruct, dataInfo...>
       : public IExport<T>
   {
@@ -216,13 +159,11 @@ namespace NamingScheme
         = {{dataInfo.name.string, dataInfo.local_ptr}...};
   };
 
-
-
   /**
    * Template specialization that exports SharedPtr data managed by Exporter<DataStruct>.
    */
   template<typename T, class DataStruct, EachExportedData... dataInfo>
-  requires (C_AllExportedDataOfType<T, SharedPtrWrap<T>, decltype(dataInfo)...>
+  requires (TypeTraits::C_AllNamedDataOfType<T, SharedPtrWrap<T>, decltype(dataInfo)...>
             && Threads::C_MutexHolder<T>)
   class IExportStruct<T, DataStruct, dataInfo...>
       : public IExport<T>
