@@ -20,7 +20,7 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "spheres.h"
+#include "sphere.h"
 
 #include <gismo/gismo.h>
 

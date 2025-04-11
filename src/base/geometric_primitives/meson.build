@@ -1,23 +1,29 @@
 geometric_primitives_src = files(
   'checks.cpp',
-  'circles.cpp',
   'deferenceables.cpp',
+  'deferenceables_translation.cpp',
   'DocumentGeometry.cpp',
   'exceptions.cpp',
+  'types.cpp',
+  'circles.cpp',
+  'circles_translation.cpp',
   'lines.cpp',
   'spheres.cpp',
-  'types.cpp',
 )
 
 geometric_primitives_includes = files(
   'checks.h',
-  'circles.h',
   'deferenceables.h',
+  'deferenceables_description.h',
+  'deferenceables_translation.h',
   'DocumentGeometry.h',
   'exceptions.h',
+  'types.h',
+  'circles.h',
+  'circles_description.h',
+  'circles_translation.h',
   'lines.h',
   'spheres.h',
-  'types.h',
 )
 
 subdir('coordinate_system')

@@ -32,9 +32,12 @@ struct TemplateString
   constexpr TemplateString(const char (&str)[N])
   {
     // TODO: temporary check. Remove in future.
-    static_assert(N <= 20, "Exported variable's name is too long.");
+    static_assert(N <= 40, "Exported variable's name is too long.");
     std::ranges::copy(str, string);
   }
+
+  constexpr operator const char*() const {return string;}
+
   char string[N];
 };
 

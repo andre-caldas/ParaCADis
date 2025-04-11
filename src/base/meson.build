@@ -20,6 +20,7 @@ subdir('type_traits')
 subdir('expected_behaviour')
 subdir('threads')
 subdir('naming_scheme')
+subdir('data_description')
 subdir('geometric_primitives')
 subdir('document_tree')
 

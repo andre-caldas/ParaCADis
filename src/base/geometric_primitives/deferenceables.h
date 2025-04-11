@@ -48,7 +48,7 @@ struct TripletStruct {
  * coordinates directly accessed and simply use it.
  */
 class DeferenceablePoint
-    : public NamingScheme::Exporter<TripletStruct>
+    : public NamingScheme::Exporter<TripletStruct, 10>
     , public NamingScheme::IExportStruct<Real, TripletStruct,
                                        {&TripletStruct::x, "x"},
                                        {&TripletStruct::y, "y"},
@@ -79,7 +79,7 @@ public:
  * coordinates directly accessed and simply use it.
  */
 class DeferenceableVector
-    : public NamingScheme::Exporter<TripletStruct>
+    : public NamingScheme::Exporter<TripletStruct, 10>
     , public NamingScheme::IExportStruct<Real, TripletStruct,
                                        {&TripletStruct::x, "x"},
                                        {&TripletStruct::y, "y"},
