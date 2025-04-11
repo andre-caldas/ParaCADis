@@ -154,13 +154,13 @@ namespace NamingScheme
   };
 
 
-  template<typename DataStruct, int MutexLayer = 0>
+  template<typename DataStruct>
   class Exporter
       : public virtual ExporterBase
   {
   public:
     using data_t        = DataStruct;
-    using safe_struct_t = Threads::SafeStructs::ThreadSafeStruct<data_t, MutexLayer>;
+    using safe_struct_t = Threads::SafeStructs::ThreadSafeStruct<data_t>;
 
     safe_struct_t safeData;
 

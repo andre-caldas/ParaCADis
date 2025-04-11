@@ -24,13 +24,18 @@
 
 #include <base/threads/locks/reader_locks.h>
 
+DeferenceablePoint::DeferenceablePoint()
+    : Exporter(Threads::MutexLayer{10})
+{
+}
+
 DeferenceablePoint::DeferenceablePoint(const Point& p)
-    : Exporter(p.x(), p.y(), p.z())
+    : Exporter(Threads::MutexLayer{10}, p.x(), p.y(), p.z())
 {
 }
 
 DeferenceablePoint::DeferenceablePoint(Real x, Real y, Real z)
-    : Exporter(std::move(x), std::move(y), std::move(z))
+    : Exporter(Threads::MutexLayer{10}, std::move(x), std::move(y), std::move(z))
 {
 }
 
@@ -46,13 +51,18 @@ SharedPtr<DeferenceablePoint> DeferenceablePoint::deepCopy() const
 }
 
 
+DeferenceableVector::DeferenceableVector()
+    : Exporter(Threads::MutexLayer{10})
+{
+}
+
 DeferenceableVector::DeferenceableVector(const Vector& v)
-    : Exporter(v.x(), v.y(), v.z())
+    : Exporter(Threads::MutexLayer{10}, v.x(), v.y(), v.z())
 {
 }
 
 DeferenceableVector::DeferenceableVector(Real x, Real y, Real z)
-    : Exporter(std::move(x), std::move(y), std::move(z))
+    : Exporter(Threads::MutexLayer{10}, std::move(x), std::move(y), std::move(z))
 {
 }
 

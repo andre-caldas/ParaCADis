@@ -40,6 +40,17 @@ namespace Threads
   class MutexSignal;
 
   /**
+   * Facilitates passing an integer to MutexData.
+   *
+   * Many classes hold mutexes. This is just to help disambiguation.
+   */
+  struct MutexLayer
+  {
+    MutexLayer(int n = 0) : n(n) {}
+    int n;
+  };
+
+  /**
    * The lock policy uses a MutexData to represent one mutex.
    *
    * The lock policy organizes locks in a hierarchy.
@@ -67,7 +78,7 @@ namespace Threads
 
     /// Default #layer and not "lock free".
     MutexData() = default;
-    MutexData(int layer) : layer(layer) {}
+    MutexData(MutexLayer layer) : layer(layer.n) {}
     MutexData(const MutexData&) = delete;
     MutexData& operator=(const MutexData&) = delete;
     void report_exclusive_unlock() const;

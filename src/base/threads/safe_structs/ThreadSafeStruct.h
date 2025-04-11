@@ -33,11 +33,11 @@ namespace Threads::SafeStructs
   /**
    * @brief Encapsulates a struct/class to use SharedLock and ExclusiveLock.
    */
-  template<typename Struct, int MutexLayer = 0>
+  template<typename Struct>
   class ThreadSafeStruct
   {
   private:
-    mutable Threads::MutexData mutex{MutexLayer};
+    mutable Threads::MutexData mutex;
     Struct                     theStruct;
 
   public:
@@ -45,19 +45,25 @@ namespace Threads::SafeStructs
     using record_t = Struct;
 
     ThreadSafeStruct() = default;
+    ThreadSafeStruct(MutexLayer layer);
     ThreadSafeStruct(record_t&& record);
+    ThreadSafeStruct(MutexLayer layer, record_t&& record);
 
     /**
-     * Move constructor.
+     * Move constructors.
      * @attention We assume without check that no other threads have
      * access to the moved structure.
      */
     ThreadSafeStruct(ThreadSafeStruct&& other)
-        : theStruct(std::move(other.theStruct)) {}
+        : mutex(other.mutex.layer)
+        , theStruct(std::move(other.theStruct))
+    {}
 
     template<typename... T>
-    ThreadSafeStruct(T&&... t)
-        : theStruct(std::forward<T>(t)...) {}
+    ThreadSafeStruct(T&&... t);
+
+    template<typename... T>
+    ThreadSafeStruct(MutexLayer layer, T&&... t);
 
 
     // We could have a copy constructor.

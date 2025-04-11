@@ -48,15 +48,15 @@ struct TripletStruct {
  * coordinates directly accessed and simply use it.
  */
 class DeferenceablePoint
-    : public NamingScheme::Exporter<TripletStruct, 10>
+    : public NamingScheme::Exporter<TripletStruct>
     , public NamingScheme::IExportStruct<Real, TripletStruct,
                                        {&TripletStruct::x, "x"},
                                        {&TripletStruct::y, "y"},
                                        {&TripletStruct::z, "z"}>
 {
   ONLY_SHAREDPTRWRAP()
-  DeferenceablePoint() = default;
-  DeferenceablePoint(DeferenceablePoint&&) = default;
+  DeferenceablePoint();
+  DeferenceablePoint(DeferenceablePoint&&) = delete;
   DeferenceablePoint(const Point& p);
   DeferenceablePoint(Real x, Real y, Real z);
 public:
@@ -79,15 +79,15 @@ public:
  * coordinates directly accessed and simply use it.
  */
 class DeferenceableVector
-    : public NamingScheme::Exporter<TripletStruct, 10>
+    : public NamingScheme::Exporter<TripletStruct>
     , public NamingScheme::IExportStruct<Real, TripletStruct,
                                        {&TripletStruct::x, "x"},
                                        {&TripletStruct::y, "y"},
                                        {&TripletStruct::z, "z"}>
 {
   ONLY_SHAREDPTRWRAP()
-  DeferenceableVector() = default;
-  DeferenceableVector(DeferenceableVector&&) = default;
+  DeferenceableVector();
+  DeferenceableVector(DeferenceableVector&&) = delete;
   DeferenceableVector(const Vector& v);
   DeferenceableVector(Real x, Real y, Real z);
 public:

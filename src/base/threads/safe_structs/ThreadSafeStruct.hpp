@@ -26,8 +26,30 @@
 
 namespace Threads::SafeStructs
 {
-  template<typename Struct, int MutexLayer>
-  ThreadSafeStruct<Struct, MutexLayer>::ThreadSafeStruct(record_t&& record)
+  template<typename Struct>
+  ThreadSafeStruct<Struct>::ThreadSafeStruct(MutexLayer layer)
+      : mutex(layer)
+  {}
+
+  template<typename Struct>
+  ThreadSafeStruct<Struct>::ThreadSafeStruct(record_t&& record)
       : theStruct(std::move(record))
   {}
+
+  template<typename Struct>
+  ThreadSafeStruct<Struct>::ThreadSafeStruct(MutexLayer layer, record_t&& record)
+      : mutex(layer)
+      , theStruct(std::move(record))
+  {}
+
+  template<typename Struct>
+  template<typename... T>
+  ThreadSafeStruct<Struct>::ThreadSafeStruct(T&&... t)
+      : theStruct(std::forward<T>(t)...) {}
+
+  template<typename Struct>
+  template<typename... T>
+  ThreadSafeStruct<Struct>::ThreadSafeStruct(MutexLayer layer, T&&... t)
+      : mutex(layer)
+      , theStruct(std::forward<T>(t)...) {}
 }
