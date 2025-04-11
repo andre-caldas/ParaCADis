@@ -33,11 +33,11 @@ namespace Threads::SafeStructs
   /**
    * @brief Encapsulates a struct/class to use SharedLock and ExclusiveLock.
    */
-  template<typename Struct>
+  template<typename Struct, int MutexLayer = 0>
   class ThreadSafeStruct
   {
   private:
-    mutable Threads::MutexData mutex;
+    mutable Threads::MutexData mutex{MutexLayer};
     Struct                     theStruct;
 
   public:
