@@ -62,6 +62,9 @@ public:
     }
   }
 
+  SharedPtrWrap<T>& operator=(const SharedPtrWrap&) = delete;
+  auto operator==(const SharedPtrWrap&) = delete;
+
   operator const T&() const { return **this; }
   operator       T&()       { return **this; }
 
