@@ -48,6 +48,6 @@ namespace Mesh
     void slotUpdate();
 
     const SharedPtr<IgaProvider> igaProvider;
-    SharedPtrWrap<OgreGismoMesh> mesh;
+    const SharedPtrWrap<OgreGismoMesh> mesh;
   };
 }
