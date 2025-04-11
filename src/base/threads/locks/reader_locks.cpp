@@ -61,6 +61,12 @@ namespace Threads
     return true;
   }
 
+  bool SharedLock::hasTryLockFailed() const
+  {
+    auto& mutexes = getMutexes();
+    return locks.size() != mutexes.size();
+  }
+
 
   void SharedLock::release()
   {

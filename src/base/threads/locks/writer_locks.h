@@ -49,6 +49,7 @@ namespace Threads
     ExclusiveLock(std::try_to_lock_t, Mutex&... mutex);
 
     bool hasTryLockFailed() const;
+    operator bool() const {return !hasTryLockFailed();}
 
     /**
      * Prematurely releases the lock.
@@ -97,6 +98,8 @@ namespace Threads
      */
     void release();
 
+    operator bool() const {return bool(lock);}
+
   private:
     ExclusiveLock lock;
 #ifndef NDEBUG
@@ -132,6 +135,8 @@ namespace Threads
      */
     void release();
 
+    operator bool() const {return bool(lock);}
+
   private:
     ExclusiveLock lock;
     Holder& holder;
@@ -164,6 +169,8 @@ namespace Threads
      * Prematurelly releases the gate.
      */
     void release();
+
+    operator bool() const {return bool(lock);}
 
     const Holder& getHolder() const {return holder;}
 

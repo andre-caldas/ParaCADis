@@ -46,6 +46,9 @@ namespace Threads
     [[nodiscard]]
     SharedLock(std::try_to_lock_t, Mutex&... mutex);
 
+    bool hasTryLockFailed() const;
+    operator bool() const {return !hasTryLockFailed();}
+
     /**
      * Prematurely releases the lock.
      *
@@ -91,6 +94,8 @@ namespace Threads
      * Seldom use this. Rethink your design... you probably ain't gonna need it.
      */
     void release();
+
+    operator bool() const {return bool(lock);}
 
     /**
      * Gets a non-const reference.
@@ -140,6 +145,8 @@ namespace Threads
      */
     void release();
 
+    operator bool() const {return bool(lock);}
+
     /**
      * Gets a non-const reference.
      *
@@ -183,6 +190,8 @@ namespace Threads
      * Prematurelly releases the gate.
      */
     void release();
+
+    operator bool() const {return bool(lock);}
 
     const Holder& getHolder() const {return holder;}
 

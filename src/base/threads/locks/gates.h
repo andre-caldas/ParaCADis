@@ -94,9 +94,15 @@ namespace Threads
    * Information to implement gates exported by a C_MutexHolderWithGates.
    */
   /// @{
-  /// Just for template specialization.
+  /**
+   * Just for template specialization.
+   * @attention
+   * If you are getting linker errors,
+   * it means you need to define the proper specialization
+   * (or you are passing the wrong template parameters).
+   */
   template<auto PTR_TO_MEMBER, auto PTR_TO_MUTEX>
-  class LocalGateInfo {};
+  class LocalGateInfo;
 
   /**
    * Info to export a member of a C_MutexHolder through a local pointer.
