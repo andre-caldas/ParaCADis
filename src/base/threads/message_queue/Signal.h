@@ -79,6 +79,8 @@ namespace Threads
      * @attention We hold corresponding WeakPtr.
      * The signals are disconnected automatically
      * when any of those WeakPtr become invalid.
+     *
+     * @returns An id that can be used for disconnection.
      */
     template<class SignalFrom, class SignalTo>
     int connect(const SharedPtr<SignalFrom>& from,
@@ -99,6 +101,8 @@ namespace Threads
      * @attention We hold corresponding WeakPtr.
      * The signals are disconnected automatically
      * when any of those WeakPtr become invalid.
+     *
+     * @returns An id that can be used for disconnection.
      */
     template<class SignalFrom, class SignalTo>
     int connect(const SharedPtr<SignalFrom>& from,

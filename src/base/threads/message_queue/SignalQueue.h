@@ -20,8 +20,7 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef MessageQueue_SignalQueue_H
-#define MessageQueue_SignalQueue_H
+#pragma once
 
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/threads/safe_structs/ThreadSafeQueue.h>
@@ -32,7 +31,6 @@
 
 namespace Threads
 {
-
   /**
    * Recieves and executes in order every recieved "message".
    */
@@ -55,8 +53,21 @@ namespace Threads
      * and executes the corresponding callback.
      *
      * It can be called more than once.
+     * (if we fix the blockedCallBacks thread unsafety)
      */
     void run_thread(const SharedPtr<SignalQueue>& self);
+
+    /**
+     * Non-blocking try to run queued signals.
+     *
+     * @attention
+     * May fail spuriously.
+     *
+     * @attention
+     * The block/unblock mechanism is not safe when we have
+     * multiple threads running the queue.
+     */
+    void try_run();
 
     /**
      * Pushes a callback to the queue.
@@ -86,7 +97,4 @@ namespace Threads
     SharedPtr<blocked_t> blockedCallBacks;
     /// @}
   };
-
 }
-
-#endif

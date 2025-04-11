@@ -29,7 +29,6 @@
 
 namespace Threads
 {
-
   void SignalQueue::run_thread(const SharedPtr<SignalQueue>& self)
   {
     auto lambda = [self_weak = self.getWeakPtr(),
@@ -54,7 +53,7 @@ namespace Threads
 
         // We do not hold "self" while blocked in `pull()`.
         // Because if we have two consumer threads,
-        // we do not them to thik "self" is still being used just because
+        // we do not them to think "self" is still being used just because
         // the other consumer thred has a SharedPtr.
         auto self = self_weak.lock();
         if(!self) {
@@ -66,6 +65,17 @@ namespace Threads
     std::thread thread{std::move(lambda)};
     Threads::set_thread_name(thread, "signal queue");
     thread.detach();
+  }
+
+  void SignalQueue::try_run()
+  {
+    while(auto record = callBacks->try_pull()) {
+      if(blockedCallBacks->contains(record->id)) {
+        blockedCallBacks->at(record->id).push_back(std::move(record->callback));
+      } else {
+        record->callback();
+      }
+    }
   }
 
   void SignalQueue::push(function_t&& callback, void* id)
@@ -112,5 +122,4 @@ namespace Threads
     };
     push(std::move(lambda), nullptr);
   }
-
 }
