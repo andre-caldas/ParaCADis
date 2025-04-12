@@ -25,7 +25,8 @@
 namespace DataDescription
 {
   template<typename FloatTripletStruct>
-  DataTranslator<TripletStruct, FloatTripletStruct>::DataTranslator(const inner_t& _inner)
+  DataTranslator<TripletStruct, FloatTripletStruct>::
+      DataTranslator(const inner_t& _inner)
   {
     init(_inner);
   }
@@ -55,11 +56,6 @@ namespace DataDescription
   void DataTranslator<TripletStruct, FloatTripletStruct>::
       update(const inner_t& _inner, user_t& _user)
   {
-    if(!hasInnerChanged()) {
-      return;
-    }
-    resetInnerChanged();
-
     if(inner.x != _inner.x) {
       inner.x = _inner.x;
       user.x = static_cast<float>(CGAL::to_double(_inner.x));

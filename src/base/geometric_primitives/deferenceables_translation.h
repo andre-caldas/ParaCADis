@@ -32,7 +32,6 @@ namespace DataDescription
 {
   template<typename FloatTripletStruct>
   class DataTranslator<TripletStruct, FloatTripletStruct>
-      : public DataTranslatorBase
   {
   public:
     using inner_t = TripletStruct;
@@ -54,6 +53,9 @@ namespace DataDescription
     void update(const inner_t& inner, user_t& user);
     void commit(inner_t& inner, const user_t& user);
 
+    constexpr std::vector<GateTranslatorBase*> getSubTranslators() const
+    {return {};}
+
     inner_t inner;
     user_t _local_user;
     user_t& user = _local_user;
@@ -62,9 +64,9 @@ namespace DataDescription
     void init(const inner_t& inner);
   };
 
-  static_assert(C_SimpleTranslator<DataTranslator<TripletStruct, FloatPoint3D>>,
-                "Translator satisfies C_SimpleTranslator.");
+  static_assert(C_StructTranslator<DataTranslator<TripletStruct, FloatPoint3D>>,
+                "Translator satisfies C_StructTranslator.");
 
-  static_assert(C_SimpleTranslator<DataTranslator<TripletStruct, FloatVector3D>>,
-                "Translator satisfies C_SimpleTranslator.");
+  static_assert(C_StructTranslator<DataTranslator<TripletStruct, FloatVector3D>>,
+                "Translator satisfies C_StructTranslator.");
 }

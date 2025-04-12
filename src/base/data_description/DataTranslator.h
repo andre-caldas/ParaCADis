@@ -23,25 +23,11 @@
 #pragma once
 
 #include <concepts>
+#include <vector>
 
 namespace DataDescription
 {
-  class DataTranslatorBase
-  {
-  public:
-    void slotInnerChanged();
-    bool hasInnerChanged() const;
-
-  protected:
-    /**
-     * Must be called just before updating changes.
-     */
-    void resetInnerChanged();
-
-  private:
-    bool has_inner_changed = false;
-  };
-
+  class GateTranslatorBase;
 
   /**
    * Template to be specialized.
@@ -61,19 +47,20 @@ namespace DataDescription
    * Translates directly from a struct to another without any locks or gates.
    */
   template<typename T>
-  concept C_SimpleTranslator = std::derived_from<T, DataTranslatorBase>
-    && requires(T a,
+  concept C_StructTranslator = requires(T a,
                 T::inner_t inner,
                 T::user_t user,
                 const T::inner_t const_inner,
                 const T::user_t const_user) {
-    // Constructs from inner object.
+    // Constructs from inner struct.
     T{inner};
 
     // Translate from inner to user when has changes.
     a.update(const_inner, user);
     // Translate from user to inner when has changes.
     a.commit(inner, const_user);
+
+    {a.getSubTranslators()} -> std::same_as<std::vector<GateTranslatorBase*>>;
   };
 
   /**
@@ -85,7 +72,7 @@ namespace DataDescription
    * that are inside other structs, the cache already exists.
    */
   template<typename T>
-  concept C_SimpleSubTranslator = C_SimpleTranslator<T> &&
+  concept C_StructSubTranslator = C_StructTranslator<T> &&
     requires (const typename T::inner_t inner, T::user_t user_cache) {
     /*
      * Constructor shall

@@ -28,6 +28,8 @@ namespace DataDescription
 {
   DataTranslator<CirclePointRadius2NormalData, CircleRadiusCenterNormal>::
       DataTranslator(const inner_t& _inner)
+      : center_tr(_inner.center.getSharedPtr(), user.center)
+      , normal_tr(_inner.normal.getSharedPtr(), user.normal)
   {
     inner.radius2 = _inner.radius2;
     user.radius = static_cast<float>(CGAL::to_double(CGAL::sqrt(_inner.radius2)));

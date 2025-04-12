@@ -24,16 +24,26 @@
 
 namespace DataDescription
 {
-  bool GateTranslatorBase::trySync()
+  void ChangeSentinel::slotInnerChanged()
   {
-    // First we commit only what has changed.
-    if(!tryUserToInner()) {
-      return false;
-    }
-    // Then we try to update from inner data.
+    has_inner_changed = true;
+  }
+
+  bool ChangeSentinel::hasInnerChanged() const
+  {
+    return has_inner_changed;
+  }
+
+  void ChangeSentinel::resetInnerChanged()
+  {
+    has_inner_changed = false;
+  }
+
+
+  void GateTranslatorBase::trySync()
+  {
+    tryUserToInner();
     tryInnerToUser();
-    // Since commit has already succeeded, we return true;
-    return true;
   }
 
   void GateTranslatorBase::sync()

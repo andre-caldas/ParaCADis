@@ -31,6 +31,28 @@
 namespace DataDescription
 {
   /**
+   * Flag to be connected to a signal.
+   *
+   * You should create this using SharedPtrWrap so
+   * slotInnerChanged() can be connected to a signal.
+   */
+  class ChangeSentinel
+  {
+  public:
+    void slotInnerChanged();
+    bool hasInnerChanged() const;
+
+    /**
+     * Must be called just before updating changes.
+     */
+    void resetInnerChanged();
+
+  private:
+    bool has_inner_changed = false;
+  };
+
+
+  /**
    * Base class for all gate translators.
    *
    * We use virtual methods instead of a "concept",
@@ -52,12 +74,8 @@ namespace DataDescription
      *
      * @attention
      * User to inner has precedence, so it is executed first.
-     *
-     * @returns
-     * In case of success, `true`. And `false`, otherwise;
-     * where "success" means tryUserToInner() has succeeded.
      */
-    bool trySync();
+    void trySync();
 
     /**
      * Synchronizes all values back and forth.
@@ -71,7 +89,6 @@ namespace DataDescription
      */
     void sync();
 
-  protected:
     /**
      * Methods to update values from the "inner side" to the "user side".
      *
@@ -81,13 +98,8 @@ namespace DataDescription
     // @{
     /**
      * Non-blocking attempt to update values.
-     *
-     * @returns
-     * In case of success, `true`. And `false`, otherwise;
-     * where success means that needed changes were updated.
-     * In particular, when no changes are needed, it shall return `true`.
      */
-    virtual bool tryInnerToUser() = 0;
+    virtual void tryInnerToUser() = 0;
     /// Blocking version that always succeeds.
     virtual void innerToUser() = 0;
     // @}
@@ -101,30 +113,23 @@ namespace DataDescription
     // @{
     /**
      * Non-blocking attempt to commit values.
-     *
-     * @returns
-     * In case of success, `true`. And `false`, otherwise;
-     * where success means that needed changes were updated.
-     * In particular, when no changes are needed, it shall return `true`.
      */
-    virtual bool tryUserToInner() = 0;
+    virtual void tryUserToInner() = 0;
     /// Blocking version that always succeeds.
     virtual void userToInner() = 0;
     // @}
   };
 
 
-  template<Threads::C_MutexHolderWithGates Inner, typename... User>
+  template<Threads::C_MutexHolderWithGates Inner, typename User = void>
   class GateTranslator
     : public GateTranslatorBase
   {
-    static_assert(sizeof...(User) <= 1,
-                  "Too many 'User' types passed to template.");
     using inner_data_t = typename Inner::data_t;
-    using cache_t = DataTranslator<inner_data_t, User...>;
+    using cache_t = DataTranslator<inner_data_t, User>;
     using user_t = typename cache_t::user_t;
 
-    static_assert(C_SimpleTranslator<cache_t>,
+    static_assert(C_StructTranslator<cache_t>,
                   "Needs to define a simple translator for those structs.");
 
   public:
@@ -144,20 +149,21 @@ namespace DataDescription
      * Translator with inner cache that reuses an already existing user cache.
      */
     GateTranslator(SharedPtr<Inner> inner, user_t& user_cache)
-      requires C_SimpleSubTranslator<cache_t>;
+      requires C_StructSubTranslator<cache_t>;
     // @}
 
     void innerToUser() override;
-    bool tryInnerToUser() override;
+    void tryInnerToUser() override;
     void userToInner() override;
-    bool tryUserToInner() override;
+    void tryUserToInner() override;
 
   protected:
     SharedPtr<Inner> inner;
     SharedPtrWrap<cache_t> cache;
     user_t user;
 
-    Threads::SignalQueue signal_queue;
+    SharedPtrWrap<ChangeSentinel> change_sentinel;
+    SharedPtrWrap<Threads::SignalQueue> signal_queue;
   };
 }
 

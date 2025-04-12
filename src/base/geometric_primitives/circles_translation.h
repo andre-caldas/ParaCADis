@@ -46,12 +46,16 @@ namespace DataDescription
     void update(const inner_t& inner, user_t& user);
     void commit(inner_t& inner, const user_t& user);
 
+    constexpr auto& getSubTranslators() const
+    {return sub_translators;}
+
   private:
     inner_t inner;
     user_t  user;
 
-    point_translator_t center{inner.center, user.center};
-    vector_translator_t normal{inner.normal, user.normal};
+    point_translator_t center_tr;
+    vector_translator_t normal_tr;
+    const std::vector<GateTranslatorBase*> sub_translators = {&center_tr, &normal_tr};
   };
 
   template<>

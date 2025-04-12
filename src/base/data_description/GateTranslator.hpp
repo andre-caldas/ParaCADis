@@ -31,72 +31,103 @@
 
 namespace DataDescription
 {
-  template<Threads::C_MutexHolderWithGates Inner, typename... User>
-  GateTranslator<Inner, User...>::GateTranslator(SharedPtr<Inner> _inner)
+  template<Threads::C_MutexHolderWithGates Inner, typename User>
+  GateTranslator<Inner, User>::GateTranslator(SharedPtr<Inner> _inner)
       : inner(std::move(_inner))
       , cache(*Threads::ReaderGate{inner})
       , user(cache->user)
   {
     inner->getChangedSignal().connect(
-        inner, signal_queue, cache, &cache_t::slotInnerChanged);
+        inner, signal_queue, change_sentinel, &ChangeSentinel::slotInnerChanged);
   }
 
-  template<Threads::C_MutexHolderWithGates Inner, typename... User>
-  GateTranslator<Inner, User...>
+  template<Threads::C_MutexHolderWithGates Inner, typename User>
+  GateTranslator<Inner, User>
       ::GateTranslator(SharedPtr<Inner> _inner, user_t& user_cache)
-    requires C_SimpleSubTranslator<cache_t>
+    requires C_StructSubTranslator<cache_t>
       : inner(std::move(_inner))
       , cache(*Threads::ReaderGate{*inner}, user_cache)
       , user(cache->user)
   {
+    inner->getChangedSignal().connect(
+        inner, signal_queue, change_sentinel, &ChangeSentinel::slotInnerChanged);
   }
 
-  template<Threads::C_MutexHolderWithGates Inner, typename... User>
-  void GateTranslator<Inner, User...>::innerToUser()
+
+  template<Threads::C_MutexHolderWithGates Inner, typename User>
+  void GateTranslator<Inner, User>::innerToUser()
   {
-    if(!cache->hasInnerChanged()) {
+    for(auto* sub: cache->getSubTranslators()) {
+      sub->innerToUser();
+    }
+
+    signal_queue->try_run();
+    if(!change_sentinel->hasInnerChanged()) {
       return;
     }
+
+    change_sentinel->resetInnerChanged();
     Threads::ReaderGate gate{*inner};
     cache->update(*gate, user);
   }
 
-  template<Threads::C_MutexHolderWithGates Inner, typename... User>
-  bool GateTranslator<Inner, User...>::tryInnerToUser()
+
+  template<Threads::C_MutexHolderWithGates Inner, typename User>
+  void GateTranslator<Inner, User>::tryInnerToUser()
   {
-    if(!cache->hasInnerChanged()) {
-      return true;
+    for(auto* sub: cache->getSubTranslators()) {
+      sub->tryInnerToUser();
+    }
+
+    signal_queue->try_run();
+    if(!change_sentinel->hasInnerChanged()) {
+      return;
     }
 
     Threads::ReaderGate gate{std::try_to_lock, *inner};
     if(!gate) {
-      return false;
+      return;
     }
+    change_sentinel->resetInnerChanged();
     cache->update(*gate, user);
-    return true;
+    return;
   }
 
-  template<Threads::C_MutexHolderWithGates Inner, typename... User>
-  void GateTranslator<Inner, User...>::userToInner()
+
+  template<Threads::C_MutexHolderWithGates Inner, typename User>
+  void GateTranslator<Inner, User>::userToInner()
   {
+    // We assume the same user and same cache->user for all sub translators.
     if(user == cache->user) {
       return;
     }
+
+    for(auto* sub: cache->getSubTranslators()) {
+      sub->userToInner();
+    }
+
     Threads::WriterGate gate{*inner};
     cache->commit(*gate, user);
   }
 
-  template<Threads::C_MutexHolderWithGates Inner, typename... User>
-  bool GateTranslator<Inner, User...>::tryUserToInner()
+
+  template<Threads::C_MutexHolderWithGates Inner, typename User>
+  void GateTranslator<Inner, User>::tryUserToInner()
   {
+    // We assume the same user and same cache->user for all sub translators.
     if(user == cache->user) {
-      return true;
+      return;
     }
+
+    for(auto* sub: cache->getSubTranslators()) {
+      sub->tryUserToInner();
+    }
+
     Threads::WriterGate gate{std::try_to_lock, *inner};
     if(!gate) {
-      return false;
+      return;
     }
     cache->commit(*gate, user);
-    return true;
+    return;
   }
 }

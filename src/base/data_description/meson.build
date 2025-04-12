@@ -1,5 +1,4 @@
 data_description_src = files(
-  'DataTranslator.cpp',
   'GateTranslator.cpp',
   'DataWithDescription.cpp',
 )
@@ -7,6 +6,7 @@ data_description_src = files(
 data_description_includes = files(
   'DataTranslator.h',
   'GateTranslator.h',
+  'GateTranslator.hpp',
   'DataWithDescription.h',
   'DataWithDescription.hpp',
 )
