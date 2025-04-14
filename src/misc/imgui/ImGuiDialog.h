@@ -20,21 +20,30 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "DataWithDescription.h"
+#pragma once
 
-#include <cassert>
+#include <base/data_description/Description.h>
+#include <base/expected_behaviour/SharedPtr.h>
 
-namespace DataDescription
+namespace ParacadisImGui
 {
-  const char* DataWithDescriptionBase::describe_class() const
+  template<typename T>
+  class ImGuiDialog
   {
-    assert(false && "Passed data does not belong to this object.");
-    return "(unkown)";
-  }
+    using description_t = DataDescription::Description<T>;
 
-  const char* DataWithDescriptionBase::describe(void*) const
-  {
-    assert(false && "Passed data does not belong to this object.");
-    return "(unkown)";
-  }
+  public:
+    ImGuiDialog(SharedPtr<T> _data)
+      : data(std::move(_data))
+      , description(*data)
+    {}
+
+    bool operator()();
+
+  private:
+    SharedPtr<T> data;
+    description_t description;
+  };
 }
+
+#include"ImGuiDialog.hpp"

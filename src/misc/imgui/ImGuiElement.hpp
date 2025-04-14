@@ -22,42 +22,32 @@
 
 #pragma once
 
-#include "deferenceables.h"
-#include "deferenceables_description.h"
+#include "ImGuiElement.h"
 
-#include <base/data_description/Description.h>
+#include <base/geometric_primitives/deferenceables_description.h>
 
-namespace DataDescription
+#include <imgui.h>
+#include <type_traits>
+
+namespace ParacadisImGui
 {
-  struct FloatPoint3D
-  {
-    float x = 0;
-    float y = 0;
-    float z = 0;
-    bool operator==(const FloatPoint3D&) const = default;
-  };
-
-  struct FloatVector3D
-  {
-    float x = 0;
-    float y = 0;
-    float z = 0;
-    bool operator==(const FloatVector3D&) const = default;
-  };
-
   template<>
-  class Description<FloatPoint3D>
-    : public DescriptionT<FloatPoint3D, "3D point",
-                                  {&FloatPoint3D::x, "x"},
-                                  {&FloatPoint3D::y, "y"},
-                                  {&FloatPoint3D::z, "z"}>
-  {};
-
   template<>
-  class Description<FloatVector3D>
-    : public DescriptionT<FloatVector3D, "3D vector",
-                                  {&FloatVector3D::x, "x"},
-                                  {&FloatVector3D::y, "y"},
-                                  {&FloatVector3D::z, "z"}>
-  {};
+  bool ImGuiElement<float>::draw(const char* label, T& value)
+  {
+    ImGui::InputFloat(label, &value);
+    return true;
+  }
+
+  template<typename T>
+  concept C_FloatArray3 =
+      std::is_standard_layout_v<T> && sizeof(T) == sizeof(float) * 3;
+
+  template<C_FloatArray3 T>
+  template<>
+  bool ImGuiElement<T>::draw(const char* label, T& value)
+  {
+    ImGui::InputFoat3(label, &value);
+    return true;
+  }
 }

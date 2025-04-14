@@ -22,42 +22,30 @@
 
 #pragma once
 
-#include "deferenceables.h"
-#include "deferenceables_description.h"
-
-#include <base/data_description/Description.h>
+#include "Description.h"
 
 namespace DataDescription
 {
-  struct FloatPoint3D
+  template<typename Struct, TemplateString struct_name,
+           TypeTraits::NamedMember... named_items>
+  const char*
+  DescriptionT<Struct, struct_name, named_items...>::describeClass() const
   {
-    float x = 0;
-    float y = 0;
-    float z = 0;
-    bool operator==(const FloatPoint3D&) const = default;
-  };
+    return struct_name;
+  }
 
-  struct FloatVector3D
+  template<typename Struct, TemplateString struct_name,
+           TypeTraits::NamedMember... named_items>
+  const char*
+  DescriptionT<Struct, struct_name, named_items...>::describe(void* ptr) const
   {
-    float x = 0;
-    float y = 0;
-    float z = 0;
-    bool operator==(const FloatVector3D&) const = default;
-  };
-
-  template<>
-  class Description<FloatPoint3D>
-    : public DescriptionT<FloatPoint3D, "3D point",
-                                  {&FloatPoint3D::x, "x"},
-                                  {&FloatPoint3D::y, "y"},
-                                  {&FloatPoint3D::z, "z"}>
-  {};
-
-  template<>
-  class Description<FloatVector3D>
-    : public DescriptionT<FloatVector3D, "3D vector",
-                                  {&FloatVector3D::x, "x"},
-                                  {&FloatVector3D::y, "y"},
-                                  {&FloatVector3D::z, "z"}>
-  {};
+    for(const auto& item: {named_items...}) {
+      if(ptr == &(data.*(item.local_ptr))) {
+        return data.*(item.name);
+      }
+    }
+    return DescriptionBase::describe(ptr);
+  }
 }
+
+#include "Description.hpp"

@@ -25,48 +25,57 @@
 #include <base/type_traits/NamedMember.h>
 
 #include <concepts>
+#include <tuple>
 
 namespace DataDescription
 {
-  class DataWithDescriptionBase
+  class DescriptionBase
   {
   public:
-    virtual const char* describe_class() const;
+    virtual const char* describeClass() const;
     virtual const char* describe(void* ptr) const;
   };
 
   template<typename T>
-  concept C_DataWithDescription = std::derived_from<T, DataWithDescriptionBase>;
+  concept C_Description = std::derived_from<T, DescriptionBase>;
 
   /**
    * Template to be specialized.
    *
    * @attention
    * If you are getting linker errors,
-   * this means you have to specialize DataWithDescription
+   * this means you have to specialize Description
    * for the structure you are using.
+   *
+   * @example
+   * template<>
+   * class Description<Struct>
+   * : public DescriptionT<Struct, "Struct Name",
+   *                       {&Struct::radius, "Radius"},
+   *                       {&Struct::center, "Center"},
+   *                       {&Struct::normal, "Normal"}>
+   * {};
    */
   template<typename T>
-  class DataWithDescription;
+  class Description;
 
   template<typename Struct, TemplateString struct_name,
            TypeTraits::NamedMember... named_items>
-  class DataWithDescriptionT
-    : public DataWithDescriptionBase
+  class DescriptionT
+    : public DescriptionBase
   {
   public:
-    Struct data;
-
-    DataWithDescriptionT() = default;
+    Struct& data;
 
     // Behave as if it was a Struct.
-    DataWithDescriptionT(const Struct& data) : data(data) {}
-    DataWithDescriptionT(Struct&& data) : data(std::move(data)) {}
+    DescriptionT(Struct& data) : data(data) {}
     operator Struct&() {return data;}
 
-    const char* describe_class() const override;
+    const char* describeClass() const override;
     const char* describe(void* ptr) const override;
+
+    std::tuple<> items{named_items...};
   };
 }
 
-#include "DataWithDescription.hpp"
+#include "Description.hpp"

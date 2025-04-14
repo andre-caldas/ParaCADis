@@ -24,7 +24,7 @@
 
 #include "DataTranslator.h"
 
-#include <base/data_description/DataWithDescription.h>
+#include <base/data_description/Description.h>
 #include <base/threads/locks/gates.h>
 #include <base/threads/message_queue/SignalQueue.h>
 

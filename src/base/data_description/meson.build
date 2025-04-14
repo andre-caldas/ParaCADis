@@ -1,14 +1,14 @@
 data_description_src = files(
   'GateTranslator.cpp',
-  'DataWithDescription.cpp',
+  'Description.cpp',
 )
 
 data_description_includes = files(
   'DataTranslator.h',
   'GateTranslator.h',
   'GateTranslator.hpp',
-  'DataWithDescription.h',
-  'DataWithDescription.hpp',
+  'Description.h',
+  'Description.hpp',
 )
 
 install_headers(data_description_includes,

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2025 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of FreeCAD.                                          *
  *                                                                          *
@@ -21,8 +21,7 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef BASE_Threads_Traits_Utils_H
-#define BASE_Threads_Traits_Utils_H
+#pragma once
 
 #include "IndexTraits.h"
 
@@ -30,6 +29,14 @@
 
 namespace TypeTraits
 {
+  template<typename T, template<typename> class Template>
+  struct IsSpecializationOf : std::false_type {};
+
+  template<typename U, template<typename> class Template>
+  struct IsSpecializationOf<Template<U>, Template> : std::true_type {};
+
+  template<typename T, template<typename> class Template>
+  concept C_SpecializationOf = IsSpecializationOf<T, Template>::value;
 
   /**
    * @brief Used to unpack packed template types.
@@ -69,14 +76,14 @@ namespace TypeTraits
   struct MemberPointerTo
       : utils_detail::MemberPointerToAux<std::remove_reference_t<decltype(MP)>> {
   };
+
   /**
    * @brief Given a "member pointer" T that points to a member of X,
    * the type X.
    */
   template<auto MP>
   using MemberPointerTo_t = typename MemberPointerTo<MP>::type;
-
-}  // namespace TypeTraits
+}
 
 namespace strip_detail
 {
@@ -110,6 +117,3 @@ struct StripSmartPointer : strip_detail::StripSmartPointerAux<T> {
   using parent_t = strip_detail::StripSmartPointerAux<T>;
   StripSmartPointer(T& t) : parent_t(t) {}
 };
-
-#endif  // BASE_Threads_Traits_Utils_H
-

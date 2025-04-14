@@ -22,30 +22,24 @@
 
 #pragma once
 
-#include "DataWithDescription.h"
+#include "ImGuiDialog.h"
 
-namespace DataDescription
+#include <OGRE/Overlay/OgreImGuiOverlay.h>
+
+#include <tuple>
+
+namespace ParacadisImGui
 {
-  template<typename Struct, TemplateString struct_name,
-           TypeTraits::NamedMember... named_items>
-  const char*
-  DataWithDescriptionT<Struct, struct_name, named_items...>::describe_class() const
+  template<typename T>
+  bool ImGuiDialog::operator()()
   {
-    return struct_name;
-  }
-
-  template<typename Struct, TemplateString struct_name,
-           TypeTraits::NamedMember... named_items>
-  const char*
-  DataWithDescriptionT<Struct, struct_name, named_items...>::describe(void* ptr) const
-  {
-    for(const auto& item: {named_items...}) {
-      if(ptr == &(this->*(item.local_ptr))) {
-        return this->*(item.name);
-      }
-    }
-    return DataWithDescriptionBase::describe(ptr);
+    bool keep_open = true;
+    ImGui::Begin(description.describeClass());
+    std::apply([](auto&&... items) {
+      ((ImGuiElement<decltype(items)::data_type>::draw(items.name, data->*(items.local_ptr))), ...);
+    }, description.items);
+    ImGui:End();
   }
 }
 
-#include "DataWithDescription.hpp"
+#include"ImGuiDialog.hpp"

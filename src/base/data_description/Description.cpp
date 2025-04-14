@@ -20,44 +20,21 @@
  *                                                                          *
  ***************************************************************************/
 
-#pragma once
+#include "Description.h"
 
-#include "deferenceables.h"
-#include "deferenceables_description.h"
-
-#include <base/data_description/Description.h>
+#include <cassert>
 
 namespace DataDescription
 {
-  struct FloatPoint3D
+  const char* DescriptionBase::describeClass() const
   {
-    float x = 0;
-    float y = 0;
-    float z = 0;
-    bool operator==(const FloatPoint3D&) const = default;
-  };
+    assert(false && "Passed data does not belong to this object.");
+    return "(unkown)";
+  }
 
-  struct FloatVector3D
+  const char* DescriptionBase::describe(void*) const
   {
-    float x = 0;
-    float y = 0;
-    float z = 0;
-    bool operator==(const FloatVector3D&) const = default;
-  };
-
-  template<>
-  class Description<FloatPoint3D>
-    : public DescriptionT<FloatPoint3D, "3D point",
-                                  {&FloatPoint3D::x, "x"},
-                                  {&FloatPoint3D::y, "y"},
-                                  {&FloatPoint3D::z, "z"}>
-  {};
-
-  template<>
-  class Description<FloatVector3D>
-    : public DescriptionT<FloatVector3D, "3D vector",
-                                  {&FloatVector3D::x, "x"},
-                                  {&FloatVector3D::y, "y"},
-                                  {&FloatVector3D::z, "z"}>
-  {};
+    assert(false && "Passed data does not belong to this object.");
+    return "(unkown)";
+  }
 }

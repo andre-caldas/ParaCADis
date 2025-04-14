@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <base/threads/locks/unreliable_mirror.h>
+#include <base/data_description/GateTranslator.h>
 #include <base/threads/dedicated_thread_scope/DedicatedThreadScope.h>
 
 namespace ParacadisImGui
@@ -34,7 +34,7 @@ namespace ParacadisImGui
     ImGuiScope();
 
     template<Threads::C_MutexHolderWithGates Holder>
-    using Mirror = Threads::UnreliableMirrorGate<Holder>;
+    using Mirror = DataDescription::GateTranslator<Holder>;
 
     template<Threads::C_MutexHolderWithGates Holder>
     void addMutexHolder(SharedPtr<Holder> holder, std::function<bool(Mirror<Holder>&)> f);

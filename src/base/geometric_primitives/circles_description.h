@@ -24,7 +24,7 @@
 
 #include "deferenceables_description.h"
 
-#include <base/data_description/DataWithDescription.h>
+#include <base/data_description/Description.h>
 
 namespace DataDescription
 {
@@ -36,8 +36,8 @@ namespace DataDescription
   };
 
   template<>
-  class DataWithDescription<CircleRadiusCenterNormal>
-    : public DataWithDescriptionT<CircleRadiusCenterNormal, "Circle",
+  class Description<CircleRadiusCenterNormal>
+    : public DescriptionT<CircleRadiusCenterNormal, "Circle",
                                   {&CircleRadiusCenterNormal::radius, "Radius"},
                                   {&CircleRadiusCenterNormal::center, "Center"},
                                   {&CircleRadiusCenterNormal::normal, "Normal"}>
@@ -49,8 +49,8 @@ namespace DataDescription
   };
 
   template<>
-  class DataWithDescription<Circle3Points>
-    : public DataWithDescriptionT<Circle3Points, "Circle (three points)",
+  class Description<Circle3Points>
+    : public DescriptionT<Circle3Points, "Circle (three points)",
                                   {&Circle3Points::p1, "P1"},
                                   {&Circle3Points::p2, "P2"},
                                   {&Circle3Points::p3, "P3"}>

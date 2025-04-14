@@ -22,42 +22,26 @@
 
 #pragma once
 
-#include "deferenceables.h"
-#include "deferenceables_description.h"
+#include <base/type_traits/NamedMember.h>
 
-#include <base/data_description/Description.h>
-
-namespace DataDescription
+namespace ParacadisImGui
 {
-  struct FloatPoint3D
+  template<typename T>
+  class ImGuiElement
   {
-    float x = 0;
-    float y = 0;
-    float z = 0;
-    bool operator==(const FloatPoint3D&) const = default;
+  public:
+    /**
+     * Actually creates ImGui elements.
+     *
+     * This is supposed to be specialized for each data type.
+     *
+     * @returns
+     * Shall only return `false` when the dialog is supposed to be closed.
+     * Otherwise, shall return `true`;
+     */
+    template<typename U = T>
+    static bool draw(const char* label, T& value);
   };
-
-  struct FloatVector3D
-  {
-    float x = 0;
-    float y = 0;
-    float z = 0;
-    bool operator==(const FloatVector3D&) const = default;
-  };
-
-  template<>
-  class Description<FloatPoint3D>
-    : public DescriptionT<FloatPoint3D, "3D point",
-                                  {&FloatPoint3D::x, "x"},
-                                  {&FloatPoint3D::y, "y"},
-                                  {&FloatPoint3D::z, "z"}>
-  {};
-
-  template<>
-  class Description<FloatVector3D>
-    : public DescriptionT<FloatVector3D, "3D vector",
-                                  {&FloatVector3D::x, "x"},
-                                  {&FloatVector3D::y, "y"},
-                                  {&FloatVector3D::z, "z"}>
-  {};
 }
+
+#include "ImGuiElement.hpp"

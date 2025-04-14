@@ -3,6 +3,10 @@ imgui_src = files(
 )
 
 imgui_includes = files(
+  'ImGuiDialog.h',
+  'ImGuiDialog.hpp',
+  'ImGuiElement.h',
+  'ImGuiElement.hpp',
   'ImGuiScope.h',
 )
 
