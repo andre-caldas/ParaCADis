@@ -30,7 +30,7 @@
 
 namespace DataDescription
 {
-  template<typename FloatTripletStruct>
+  template<C_TripletStruct TripletStruct, typename FloatTripletStruct>
   class DataTranslator<TripletStruct, FloatTripletStruct>
   {
   public:
@@ -53,8 +53,8 @@ namespace DataDescription
     void update(const inner_t& inner, user_t& user);
     void commit(inner_t& inner, const user_t& user);
 
-    constexpr std::vector<GateTranslatorBase*> getSubTranslators() const
-    {return {};}
+    const auto& getSubTranslators() const
+    {return sub_translators;}
 
     inner_t inner;
     user_t _local_user;
@@ -62,11 +62,30 @@ namespace DataDescription
 
   private:
     void init(const inner_t& inner);
+    const std::vector<GateTranslatorBase*> sub_translators = {};
   };
 
-  static_assert(C_StructTranslator<DataTranslator<TripletStruct, FloatPoint3D>>,
+  template<>
+  struct DataTranslator<DeferenceablePointData>
+      : public DataTranslator<DeferenceablePointData, FloatPoint3D>
+  {
+    using Base = DataTranslator<DeferenceablePointData, FloatPoint3D>;
+    using Base::inner_t;
+    using Base::user_t;
+  };
+
+  static_assert(C_StructTranslator<DataTranslator<DeferenceablePointData>>,
                 "Translator satisfies C_StructTranslator.");
 
-  static_assert(C_StructTranslator<DataTranslator<TripletStruct, FloatVector3D>>,
+  template<>
+  struct DataTranslator<DeferenceableVectorData>
+      : public DataTranslator<DeferenceableVectorData, FloatVector3D>
+  {
+    using Base = DataTranslator<DeferenceableVectorData, FloatVector3D>;
+    using Base::inner_t;
+    using Base::user_t;
+  };
+
+  static_assert(C_StructTranslator<DataTranslator<DeferenceableVectorData>>,
                 "Translator satisfies C_StructTranslator.");
 }

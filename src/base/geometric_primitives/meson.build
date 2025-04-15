@@ -8,10 +8,13 @@ geometric_primitives_src = files(
   'circles.cpp',
   'circles_translation.cpp',
   'lines.cpp',
+  'lines_translation.cpp',
   'spheres.cpp',
+  'spheres_translation.cpp',
 )
 
 geometric_primitives_includes = files(
+  'all_translators.h',
   'checks.h',
   'deferenceables.h',
   'deferenceables_description.h',
@@ -23,7 +26,12 @@ geometric_primitives_includes = files(
   'circles_description.h',
   'circles_translation.h',
   'lines.h',
+  'lines_description.h',
+  'lines_translation.h',
   'spheres.h',
+  'spheres_description.h',
+  'spheres_translation.h',
+  'power_cast.h',
 )
 
 subdir('coordinate_system')

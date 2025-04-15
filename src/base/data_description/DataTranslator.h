@@ -33,12 +33,17 @@ namespace DataDescription
    * Template to be specialized.
    *
    * @attention
-   * If you are getting linker errors, this means
+   * If you are getting the static_assert error, this means
    * you have to specialize DataTranslator and define the proper
    * translation between the structures you are using.
+   * Or, you are just forgetting to include the propper `.h` file.
    */
   template<typename Inner, typename User = void>
-  class DataTranslator;
+  class DataTranslator
+  {
+    static_assert(sizeof(Inner) == 0,
+                  "Did you forget to include the specialization?");
+  };
 
 
   /**
@@ -60,13 +65,13 @@ namespace DataDescription
     // Translate from user to inner when has changes.
     a.commit(inner, const_user);
 
-    {a.getSubTranslators()} -> std::same_as<std::vector<GateTranslatorBase*>>;
+    {a.getSubTranslators()} -> std::same_as<const std::vector<GateTranslatorBase*>&>;
   };
 
   /**
    * Sometimes the translator can use an already existing user cache.
    *
-   * This is used, for example, by TripletStruct,
+   * This is used, for example, by DeferenceableVectorData,
    * because other structs usually contain points or vectors.
    * When translating those points or vectors,
    * that are inside other structs, the cache already exists.

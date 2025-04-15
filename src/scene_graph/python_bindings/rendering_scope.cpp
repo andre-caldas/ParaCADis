@@ -22,40 +22,34 @@
 
 #include <pybind11/pybind11.h>
 
-#include "thread_scope.h"
+#include "scene.h"
 
-#include <base/threads/dedicated_thread_scope/DedicatedThreadScope.h>
-#include <base/threads/dedicated_thread_scope/ScopeOfScopes.h>
+#include <exception>
 
 #include <python_bindings/types.h>
+
+#include <scene_graph/RenderingScope.h>
 
 namespace py = pybind11;
 using namespace py::literals;
 using namespace Threads;
+using namespace SceneGraph;
 
-void init_thread_scope(py::module_& m)
+void init_rendering_scope(py::module_& m)
 {
-  /*
-   * This only declares the class.
-   * Since executing python code involves locking the GIL,
-   * and since the dedicated thread is not supposed to block,
-   * this class will not be instantiable in python.
-   */
-  py::class_<DedicatedThreadScopeBase, SharedPtr<DedicatedThreadScopeBase>>(
-      m, "DedicatedThreadScope",
-      "Safely executes instructions in a dedicated thread."
-      " This object cannot be instantiated in python"
-      " and cannot be extended in python.")
-    .def("__repr__",
-         [](const DedicatedThreadScopeBase&){ return "<DEDICATEDTHREADSCOPE>"; });
-
-  py::class_<ScopeOfScopes, DedicatedThreadScopeBase, SharedPtr<ScopeOfScopes>>(
-      m, "A scope that is an array of scopes.",
-      "Safely adds new scopes.")
-    .def("addScope", &ScopeOfScopes::addScope, "scope"_a,
-           "Adds a scope that will be automatically removed when it is garbage collected.")
-    .def("addScopeKeepAlive", &ScopeOfScopes::addScopeKeepAlive, "scope"_a,
-           "Adds a scope that will never be removed.")
-    .def("__repr__",
-         [](const ScopeOfScopes& c){ return "<SCOPEOFSCOPES>"; });
+  py::class_<RenderingScope, ScopeOfScopes, SharedPtr<RenderingScope>>(
+      m, "RenderingScope",
+      "The rendering scope is a ScopeOfScopes registered to be executed"
+      "\nby the rendering thread."
+      "\n"
+      "\nScopes execute commands sent by other threads."
+      "\nIn the case of the RenderingScope, as a ScopeOfScopes,"
+      "\nthose commands are for adding sub-scopes."
+      "\nFor example, you can add a ImGuiScope. Then, you can send GUI elements"
+      "\nfor this scope to execute Dear ImGui commands to render those GUI elements."
+      "\n"
+      "\nThis object is automatically instantiated by the Scene object."
+      "\nYou (probably) should not instantiate it yourself.")
+      .def("__repr__",
+           [](const RenderingScope& s){ return "<RENDERING SCOPE... (put info here)>"; });
 }

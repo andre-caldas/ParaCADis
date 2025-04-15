@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2025 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,10 +20,42 @@
  *                                                                          *
  ***************************************************************************/
 
-#pragma once
-
 #include <pybind11/pybind11.h>
 
-namespace py = pybind11;
+#include "scopes.h"
 
-void init_thread_scope(py::module_& module);
+#include <base/threads/dedicated_thread_scope/DedicatedThreadScope.h>
+#include <base/threads/dedicated_thread_scope/ScopeOfScopes.h>
+
+#include <python_bindings/types.h>
+
+namespace py = pybind11;
+using namespace py::literals;
+using namespace Threads;
+
+void init_thread_scope(py::module_& m)
+{
+  /*
+   * This only declares the class.
+   * Since executing python code involves locking the GIL,
+   * and since the dedicated thread is not supposed to block,
+   * this class will not be instantiable in python.
+   */
+  py::class_<DedicatedThreadScopeBase, SharedPtr<DedicatedThreadScopeBase>>(
+      m, "DedicatedThreadScope",
+      "Safely executes instructions in a dedicated thread."
+      " This object cannot be instantiated in python"
+      " and cannot be extended in python.")
+    .def("__repr__",
+         [](const DedicatedThreadScopeBase&){ return "<DEDICATEDTHREADSCOPE>"; });
+
+  py::class_<ScopeOfScopes, DedicatedThreadScopeBase, SharedPtr<ScopeOfScopes>>(
+      m, "A scope that is an array of scopes.",
+      "Safely adds new scopes.")
+    .def("addScope", &ScopeOfScopes::addScope, "scope"_a,
+           "Adds a scope that will be automatically removed when it is garbage collected.")
+    .def("addScopeKeepAlive", &ScopeOfScopes::addScopeKeepAlive, "scope"_a,
+           "Adds a scope that will never be removed.")
+    .def("__repr__",
+         [](const ScopeOfScopes& c){ return "<SCOPEOFSCOPES>"; });
+}

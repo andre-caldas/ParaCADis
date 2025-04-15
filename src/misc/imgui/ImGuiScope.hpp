@@ -22,43 +22,27 @@
 
 #pragma once
 
-#include "deferenceables_description.h"
+#include "ImGuiScope.h"
 
-#include <base/data_description/Description.h>
-
-namespace DataDescription
+namespace ParacadisImGui
 {
-  /*
-   * Center and radius.
-   */
-  struct SphereCenterRadius
+  template<Threads::C_MutexHolderWithGates Holder, typename Func>
+  void ImGuiScope::addMutexHolder(SharedPtr<Holder> holder, Func&& f)
   {
-    FloatPoint3D center;
-    float        radius;
-  };
+    static_assert(std::invocable<Func, Translator<Holder>&>,
+                  "Function must be callable with Translator<Holder>& argument.");
+    auto translator = std::make_shared<Translator<Holder>>(std::move(holder));
+    addTranslator(SharedPtr{std::move(translator)}, std::move(f));
+  }
 
-  template<>
-  class Description<SphereCenterRadius>
-    : public DescriptionT<SphereCenterRadius, "Sphere",
-    {&SphereCenterRadius::radius, "Radius"},
-    {&SphereCenterRadius::center, "Center"}>
-  {};
-
-
-
-  /*
-   * Center and point.
-   */
-  struct SphereCenterSurfacePoint
+  template<Threads::C_MutexHolderWithGates Holder, typename Func>
+  void ImGuiScope::addTranslator(SharedPtr<Translator<Holder>> translator, Func&& f)
   {
-    FloatPoint3D center;
-    FloatPoint3D surface_point;
-  };
-
-  template<>
-  class Description<SphereCenterSurfacePoint>
-    : public DescriptionT<SphereCenterSurfacePoint, "Sphere (two points)",
-    {&SphereCenterSurfacePoint::center, "Center"},
-    {&SphereCenterSurfacePoint::surface_point, "Surface point"}>
-  {};
+    static_assert(std::invocable<Func, Translator<Holder>&>,
+                  "Function must be callable with Translator<Holder>& argument.");
+    auto lambda = [translator=std::move(translator), f=std::move(f)](){
+      return f(*translator);
+    };
+    appendCallable(std::move(lambda));
+  }
 }

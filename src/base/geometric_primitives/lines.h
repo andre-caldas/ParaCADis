@@ -76,7 +76,7 @@ private:
 
 
 /**
- * DataStruct for Line2Points.
+ * DataStruct for LinePointDirection.
  */
 struct LinePointDirectionData {
   SharedPtrWrap<DeferenceablePoint>  start;

@@ -22,43 +22,7 @@
 
 #pragma once
 
-#include "deferenceables_description.h"
-
-#include <base/data_description/Description.h>
-
-namespace DataDescription
-{
-  /*
-   * Center and radius.
-   */
-  struct SphereCenterRadius
-  {
-    FloatPoint3D center;
-    float        radius;
-  };
-
-  template<>
-  class Description<SphereCenterRadius>
-    : public DescriptionT<SphereCenterRadius, "Sphere",
-    {&SphereCenterRadius::radius, "Radius"},
-    {&SphereCenterRadius::center, "Center"}>
-  {};
-
-
-
-  /*
-   * Center and point.
-   */
-  struct SphereCenterSurfacePoint
-  {
-    FloatPoint3D center;
-    FloatPoint3D surface_point;
-  };
-
-  template<>
-  class Description<SphereCenterSurfacePoint>
-    : public DescriptionT<SphereCenterSurfacePoint, "Sphere (two points)",
-    {&SphereCenterSurfacePoint::center, "Center"},
-    {&SphereCenterSurfacePoint::surface_point, "Surface point"}>
-  {};
-}
+#include "deferenceables_translation.h"
+#include "lines_translation.h"
+#include "circles_translation.h"
+#include "spheres_translation.h"

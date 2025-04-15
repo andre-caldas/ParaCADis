@@ -8,6 +8,7 @@ imgui_includes = files(
   'ImGuiElement.h',
   'ImGuiElement.hpp',
   'ImGuiScope.h',
+  'ImGuiScope.hpp',
 )
 
 install_headers(

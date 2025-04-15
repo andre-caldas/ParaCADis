@@ -20,25 +20,24 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "circles_translation.h"
+#include "spheres_translation.h"
 
 #include <CGAL/number_utils.h>
 
 namespace DataDescription
 {
   /*
-   * Radius, center and normal vector.
+   * Center and radius.
    */
-  DataTranslator<CirclePointRadius2NormalData, CircleRadiusCenterNormal>::
+  DataTranslator<SphereCenterRadius2Data, SphereCenterRadius>::
       DataTranslator(const inner_t& _inner)
       : center_tr(_inner.center.getSharedPtr(), user.center)
-      , normal_tr(_inner.normal.getSharedPtr(), user.normal)
   {
     inner.radius2 = _inner.radius2;
     user.radius = static_cast<float>(CGAL::to_double(CGAL::sqrt(_inner.radius2)));
   }
 
-  void DataTranslator<CirclePointRadius2NormalData, CircleRadiusCenterNormal>::
+  void DataTranslator<SphereCenterRadius2Data, SphereCenterRadius>::
       update(const inner_t& _inner, user_t& _user)
   {
     if(_inner.radius2 != inner.radius2) {
@@ -48,7 +47,7 @@ namespace DataDescription
     }
   }
 
-  void DataTranslator<CirclePointRadius2NormalData, CircleRadiusCenterNormal>::
+  void DataTranslator<SphereCenterRadius2Data, SphereCenterRadius>::
       commit(inner_t& _inner, const user_t& _user)
   {
     if(_user.radius != user.radius) {
@@ -58,29 +57,28 @@ namespace DataDescription
     }
   }
 
-  template class DataTranslator<CirclePointRadius2NormalData, CircleRadiusCenterNormal>;
+  template class DataTranslator<SphereCenterRadius2Data, SphereCenterRadius>;
 
 
   /*
-   * Three points.
+   * Center and surface point.
    */
-  DataTranslator<Circle3PointsData, Circle3Points>::
+  DataTranslator<SphereCenterSurfacePointData, SphereCenterSurfacePoint>::
       DataTranslator(const inner_t& _inner)
-      : a_tr(_inner.a.getSharedPtr(), user.a)
-      , b_tr(_inner.b.getSharedPtr(), user.b)
-      , c_tr(_inner.c.getSharedPtr(), user.c)
+      : center_tr(_inner.center.getSharedPtr(), user.center)
+      , surface_point_tr(_inner.surface_point.getSharedPtr(), user.surface_point)
   {
   }
 
-  void DataTranslator<Circle3PointsData, Circle3Points>::
-      update(const inner_t& /*_inner*/, user_t& /*_user*/)
+  void DataTranslator<SphereCenterSurfacePointData, SphereCenterSurfacePoint>::
+      update(const inner_t& _inner, user_t& _user)
   {
   }
 
-  void DataTranslator<Circle3PointsData, Circle3Points>::
-      commit(inner_t& /*_inner*/, const user_t& /*_user*/)
+  void DataTranslator<SphereCenterSurfacePointData, SphereCenterSurfacePoint>::
+      commit(inner_t& _inner, const user_t& _user)
   {
   }
 
-  template class DataTranslator<Circle3PointsData, Circle3Points>;
+  template class DataTranslator<SphereCenterSurfacePointData, SphereCenterSurfacePoint>;
 }

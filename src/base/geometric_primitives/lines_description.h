@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2025 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -22,97 +22,44 @@
 
 #pragma once
 
-#include "deferenceables.h"
-#include "DocumentGeometry.h"
-#include "types.h"
+#include "deferenceables_description.h"
 
-#include <base/expected_behaviour/SharedPtrWrap.h>
-#include <base/naming_scheme/Chainables.h>
-#include <base/naming_scheme/Exporter.h>
-#include <base/naming_scheme/IExport.h>
-#include <base/threads/safe_structs/ThreadSafeStruct.h>
+#include <base/data_description/Description.h>
 
-
-/**
- * DataStruct for Line2Points.
- */
-struct Line2PointsData {
-  SharedPtrWrap<DeferenceablePoint> start;
-  SharedPtrWrap<DeferenceablePoint> end;
-  bool is_bounded_start;
-  bool is_bounded_end;
-};
-
-/**
- * An oriented line determined by two points.
- *
- * It can be bounded by the any of the two points.
- */
-class Line2Points
-    : public Document::DocumentCurve
-    , public NamingScheme::Exporter<Line2PointsData>
-    , public NamingScheme::IExportStruct<DeferenceablePoint, Line2PointsData,
-                                {&Line2PointsData::start, "start"},
-                                {&Line2PointsData::start, "a"},
-                                {&Line2PointsData::end, "end"},
-                                {&Line2PointsData::end, "b"}>
-    , public NamingScheme::IExportStruct<bool, Line2PointsData,
-                                {&Line2PointsData::is_bounded_start, "is_bounded_start"},
-                                {&Line2PointsData::is_bounded_end, "is_bounded_end"}>
-    , public NamingScheme::Chainables<DeferenceablePoint>
+namespace DataDescription
 {
-  ONLY_SHAREDPTRWRAP()
-  Line2Points(Point start, Point end,
-              bool is_bounded_start = true, bool is_bounded_end = true);
+  struct Line2Points
+  {
+    FloatPoint3D start;
+    FloatPoint3D end;
+    bool is_bounded_start;
+    bool is_bounded_end;
+  };
 
-public:
-  SharedPtr<Line2Points> deepCopy() const;
-  SharedPtr<NamingScheme::ExporterBase> deepCopyExporter() const override
-  { return deepCopy(); }
+  template<>
+  class Description<Line2Points>
+    : public DescriptionT<Line2Points, "Line",
+    {&Line2Points::start, "Start"},
+    {&Line2Points::end, "End"},
+    {&Line2Points::is_bounded_start, "Bounded start"},
+    {&Line2Points::is_bounded_end, "Bounded end"}>
+  {};
 
-private:
-  SharedPtr<const iga_curve_t> produceIgaCurve() const override;
-};
 
+  struct LinePointDirection
+  {
+    FloatPoint3D start;
+    FloatVector3D direction;
+    bool is_bounded_start;
+    bool is_bounded_end;
+  };
 
-/**
- * DataStruct for Line2Points.
- */
-struct LinePointDirectionData {
-  SharedPtrWrap<DeferenceablePoint>  start;
-  SharedPtrWrap<DeferenceableVector> direction;
-  bool is_bounded_start = true;
-  bool is_bounded_end = true;
-};
-
-/**
- * An oriented line determined by a (starting) point and a direction.
- *
- * It can be bounded in the starting point, or not.
- */
-class LinePointDirection
-    : public Document::DocumentCurve
-    , public NamingScheme::Exporter<LinePointDirectionData>
-    , public NamingScheme::IExportStruct<DeferenceablePoint, LinePointDirectionData,
-                                {&LinePointDirectionData::start, "start"},
-                                {&LinePointDirectionData::start, "a"}>
-    , public NamingScheme::IExportStruct<DeferenceableVector, LinePointDirectionData,
-                                {&LinePointDirectionData::direction, "direction"},
-                                {&LinePointDirectionData::direction, "v"}>
-    , public NamingScheme::IExportStruct<bool, LinePointDirectionData,
-                                {&LinePointDirectionData::is_bounded_start, "is_bounded_start"},
-                                {&LinePointDirectionData::is_bounded_end, "is_bounded_end"}>
-    , public NamingScheme::Chainables<DeferenceablePoint, DeferenceableVector>
-{
-  ONLY_SHAREDPTRWRAP()
-  LinePointDirection(Point start, Vector direction,
-                     bool is_bounded_start = true, bool is_bounded_end = true);
-
-public:
-  SharedPtr<LinePointDirection> deepCopy() const;
-  SharedPtr<NamingScheme::ExporterBase> deepCopyExporter() const override
-  { return deepCopy(); }
-
-private:
-  SharedPtr<const iga_curve_t> produceIgaCurve() const override;
-};
+  template<>
+  class Description<LinePointDirection>
+    : public DescriptionT<LinePointDirection, "Line",
+    {&LinePointDirection::start, "Start"},
+    {&LinePointDirection::direction, "Direction"},
+    {&LinePointDirection::is_bounded_start, "Bounded start"},
+    {&LinePointDirection::is_bounded_end, "Bounded end"}>
+  {};
+}

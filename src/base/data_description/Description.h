@@ -43,9 +43,10 @@ namespace DataDescription
    * Template to be specialized.
    *
    * @attention
-   * If you are getting linker errors,
-   * this means you have to specialize Description
-   * for the structure you are using.
+   * If you are getting the static_assert error, this means
+   * you have to specialize DataTranslator and define the proper
+   * translation between the structures you are using.
+   * Or, you are just forgetting to include the propper `.h` file.
    *
    * @example
    * template<>
@@ -57,7 +58,12 @@ namespace DataDescription
    * {};
    */
   template<typename T>
-  class Description;
+  class Description
+  {
+    static_assert(sizeof(T) == 0,
+                  "Did you forget to include the specialization?");
+  };
+
 
   template<typename Struct, TemplateString struct_name,
            TypeTraits::NamedMember... named_items>

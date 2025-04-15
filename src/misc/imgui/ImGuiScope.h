@@ -25,6 +25,8 @@
 #include <base/data_description/GateTranslator.h>
 #include <base/threads/dedicated_thread_scope/DedicatedThreadScope.h>
 
+#include <functional>
+
 namespace ParacadisImGui
 {
   class ImGuiScope
@@ -34,15 +36,17 @@ namespace ParacadisImGui
     ImGuiScope();
 
     template<Threads::C_MutexHolderWithGates Holder>
-    using Mirror = DataDescription::GateTranslator<Holder>;
+    using Translator = DataDescription::GateTranslator<Holder>;
 
-    template<Threads::C_MutexHolderWithGates Holder>
-    void addMutexHolder(SharedPtr<Holder> holder, std::function<bool(Mirror<Holder>&)> f);
+    template<Threads::C_MutexHolderWithGates Holder, typename Func>
+    void addMutexHolder(SharedPtr<Holder> holder, Func&& f);
 
-    template<Threads::C_MutexHolderWithGates Holder>
-    void addMirror(SharedPtr<Mirror<Holder>> mirror, std::function<bool(Mirror<Holder>&)> f);
+    template<Threads::C_MutexHolderWithGates Holder, typename Func>
+    void addTranslator(SharedPtr<Translator<Holder>>, Func&& f);
 
   protected:
     void execute() noexcept override;
   };
 }
+
+#include "ImGuiScope.hpp"

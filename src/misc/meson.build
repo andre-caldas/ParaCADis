@@ -8,6 +8,6 @@ paracadis_misc_py_lib = py_ins.extension_module(
   install: true,
   include_directories: inc,
   implicit_include_directories: false,
-  dependencies: [deps, py_deps],
+  dependencies: [deps, imgui_deps, py_deps],
   link_with: [libs_base, imgui_lib],
 )

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2025 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -22,43 +22,8 @@
 
 #pragma once
 
-#include "deferenceables_description.h"
+#include <pybind11/pybind11.h>
 
-#include <base/data_description/Description.h>
+namespace py = pybind11;
 
-namespace DataDescription
-{
-  /*
-   * Center and radius.
-   */
-  struct SphereCenterRadius
-  {
-    FloatPoint3D center;
-    float        radius;
-  };
-
-  template<>
-  class Description<SphereCenterRadius>
-    : public DescriptionT<SphereCenterRadius, "Sphere",
-    {&SphereCenterRadius::radius, "Radius"},
-    {&SphereCenterRadius::center, "Center"}>
-  {};
-
-
-
-  /*
-   * Center and point.
-   */
-  struct SphereCenterSurfacePoint
-  {
-    FloatPoint3D center;
-    FloatPoint3D surface_point;
-  };
-
-  template<>
-  class Description<SphereCenterSurfacePoint>
-    : public DescriptionT<SphereCenterSurfacePoint, "Sphere (two points)",
-    {&SphereCenterSurfacePoint::center, "Center"},
-    {&SphereCenterSurfacePoint::surface_point, "Surface point"}>
-  {};
-}
+void init_rendering_scope(py::module_& m);

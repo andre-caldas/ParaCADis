@@ -22,8 +22,8 @@
 
 #pragma once
 
-#include "circles.h"
-#include "circles_description.h"
+#include "lines.h"
+#include "lines_description.h"
 #include "deferenceables_translation.h"
 
 #include <base/data_description/DataTranslator.h>
@@ -32,14 +32,14 @@
 namespace DataDescription
 {
   /*
-   * Radius, center and normal vector.
+   * Two points.
    */
   template<>
-  class DataTranslator<CirclePointRadius2NormalData, CircleRadiusCenterNormal>
+  class DataTranslator<Line2PointsData, Line2Points>
   {
   public:
-    using inner_t = CirclePointRadius2NormalData;
-    using user_t = CircleRadiusCenterNormal;
+    using inner_t = Line2PointsData;
+    using user_t = Line2Points;
 
     using point_translator_t = GateTranslator<DeferenceablePoint, FloatPoint3D>;
     using vector_translator_t = GateTranslator<DeferenceableVector, FloatVector3D>;
@@ -56,30 +56,30 @@ namespace DataDescription
     inner_t inner;
     user_t  user;
 
-    point_translator_t center_tr;
-    vector_translator_t normal_tr;
-    const std::vector<GateTranslatorBase*> sub_translators = {&center_tr, &normal_tr};
+    point_translator_t start_tr;
+    point_translator_t end_tr;
+    const std::vector<GateTranslatorBase*> sub_translators = {&start_tr, &end_tr};
   };
 
   template<>
-  struct DataTranslator<CirclePointRadius2NormalData>
-      : public DataTranslator<CirclePointRadius2NormalData, CircleRadiusCenterNormal>
+  struct DataTranslator<Line2PointsData>
+      : public DataTranslator<Line2PointsData, Line2Points>
   {
-    using Base = DataTranslator<CirclePointRadius2NormalData, CircleRadiusCenterNormal>;
+    using Base = DataTranslator<Line2PointsData, Line2Points>;
     using Base::inner_t;
     using Base::user_t;
   };
 
 
   /*
-   * Three points.
+   * Point and direction.
    */
   template<>
-  class DataTranslator<Circle3PointsData, Circle3Points>
+  class DataTranslator<LinePointDirectionData, LinePointDirection>
   {
   public:
-    using inner_t = Circle3PointsData;
-    using user_t = Circle3Points;
+    using inner_t = LinePointDirectionData;
+    using user_t = LinePointDirection;
 
     using point_translator_t = GateTranslator<DeferenceablePoint, FloatPoint3D>;
     using vector_translator_t = GateTranslator<DeferenceableVector, FloatVector3D>;
@@ -96,15 +96,16 @@ namespace DataDescription
     inner_t inner;
     user_t  user;
 
-    point_translator_t a_tr, b_tr, c_tr;
-    const std::vector<GateTranslatorBase*> sub_translators = {&a_tr, &b_tr, &c_tr};
+    point_translator_t start_tr;
+    vector_translator_t direction_tr;
+    const std::vector<GateTranslatorBase*> sub_translators = {&start_tr, &direction_tr};
   };
 
   template<>
-  struct DataTranslator<Circle3PointsData>
-      : public DataTranslator<Circle3PointsData, Circle3Points>
+  struct DataTranslator<LinePointDirectionData>
+      : public DataTranslator<LinePointDirectionData, LinePointDirection>
   {
-    using Base = DataTranslator<Circle3PointsData, Circle3Points>;
+    using Base = DataTranslator<LinePointDirectionData, LinePointDirection>;
     using Base::inner_t;
     using Base::user_t;
   };

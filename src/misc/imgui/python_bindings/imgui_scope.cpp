@@ -29,22 +29,46 @@
 #include <python_bindings/types.h>
 
 #include <base/expected_behaviour/SharedPtr.h>
-#include <base/document_tree/DocumentTree.h>
+#include <base/geometric_primitives/power_cast.h>
+#include <base/geometric_primitives/all_translators.h>
+#include <base/naming_scheme/Exporter.h>
+
 #include <misc/imgui/ImGuiScope.h>
+
+#include <OGRE/Overlay/OgreImGuiOverlay.h>
 
 namespace py = pybind11;
 using namespace py::literals;
 
 using namespace ParacadisImGui;
+using namespace NamingScheme;
+
+namespace {
+  void create_geometry_dialog(ImGuiScope& self, SharedPtr<ExporterBase> exporter)
+  {
+    GeometryCast::dispatch(
+        std::move(exporter),
+        [&self]<typename T>(SharedPtr<T> geo){
+          auto lambda_draw = [](ImGuiScope::Translator<T>& translator){
+//            ImGui::;
+            return true;
+          };
+          self.addMutexHolder(std::move(geo), std::move(lambda_draw));
+        });
+  }
+}
 
 void init_imgui(py::module_& m)
 {
   py::module_::import("Ogre.Bites");
   py::class_<ImGuiScope, SharedPtr<ImGuiScope>>(
-      m, "ImGuiScope",
-      "Manipulates Dear ImGui's elements.")
-      .def(py::init<>(),
-           "Creates a ImGui scope to be executed inside the rendering loop.")
-      .def("__repr__",
-           [](const ImGuiScope&){ return "<ImGuiScope... (put info here)>"; });
+    m, "ImGuiScope",
+    "Manipulates Dear ImGui's elements.")
+    .def(py::init<>(),
+         "Creates a ImGui scope you need to add to the RenderingScope.")
+    .def("create_geometry_dialog",
+         create_geometry_dialog , "native_geometry"_a,
+         "Creates a 'dialog' for a dataset.")
+    .def("__repr__",
+         [](const ImGuiScope&){ return "<ImGuiScope... (put info here)>"; });
 }

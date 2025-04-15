@@ -1,5 +1,6 @@
 pybind_scene_graph_src = files(
   'module.cpp',
+  'rendering_scope.cpp',
   'scene.cpp',
 )
 

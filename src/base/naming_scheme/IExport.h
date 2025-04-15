@@ -109,11 +109,19 @@ namespace NamingScheme
   /**
    * Exports data managed by Exporter<DataStruct>.
    *
-   * If you are getting linker erros or incomplete type errors,
-   * it probably means the exported data is inconsistent.
+   * @attention
+   * If you are getting the static_assert error, this means
+   * you have to specialize DataTranslator and define the proper
+   * translation between the structures you are using.
+   * Or, you are just forgetting to include the propper `.h` file.
    */
   template<typename T, class DataStruct, EachExportedData... dataInfo>
-  class IExportStruct;
+  class IExportStruct
+  {
+    static_assert(sizeof(T) == 0,
+                  "Did you forget to include the specialization?");
+  };
+
 
   template<typename T, class DataStruct, EachExportedData... dataInfo>
   requires TypeTraits::C_AllNamedDataOfType<T, T*, decltype(dataInfo)...>

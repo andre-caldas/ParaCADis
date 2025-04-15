@@ -22,43 +22,21 @@
 
 #pragma once
 
-#include "deferenceables_description.h"
+#include "deferenceables.h"
+#include "lines.h"
+#include "circles.h"
+#include "spheres.h"
 
-#include <base/data_description/Description.h>
+#include <base/type_traits/PowerCast.h>
 
-namespace DataDescription
-{
-  /*
-   * Center and radius.
-   */
-  struct SphereCenterRadius
-  {
-    FloatPoint3D center;
-    float        radius;
-  };
-
-  template<>
-  class Description<SphereCenterRadius>
-    : public DescriptionT<SphereCenterRadius, "Sphere",
-    {&SphereCenterRadius::radius, "Radius"},
-    {&SphereCenterRadius::center, "Center"}>
-  {};
-
-
-
-  /*
-   * Center and point.
-   */
-  struct SphereCenterSurfacePoint
-  {
-    FloatPoint3D center;
-    FloatPoint3D surface_point;
-  };
-
-  template<>
-  class Description<SphereCenterSurfacePoint>
-    : public DescriptionT<SphereCenterSurfacePoint, "Sphere (two points)",
-    {&SphereCenterSurfacePoint::center, "Center"},
-    {&SphereCenterSurfacePoint::surface_point, "Surface point"}>
-  {};
-}
+/**
+ * Used to "down-cast" ExporterBase and execute
+ * the propper method, according to the derived type.
+ */
+using GeometryCast = TypeTraits::PowerCast<
+  NamingScheme::ExporterBase,
+  DeferenceablePoint, DeferenceableVector,
+  Line2Points, LinePointDirection,
+  CirclePointRadius2Normal, Circle3Points,
+  SphereCenterRadius2, SphereCenterSurfacePoint
+>;

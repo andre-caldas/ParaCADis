@@ -22,7 +22,7 @@
 
 #include <pybind11/pybind11.h>
 
-#include "thread_scope.h"
+#include "scopes.h"
 
 namespace py = pybind11;
 
@@ -30,4 +30,5 @@ PYBIND11_MODULE(paracadis_threads, m) {
   m.doc() = "Python interface to thread policy and utilities.";
 
   init_thread_scope(m);
+  init_scope_of_scopes(m);
 }

@@ -48,22 +48,4 @@ namespace ParacadisImGui
     Ogre::ImGuiOverlay::NewFrame();
     DedicatedThreadScopeBase::execute();
   }
-
-  template<Threads::C_MutexHolderWithGates Holder>
-  void ImGuiScope::addMutexHolder(
-      SharedPtr<Holder> holder, std::function<bool(Mirror<Holder>&)> f)
-  {
-    auto mirror = std::make_shared<Mirror<Holder>>(std::move(holder));
-    addMirror(std::move(mirror), std::move(f));
-  }
-
-  template<Threads::C_MutexHolderWithGates Holder>
-  void ImGuiScope::addMirror(
-      SharedPtr<Mirror<Holder>> mirror, std::function<bool(Mirror<Holder>&)> f)
-  {
-    auto lambda = [mirror=std::move(mirror), f=std::move(f)](){
-      return f(*mirror);
-    };
-    appendCallable(std::move(lambda));
-  }
 }

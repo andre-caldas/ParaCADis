@@ -28,10 +28,9 @@
 #include <base/naming_scheme/Exporter.h>
 #include <base/naming_scheme/IExport.h>
 
-/**
- * DataStruct for DeferenceablePoint and DeferenceableVector.
- */
-struct TripletStruct {
+#include <concepts>
+
+struct DeferenceablePointData {
   Real x = 0;
   Real y = 0;
   Real z = 0;
@@ -48,11 +47,11 @@ struct TripletStruct {
  * coordinates directly accessed and simply use it.
  */
 class DeferenceablePoint
-    : public NamingScheme::Exporter<TripletStruct>
-    , public NamingScheme::IExportStruct<Real, TripletStruct,
-                                       {&TripletStruct::x, "x"},
-                                       {&TripletStruct::y, "y"},
-                                       {&TripletStruct::z, "z"}>
+    : public NamingScheme::Exporter<DeferenceablePointData>
+    , public NamingScheme::IExportStruct<Real, DeferenceablePointData,
+                                       {&DeferenceablePointData::x, "x"},
+                                       {&DeferenceablePointData::y, "y"},
+                                       {&DeferenceablePointData::z, "z"}>
 {
   ONLY_SHAREDPTRWRAP()
   DeferenceablePoint();
@@ -68,6 +67,12 @@ public:
 };
 
 
+struct DeferenceableVectorData {
+  Real x = 0;
+  Real y = 0;
+  Real z = 0;
+};
+
 /**
  * A vector that exports its coordinates.
  *
@@ -79,11 +84,11 @@ public:
  * coordinates directly accessed and simply use it.
  */
 class DeferenceableVector
-    : public NamingScheme::Exporter<TripletStruct>
-    , public NamingScheme::IExportStruct<Real, TripletStruct,
-                                       {&TripletStruct::x, "x"},
-                                       {&TripletStruct::y, "y"},
-                                       {&TripletStruct::z, "z"}>
+    : public NamingScheme::Exporter<DeferenceableVectorData>
+    , public NamingScheme::IExportStruct<Real, DeferenceableVectorData,
+                                       {&DeferenceableVectorData::x, "x"},
+                                       {&DeferenceableVectorData::y, "y"},
+                                       {&DeferenceableVectorData::z, "z"}>
 {
   ONLY_SHAREDPTRWRAP()
   DeferenceableVector();
@@ -99,3 +104,10 @@ public:
 
 //  std::string toString() const override;
 };
+
+template<typename TripletStruct>
+concept C_TripletStruct = std::same_as<TripletStruct, DeferenceablePointData>
+                          || std::same_as<TripletStruct, DeferenceableVectorData>;
+
+static_assert(C_TripletStruct<DeferenceablePointData>, "Point data must be a triplet.");
+static_assert(C_TripletStruct<DeferenceableVectorData>, "Vector data must be a triplet.");

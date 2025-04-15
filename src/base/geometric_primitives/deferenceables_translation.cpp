@@ -24,7 +24,7 @@
 
 namespace DataDescription
 {
-  template<typename FloatTripletStruct>
+  template<C_TripletStruct TripletStruct, typename FloatTripletStruct>
   DataTranslator<TripletStruct, FloatTripletStruct>::
       DataTranslator(const inner_t& _inner)
   {
@@ -32,7 +32,7 @@ namespace DataDescription
   }
 
 
-  template<typename FloatTripletStruct>
+  template<C_TripletStruct TripletStruct, typename FloatTripletStruct>
   DataTranslator<TripletStruct, FloatTripletStruct>::
       DataTranslator(const inner_t& _inner, user_t& user_cache)
       : user(user_cache)
@@ -41,7 +41,7 @@ namespace DataDescription
   }
 
 
-  template<typename FloatTripletStruct>
+  template<C_TripletStruct TripletStruct, typename FloatTripletStruct>
   void DataTranslator<TripletStruct, FloatTripletStruct>::
       init(const inner_t& _inner)
   {
@@ -52,7 +52,7 @@ namespace DataDescription
   }
 
 
-  template<typename FloatTripletStruct>
+  template<C_TripletStruct TripletStruct, typename FloatTripletStruct>
   void DataTranslator<TripletStruct, FloatTripletStruct>::
       update(const inner_t& _inner, user_t& _user)
   {
@@ -74,7 +74,7 @@ namespace DataDescription
   }
 
 
-  template<typename FloatTripletStruct>
+  template<C_TripletStruct TripletStruct, typename FloatTripletStruct>
   void DataTranslator<TripletStruct, FloatTripletStruct>::
       commit(inner_t& _inner, const user_t& _user)
   {
@@ -95,6 +95,8 @@ namespace DataDescription
     }
   }
 
-  template class DataTranslator<TripletStruct, FloatPoint3D>;
-  template class DataTranslator<TripletStruct, FloatVector3D>;
+  template class DataTranslator<DeferenceablePointData>;
+  template class DataTranslator<DeferenceablePointData, FloatPoint3D>;
+  template class DataTranslator<DeferenceableVectorData>;
+  template class DataTranslator<DeferenceableVectorData, FloatVector3D>;
 }

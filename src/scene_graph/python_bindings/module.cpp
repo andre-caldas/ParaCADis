@@ -22,6 +22,7 @@
 
 #include <pybind11/pybind11.h>
 
+#include "rendering_scope.h"
 #include "scene.h"
 
 namespace py = pybind11;
@@ -30,5 +31,6 @@ PYBIND11_MODULE(paracadis_scene_graph, m) {
   m.doc() = "Python interface to display ParaCADis using Ogre3D.";
 
   py::module_::import("paracadis");
+  init_rendering_scope(m);
   init_scene(m);
 }

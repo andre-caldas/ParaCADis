@@ -5,6 +5,7 @@ type_traits_includes = [
   'IndexTraits.h',
   'IsIterator.h',
   'MultiIndexRecordInfo.h',
+  'PowerCast.h',
   'record_info.h',
   'record_items.h',
   'ReduceToRaw.h',

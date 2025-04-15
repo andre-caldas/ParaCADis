@@ -96,13 +96,21 @@ namespace Threads
   /// @{
   /**
    * Just for template specialization.
+   *
    * @attention
-   * If you are getting linker errors,
-   * it means you need to define the proper specialization
+   * If you are getting the static_assert error, this means
+   * you have to specialize DataTranslator and define the proper
+   * translation between the structures you are using.
+   * Or, you are just forgetting to include the propper `.h` file.
    * (or you are passing the wrong template parameters).
    */
   template<auto PTR_TO_MEMBER, auto PTR_TO_MUTEX>
-  class LocalGateInfo;
+  class LocalGateInfo
+  {
+    static_assert(sizeof(PTR_TO_MEMBER) == 0,
+                  "Did you forget to include the specialization?");
+  };
+
 
   /**
    * Info to export a member of a C_MutexHolder through a local pointer.

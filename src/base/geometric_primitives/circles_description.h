@@ -28,6 +28,9 @@
 
 namespace DataDescription
 {
+  /*
+   * Radius, center and normal vector.
+   */
   struct CircleRadiusCenterNormal
   {
     float radius;
@@ -38,21 +41,25 @@ namespace DataDescription
   template<>
   class Description<CircleRadiusCenterNormal>
     : public DescriptionT<CircleRadiusCenterNormal, "Circle",
-                                  {&CircleRadiusCenterNormal::radius, "Radius"},
-                                  {&CircleRadiusCenterNormal::center, "Center"},
-                                  {&CircleRadiusCenterNormal::normal, "Normal"}>
+    {&CircleRadiusCenterNormal::radius, "Radius"},
+    {&CircleRadiusCenterNormal::center, "Center"},
+    {&CircleRadiusCenterNormal::normal, "Normal"}>
   {};
 
+
+  /*
+   * Three points.
+   */
   struct Circle3Points
   {
-    FloatPoint3D p1, p2, p3;
+    FloatPoint3D a, b, c;
   };
 
   template<>
   class Description<Circle3Points>
     : public DescriptionT<Circle3Points, "Circle (three points)",
-                                  {&Circle3Points::p1, "P1"},
-                                  {&Circle3Points::p2, "P2"},
-                                  {&Circle3Points::p3, "P3"}>
+    {&Circle3Points::a, "A"},
+    {&Circle3Points::b, "B"},
+    {&Circle3Points::c, "C"}>
   {};
 }

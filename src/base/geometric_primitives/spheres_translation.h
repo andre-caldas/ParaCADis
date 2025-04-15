@@ -22,8 +22,8 @@
 
 #pragma once
 
-#include "circles.h"
-#include "circles_description.h"
+#include "spheres.h"
+#include "spheres_description.h"
 #include "deferenceables_translation.h"
 
 #include <base/data_description/DataTranslator.h>
@@ -32,14 +32,14 @@
 namespace DataDescription
 {
   /*
-   * Radius, center and normal vector.
+   * Center and radius.
    */
   template<>
-  class DataTranslator<CirclePointRadius2NormalData, CircleRadiusCenterNormal>
+  class DataTranslator<SphereCenterRadius2Data, SphereCenterRadius>
   {
   public:
-    using inner_t = CirclePointRadius2NormalData;
-    using user_t = CircleRadiusCenterNormal;
+    using inner_t = SphereCenterRadius2Data;
+    using user_t = SphereCenterRadius;
 
     using point_translator_t = GateTranslator<DeferenceablePoint, FloatPoint3D>;
     using vector_translator_t = GateTranslator<DeferenceableVector, FloatVector3D>;
@@ -57,29 +57,28 @@ namespace DataDescription
     user_t  user;
 
     point_translator_t center_tr;
-    vector_translator_t normal_tr;
-    const std::vector<GateTranslatorBase*> sub_translators = {&center_tr, &normal_tr};
+    const std::vector<GateTranslatorBase*> sub_translators = {&center_tr};
   };
 
   template<>
-  struct DataTranslator<CirclePointRadius2NormalData>
-      : public DataTranslator<CirclePointRadius2NormalData, CircleRadiusCenterNormal>
+  struct DataTranslator<SphereCenterRadius2Data>
+      : public DataTranslator<SphereCenterRadius2Data, SphereCenterRadius>
   {
-    using Base = DataTranslator<CirclePointRadius2NormalData, CircleRadiusCenterNormal>;
+    using Base = DataTranslator<SphereCenterRadius2Data, SphereCenterRadius>;
     using Base::inner_t;
     using Base::user_t;
   };
 
 
   /*
-   * Three points.
+   * Center and surface point.
    */
   template<>
-  class DataTranslator<Circle3PointsData, Circle3Points>
+  class DataTranslator<SphereCenterSurfacePointData, SphereCenterSurfacePoint>
   {
   public:
-    using inner_t = Circle3PointsData;
-    using user_t = Circle3Points;
+    using inner_t = SphereCenterSurfacePointData;
+    using user_t = SphereCenterSurfacePoint;
 
     using point_translator_t = GateTranslator<DeferenceablePoint, FloatPoint3D>;
     using vector_translator_t = GateTranslator<DeferenceableVector, FloatVector3D>;
@@ -96,15 +95,16 @@ namespace DataDescription
     inner_t inner;
     user_t  user;
 
-    point_translator_t a_tr, b_tr, c_tr;
-    const std::vector<GateTranslatorBase*> sub_translators = {&a_tr, &b_tr, &c_tr};
+    point_translator_t center_tr;
+    point_translator_t surface_point_tr;
+    const std::vector<GateTranslatorBase*> sub_translators = {&center_tr, &surface_point_tr};
   };
 
   template<>
-  struct DataTranslator<Circle3PointsData>
-      : public DataTranslator<Circle3PointsData, Circle3Points>
+  struct DataTranslator<SphereCenterSurfacePointData>
+      : public DataTranslator<SphereCenterSurfacePointData, SphereCenterSurfacePoint>
   {
-    using Base = DataTranslator<Circle3PointsData, Circle3Points>;
+    using Base = DataTranslator<SphereCenterSurfacePointData, SphereCenterSurfacePoint>;
     using Base::inner_t;
     using Base::user_t;
   };
