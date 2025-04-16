@@ -68,10 +68,8 @@ SharedPtr<const LinePointDirection::iga_curve_t> LinePointDirection::produceIgaC
 #include <base/naming_scheme/IExport.h>
 #include <base/naming_scheme/NameSearch.h>
 
-using namespace NamingScheme;
+template class NamingScheme::IExport<Line2Points>;
+template class NamingScheme::IExport<LinePointDirection>;
 
-template class IExport<Line2Points>;
-template class IExport<LinePointDirection>;
-
-template class NameSearch<Line2Points>;
-template class NameSearch<LinePointDirection>;
+template class NamingScheme::NameSearch<Line2Points>;
+template class NamingScheme::NameSearch<LinePointDirection>;

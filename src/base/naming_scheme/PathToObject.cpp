@@ -75,8 +75,8 @@ ListOfPathTokens ListOfPathTokens::unserialize(Xml::Reader&)
  * ============
  */
 
-PathToObject::PathToObject(Uuid root_uuid, ListOfPathTokens tokens)
-    : root_uuid(std::move(root_uuid))
+PathToObject::PathToObject(Uuid _root_uuid, ListOfPathTokens tokens)
+    : root_uuid(std::move(_root_uuid))
     , list_of_tokens(std::move(tokens))
 {
 }
@@ -88,8 +88,8 @@ PathToObject::PathToObject(const SharedPtr<ExporterBase>& root, ListOfPathTokens
 {
 }
 
-PathToObject::PathToObject(std::string root_url, ListOfPathTokens tokens)
-    : root_url(root_url)
+PathToObject::PathToObject(std::string _root_url, ListOfPathTokens tokens)
+    : root_url(_root_url)
     , list_of_tokens(std::move(tokens))
 {
   throw ::Exception::NotImplemented();

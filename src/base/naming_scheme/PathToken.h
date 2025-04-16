@@ -47,7 +47,7 @@ namespace NamingScheme
     PathToken& operator=(PathToken&&)      = default;
     PathToken& operator=(const PathToken&) = default;
 
-    PathToken(Uuid::uuid_type uuid) : uuid(uuid) {}
+    PathToken(Uuid::uuid_type _uuid) : uuid(_uuid) {}
     PathToken(std::string name_or_uuid);
 
     std::string        toString() const;

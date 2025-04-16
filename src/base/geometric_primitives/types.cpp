@@ -29,10 +29,8 @@
 #include <base/naming_scheme/IExport.h>
 #include <base/naming_scheme/NameSearch.h>
 
-using namespace NamingScheme;
+template class NamingScheme::IExport<Real>;
+template class NamingScheme::IExport<Point>;
 
-template class IExport<Real>;
-template class IExport<Point>;
-
-template class NameSearch<Real>;
-template class NameSearch<Point>;
+template class NamingScheme::NameSearch<Real>;
+template class NamingScheme::NameSearch<Point>;

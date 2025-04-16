@@ -74,7 +74,7 @@ namespace DataDescription
     Struct& data;
 
     // Behave as if it was a Struct.
-    DescriptionT(Struct& data) : data(data) {}
+    DescriptionT(Struct& _data) : data(_data) {}
     operator Struct&() {return data;}
 
     const char* describeClass() const override;

@@ -31,13 +31,13 @@
 
 using namespace NamingScheme;
 
-NameAndUuid::NameAndUuid(const Uuid& uuid) : uuid(uuid)
+NameAndUuid::NameAndUuid(const Uuid& _uuid) : uuid(_uuid)
 {
 }
 
-NameAndUuid::NameAndUuid(const Uuid& uuid, std::string name)
-    : uuid(uuid)
-    , name(std::move(name))
+NameAndUuid::NameAndUuid(const Uuid& _uuid, std::string _name)
+    : uuid(_uuid)
+    , name(std::move(_name))
 {
 }
 
@@ -66,12 +66,12 @@ std::string NameAndUuid::toString() const
   return uuid;
 }
 
-void NameAndUuid::serialize(Xml::Writer& writer) const noexcept
+void NameAndUuid::serialize(Xml::Writer& /*writer*/) const noexcept
 {
   assert(false);
 }
 
-NameAndUuid NameAndUuid::unserialize(Xml::Reader& reader)
+NameAndUuid NameAndUuid::unserialize(Xml::Reader& /*reader*/)
 {
   throw Exception::NotImplemented{};
 }

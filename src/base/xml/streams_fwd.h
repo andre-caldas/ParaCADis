@@ -44,6 +44,7 @@ namespace Xml
 
     virtual std::size_t getMinRepetitions() const { return 1; }
     virtual std::size_t getMaxRepetitions() const { return 1; }
+    virtual ~XmlTag() = default;
   };
 
 }  // namespace Xml

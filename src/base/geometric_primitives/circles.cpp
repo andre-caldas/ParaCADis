@@ -137,10 +137,8 @@ Circle3Points::produceIgaCurve() const
 #include <base/naming_scheme/IExport.h>
 #include <base/naming_scheme/NameSearch.h>
 
-using namespace NamingScheme;
+template class NamingScheme::IExport<CirclePointRadius2Normal>;
+template class NamingScheme::IExport<Circle3Points>;
 
-template class IExport<CirclePointRadius2Normal>;
-template class IExport<Circle3Points>;
-
-template class NameSearch<CirclePointRadius2Normal>;
-template class NameSearch<Circle3Points>;
+template class NamingScheme::NameSearch<CirclePointRadius2Normal>;
+template class NamingScheme::NameSearch<Circle3Points>;

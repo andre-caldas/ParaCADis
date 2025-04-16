@@ -55,8 +55,8 @@ namespace Threads
         // Because if we have two consumer threads,
         // we do not them to think "self" is still being used just because
         // the other consumer thred has a SharedPtr.
-        auto self = self_weak.lock();
-        if(!self) {
+        auto _self = self_weak.lock();
+        if(!_self) {
           return;
         }
       }

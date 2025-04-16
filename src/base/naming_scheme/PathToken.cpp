@@ -47,12 +47,12 @@ std::string PathToken::toString() const
   return uuid;
 }
 
-void PathToken::serialize(Xml::Writer& writer) const noexcept
+void PathToken::serialize(Xml::Writer& /*writer*/) const noexcept
 {
   assert(false);
 }
 
-PathToken PathToken::unserialize(Xml::Reader& reader)
+PathToken PathToken::unserialize(Xml::Reader& /*reader*/)
 {
   throw Exception::NotImplemented{};
 }

@@ -50,17 +50,22 @@ namespace NamingScheme
     /**
      * ResultHolder for data that holds a mutex.
      */
-    ResultHolder(SharedPtr<T> data)
+    ResultHolder(SharedPtr<T> _data)
     requires Threads::C_MutexHolder<T>
-        : mutex(data->getMutexLike())
-        , data(std::move(data)), data_weak(this->data) {}
+        : mutex(_data->getMutexLike())
+        , data(std::move(_data))
+        , data_weak(this->data)
+    {}
 
     /**
      * ResultHolder for data and an explicit mutex.
      */
     template<Threads::C_MutexLike Mutex>
-    ResultHolder(Mutex& m, SharedPtr<T> data)
-        : mutex(m), data(std::move(data)), data_weak(this->data) {}
+    ResultHolder(Mutex& m, SharedPtr<T> _data)
+        : mutex(m)
+        , data(std::move(_data))
+        , data_weak(this->data)
+    {}
 
     /**
      * ResultHolder for data that holds a mutex
@@ -70,7 +75,8 @@ namespace NamingScheme
       requires Threads::C_MutexHolder<T>
     ResultHolder(ResultHolder<S> parent, T* ptr)
         : mutex(ptr->getMutexLike())
-        , data(parent.data.append(ptr)), data_weak(data)
+        , data(parent.data.append(ptr))
+        , data_weak(this->data)
     {}
 
     /**

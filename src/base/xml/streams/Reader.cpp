@@ -26,7 +26,7 @@
 
 using namespace Xml;
 
-Reader Reader::readSubTag(const XmlTag& tag)
+Reader Reader::readSubTag(const XmlTag& /*tag*/)
 {
   throw Exception::NotImplemented{};
 }
@@ -36,7 +36,7 @@ std::vector<Reader> Reader::readAllSubTags()
   throw Exception::NotImplemented{};
 }
 
-void Reader::reportException(const std::exception& e) const
+void Reader::reportException(const std::exception& /*e*/) const
 {
   throw Exception::NotImplemented{};
 }

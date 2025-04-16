@@ -49,7 +49,7 @@ namespace {
     GeometryCast::dispatch(
         std::move(exporter),
         [&self]<typename T>(SharedPtr<T> geo){
-          auto lambda_draw = [](ImGuiScope::Translator<T>& translator){
+          auto lambda_draw = [](ImGuiScope::Translator<T>& /*translator*/){
 //            ImGui::;
             return true;
           };

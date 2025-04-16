@@ -29,15 +29,15 @@ namespace Exception
 
   RunTimeError::RunTimeError(
       std::string          str,
-      std::source_location location)
-      : std::runtime_error(str), location(location)
+      std::source_location _location)
+      : std::runtime_error(str), location(_location)
   {
   }
 
-  NotImplemented::NotImplemented(std::source_location location)
+  NotImplemented::NotImplemented(std::source_location _location)
       : RunTimeError(
-            std::format("Method not implemented ({}).", location.file_name()),
-            std::move(location))
+            std::format("Method not implemented ({}).", _location.file_name()),
+            std::move(_location))
   {
   }
 

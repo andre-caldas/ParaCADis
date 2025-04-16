@@ -89,12 +89,12 @@ bool Uuid::isValid(std::string_view uuid_str)
 }
 
 
-void Uuid::serialize(Xml::Writer& writer) const noexcept
+void Uuid::serialize(Xml::Writer& /*writer*/) const noexcept
 {
   assert(false);
 }
 
-Uuid Uuid::unserialize(Xml::Reader& reader)
+Uuid Uuid::unserialize(Xml::Reader& /*reader*/)
 {
   throw Exception::NotImplemented{};
 }

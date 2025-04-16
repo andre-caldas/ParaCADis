@@ -225,8 +225,8 @@ namespace SceneGraph
     ogre_node->removeChild(ogre_removed_node);
   }
 
-  void ContainerNode::moveContainer(SharedPtr<container_t> moved_container,
-                                    SharedPtr<container_t> moved_to)
+  void ContainerNode::moveContainer(SharedPtr<container_t> /*moved_container*/,
+                                    SharedPtr<container_t> /*moved_to*/)
   {
     assert(false && "Implement!");
   }
@@ -251,8 +251,8 @@ namespace SceneGraph
     }
   }
 
-  void ContainerNode::moveNonContainer(SharedPtr<non_container_t> non_container,
-                                       SharedPtr<container_t> moved_to)
+  void ContainerNode::moveNonContainer(SharedPtr<non_container_t> /*non_container*/,
+                                       SharedPtr<container_t> /*moved_to*/)
   {
     assert(false && "Implement moveNonContainer!");
   }

@@ -88,5 +88,5 @@ void init_scene(py::module_& m)
            "document"_a,
            "Populates the scene with the contents of 'document'.")
       .def("__repr__",
-           [](const SceneRoot& s){ return "<SCENE... (put info here)>"; });
+           [](const SceneRoot&){ return "<SCENE... (put info here)>"; });
 }

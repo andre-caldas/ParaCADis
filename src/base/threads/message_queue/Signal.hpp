@@ -52,11 +52,11 @@ namespace Threads
                    weak_to = to.getWeakPtr(), member]
         (Args... args)
     {
-      auto from = weak_from.lock();
-      if(!from) {return;}
-      auto to = weak_to.lock();
-      if(!to){return;}
-      ((*to).*member)(args...);
+      auto _from = weak_from.lock();
+      if(!_from) {return;}
+      auto _to = weak_to.lock();
+      if(!_to){return;}
+      ((*_to).*member)(args...);
     };
 
     WriterGate gate{callBacks};
@@ -80,11 +80,11 @@ namespace Threads
                    weak_to = to.getWeakPtr(), member]
         (Args... args)
     {
-      auto from = weak_from.lock();
-      if(!from) {return;}
-      auto to = weak_to.lock();
-      if(!to){return;}
-      ((*to).*member)(std::move(from), args...);
+      auto _from = weak_from.lock();
+      if(!_from) {return;}
+      auto _to = weak_to.lock();
+      if(!_to){return;}
+      ((*_to).*member)(std::move(_from), args...);
     };
 
     WriterGate gate{callBacks};
@@ -97,10 +97,10 @@ namespace Threads
 
 
   template<typename... Args>
-  void Signal<Args...>::disconnect(int id)
+  void Signal<Args...>::disconnect(int _id)
   {
     WriterGate gate{callBacks};
-    gate->erase(id);
+    gate->erase(_id);
   }
 
 

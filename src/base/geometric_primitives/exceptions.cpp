@@ -28,19 +28,19 @@
 
 using namespace Exception;
 
-NeedsLI::NeedsLI(const Vector&, const Vector&, std::source_location location)
-    : RunTimeError(std::format("const Vector&s {} and {} are not LI.", '?', '?'), location)
+NeedsLI::NeedsLI(const Vector&, const Vector&, std::source_location _location)
+    : RunTimeError(std::format("const Vector&s {} and {} are not LI.", '?', '?'), _location)
 {
 }
 
-NeedsLI::NeedsLI(const Vector&, const Vector&, const Vector&, std::source_location location)
+NeedsLI::NeedsLI(const Vector&, const Vector&, const Vector&, std::source_location _location)
     : RunTimeError(
-          std::format("const Vector&s {}, {} and {} are not LI.", '?', '?', '?'), location)
+          std::format("const Vector&s {}, {} and {} are not LI.", '?', '?', '?'), _location)
 {
 }
 
-NeedsOrthogonal::NeedsOrthogonal(const Vector&, const Vector&, std::source_location location)
+NeedsOrthogonal::NeedsOrthogonal(const Vector&, const Vector&, std::source_location _location)
     : RunTimeError(
-          std::format("const Vector&s {} and {} are not orthogonal.", '?', '?'), location)
+          std::format("const Vector&s {} and {} are not orthogonal.", '?', '?'), _location)
 {
 }

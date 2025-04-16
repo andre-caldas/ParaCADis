@@ -59,7 +59,7 @@ namespace NamingScheme
     ReferenceTo& operator=(const ReferenceTo&) = default;
     ReferenceTo& operator=(ReferenceTo&&)      = default;
 
-    ReferenceTo(PathToObject path) : path(std::move(path)) {}
+    ReferenceTo(PathToObject _path) : path(std::move(_path)) {}
 
     template<typename ROOT, typename... Args>
     ReferenceTo(ROOT&& root, Args&&... args)

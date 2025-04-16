@@ -26,7 +26,6 @@
 
 namespace Threads
 {
-
   void ExclusiveLock::lock()
   {
     assert(locks.empty() && "Already locked!");
@@ -34,15 +33,15 @@ namespace Threads
     // We mimic std::lock, which unfortunately:
     // 1. Demands two mutexes or more.
     // 2. Only works with templates, not with a dynamic set of mutexes.
-    auto& mutexes = getMutexes();
-    if(mutexes.empty()) {
+    auto& _mutexes = getMutexes();
+    if(_mutexes.empty()) {
       return;
     }
 
-    locks.reserve(mutexes.size());
+    locks.reserve(_mutexes.size());
 
-    auto current = mutexes.begin();
-    auto first = mutexes.begin();
+    auto current = _mutexes.begin();
+    auto first = _mutexes.begin();
     do
     {
       locks.clear();
@@ -50,8 +49,8 @@ namespace Threads
       while(true)
       {
         ++current;
-        if(current == mutexes.end()) {
-          current = mutexes.begin();
+        if(current == _mutexes.end()) {
+          current = _mutexes.begin();
         }
         if(current == first) {
           break;
@@ -64,22 +63,22 @@ namespace Threads
         locks.emplace_back(std::move(next));
       }
     } while(current != first);
-    assert(locks.size() == mutexes.size());
+    assert(locks.size() == _mutexes.size());
   }
 
   bool ExclusiveLock::hasTryLockFailed() const
   {
-    auto& mutexes = getMutexes();
-    return locks.size() != mutexes.size();
+    auto& _mutexes = getMutexes();
+    return locks.size() != _mutexes.size();
   }
 
   bool ExclusiveLock::try_lock()
   {
     assert(locks.empty() && "Already locked!");
-    auto& mutexes = getMutexes();
+    auto& _mutexes = getMutexes();
 
-    locks.reserve(mutexes.size());
-    for(auto m: mutexes) {
+    locks.reserve(_mutexes.size());
+    for(auto m: _mutexes) {
       std::unique_lock temp_lock{m->mutex, std::try_to_lock};
       if(!temp_lock.owns_lock()) {
         release();
@@ -92,8 +91,8 @@ namespace Threads
 
   void ExclusiveLock::release()
   {
-    auto& mutexes = getMutexes();
-    for(auto mutex: mutexes) {
+    auto& _mutexes = getMutexes();
+    for(auto mutex: _mutexes) {
       for(auto signal: mutex->active_signals) {
         signal->emit_signal();
       }
@@ -105,5 +104,4 @@ namespace Threads
   {
     release();
   }
-
 }

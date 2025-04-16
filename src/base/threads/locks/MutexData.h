@@ -46,7 +46,7 @@ namespace Threads
    */
   struct MutexLayer
   {
-    MutexLayer(int n = 0) : n(n) {}
+    MutexLayer(int _n = 0) : n(_n) {}
     int n;
   };
 
@@ -72,13 +72,13 @@ namespace Threads
   struct MutexData {
     YesItIsAMutex mutex;
     const int     layer  = 0;
-    std::unordered_set<MutexSignal*> active_signals;
+    std::unordered_set<MutexSignal*> active_signals{};
 
     static constexpr int LOCKFREE = std::numeric_limits<int>::max();
 
     /// Default #layer and not "lock free".
     MutexData() = default;
-    MutexData(MutexLayer layer) : layer(layer.n) {}
+    MutexData(MutexLayer _layer) : layer(_layer.n) {}
     MutexData(const MutexData&) = delete;
     MutexData& operator=(const MutexData&) = delete;
     void report_exclusive_unlock() const;
@@ -96,8 +96,8 @@ namespace Threads
   template<typename First, typename... MutexDataFormat>
   struct GatherMutexData<First, MutexDataFormat...> : MutexGatherBase
   {
-    constexpr GatherMutexData(First& first, MutexDataFormat&... others)
-        : first(first), others(others...) {}
+    constexpr GatherMutexData(First& _first, MutexDataFormat&... _others)
+        : first(_first), others(_others...) {}
     First& first;
     GatherMutexData<MutexDataFormat...> others;
   };

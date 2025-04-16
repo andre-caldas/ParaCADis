@@ -27,7 +27,7 @@
 
 namespace Mesh
 {
-  bool GlThreadQueue::frameStarted(const Ogre::FrameEvent& evt)
+  bool GlThreadQueue::frameStarted(const Ogre::FrameEvent& /*evt*/)
   {
     // I know... queue.empty() is not thread safe.
     // But we have no problems with spurious fail.

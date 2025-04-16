@@ -85,10 +85,8 @@ SharedPtr<DeferenceableVector> DeferenceableVector::deepCopy() const
 #include <base/naming_scheme/IExport.h>
 #include <base/naming_scheme/NameSearch.h>
 
-using namespace NamingScheme;
+template class NamingScheme::IExport<DeferenceablePoint>;
+template class NamingScheme::IExport<DeferenceableVector>;
 
-template class IExport<DeferenceablePoint>;
-template class IExport<DeferenceableVector>;
-
-template class NameSearch<DeferenceablePoint>;
-template class NameSearch<DeferenceableVector>;
+template class NamingScheme::NameSearch<DeferenceablePoint>;
+template class NamingScheme::NameSearch<DeferenceableVector>;

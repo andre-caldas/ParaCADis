@@ -51,5 +51,5 @@ void init_rendering_scope(py::module_& m)
       "\nThis object is automatically instantiated by the Scene object."
       "\nYou (probably) should not instantiate it yourself.")
       .def("__repr__",
-           [](const RenderingScope& s){ return "<RENDERING SCOPE... (put info here)>"; });
+           [](const RenderingScope&){ return "<RENDERING SCOPE... (put info here)>"; });
 }

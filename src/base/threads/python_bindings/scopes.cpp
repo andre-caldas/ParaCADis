@@ -57,5 +57,5 @@ void init_thread_scope(py::module_& m)
     .def("addScopeKeepAlive", &ScopeOfScopes::addScopeKeepAlive, "scope"_a,
            "Adds a scope that will never be removed.")
     .def("__repr__",
-         [](const ScopeOfScopes& c){ return "<SCOPEOFSCOPES>"; });
+         [](const ScopeOfScopes&){ return "<SCOPEOFSCOPES>"; });
 }

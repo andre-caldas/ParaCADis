@@ -92,7 +92,7 @@ bind_reference_to(py::module_& m, std::string type_name)
   // append string.
   // get just the path.
   ref_to.def("__repr__",
-             [type_name](const ReferenceTo& ref)
+             [type_name](const ReferenceTo&)
              { return "<REFERENCETO... (" + type_name + ")>"; });
 
 

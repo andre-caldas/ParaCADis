@@ -40,8 +40,8 @@ public:
   CycleGuard& operator=(const CycleGuard&) = delete;
 
   struct Sentinel {
-    Sentinel(std::unordered_set<T*>& set, T* element)
-        : set(set), element(element) {}
+    Sentinel(std::unordered_set<T*>& _set, T* _element)
+        : set(_set), element(_element) {}
 
     Sentinel(const Sentinel&) = delete;
     Sentinel(Sentinel&&) = delete;

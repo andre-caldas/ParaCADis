@@ -71,12 +71,12 @@ namespace DataDescription
   }
 
   void DataTranslator<SphereCenterSurfacePointData, SphereCenterSurfacePoint>::
-      update(const inner_t& _inner, user_t& _user)
+      update(const inner_t& /*_inner*/, user_t& /*_user*/)
   {
   }
 
   void DataTranslator<SphereCenterSurfacePointData, SphereCenterSurfacePoint>::
-      commit(inner_t& _inner, const user_t& _user)
+      commit(inner_t& /*_inner*/, const user_t& /*_user*/)
   {
   }
 

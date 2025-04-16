@@ -26,22 +26,20 @@
 
 namespace NamingScheme::Exception
 {
-
-  InvalidName::InvalidName(std::string_view name, std::source_location location)
-      : RunTimeError(std::format("Name cannot look like a UUID ({}).", name), location)
+  InvalidName::InvalidName(std::string_view name, std::source_location _location)
+      : RunTimeError(std::format("Name cannot look like a UUID ({}).", name), _location)
   {
   }
 
   CannotResolve::CannotResolve(
-      SharedPtr<ExporterBase> parent_lock,
-      const token_iterator& tokens, std::source_location location)
-      : RunTimeError("Cannot resolve accessor reference.", location)
+      SharedPtr<ExporterBase> /*parent_lock*/,
+      const token_iterator& /*tokens*/, std::source_location _location)
+      : RunTimeError("Cannot resolve accessor reference.", _location)
   {
   }
 
-  NoExport::NoExport(std::source_location location)
-      : RunTimeError("Object does not export required type.", location)
+  NoExport::NoExport(std::source_location _location)
+      : RunTimeError("Object does not export required type.", _location)
   {
   }
-
-}  // namespace NamedScheme::Exception
+}

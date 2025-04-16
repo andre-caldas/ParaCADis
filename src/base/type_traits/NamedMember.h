@@ -46,13 +46,13 @@ namespace TypeTraits
   template<typename T, class C, std::size_t N>
   struct NamedMember
   {
-    constexpr NamedMember(T C::* local_ptr, const char (&str)[N])
-        : local_ptr(local_ptr)
+    constexpr NamedMember(T C::* _local_ptr, const char (&str)[N])
+        : local_ptr(_local_ptr)
         , name(str)
     {}
 
-    constexpr NamedMember(T C::* local_ptr, TemplateString<N> str)
-        : local_ptr(local_ptr)
+    constexpr NamedMember(T C::* _local_ptr, TemplateString<N> str)
+        : local_ptr(_local_ptr)
         , name(str)
     {}
 
@@ -65,13 +65,13 @@ namespace TypeTraits
   template<typename T, class C, std::size_t N>
   struct NamedMember<SharedPtrWrap<T>, C, N>
   {
-    constexpr NamedMember(SharedPtrWrap<T> C::* local_ptr, const char (&str)[N])
-        : local_ptr(local_ptr)
+    constexpr NamedMember(SharedPtrWrap<T> C::* _local_ptr, const char (&str)[N])
+        : local_ptr(_local_ptr)
         , name(str)
     {}
 
-    constexpr NamedMember(SharedPtrWrap<T> C::* local_ptr, TemplateString<N> str)
-        : local_ptr(local_ptr)
+    constexpr NamedMember(SharedPtrWrap<T> C::* _local_ptr, TemplateString<N> str)
+        : local_ptr(_local_ptr)
         , name(str)
     {}
 

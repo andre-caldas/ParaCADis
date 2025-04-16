@@ -44,7 +44,7 @@ namespace NamingScheme
   class NameSearch
   {
   public:
-    NameSearch(PathCachePolicyBase<T>& cache) : cache(cache) {}
+    NameSearch(PathCachePolicyBase<T>& _cache) : cache(_cache) {}
 
     /**
      * Resolves without trying the cache.

@@ -79,7 +79,7 @@ namespace NamingScheme
 
   public:
     TimedWeakChain() = default;
-    TimedWeakChain(seconds_t layer_duration) : layer_duration(layer_duration) {}
+    TimedWeakChain(seconds_t _layer_duration) : layer_duration(_layer_duration) {}
 
     void prepare(token_iterator& tokens) override;
     void invalidate() override;

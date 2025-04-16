@@ -64,7 +64,7 @@ void init_document_tree(py::module_& parent_module)
   cont.def("set_coordinates", &Container::setCoordinates, "coordinate_system"_a,
            "Sets a deferenceable coordinate systema as the coordinate system for this container.");
   cont.def("__repr__",
-           [](const Container& c){ return "<CONTAINER... (put info here)>"; });
+           [](const Container&){ return "<CONTAINER... (put info here)>"; });
 
 
   py::class_<DocumentTree, Container, SharedPtr<DocumentTree>> tree(
@@ -72,5 +72,5 @@ void init_document_tree(py::module_& parent_module)
       "A container to hold a full document.");
   tree.def(py::init<>(), "Creates an empty document.");
   tree.def("__repr__",
-           [](const DocumentTree& d){ return "<DOCUMENT... (put info here)>"; });
+           [](const DocumentTree&){ return "<DOCUMENT... (put info here)>"; });
 }

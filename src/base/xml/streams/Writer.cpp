@@ -30,11 +30,10 @@ using namespace Xml;
 
 Writer Writer::newTag(const XmlTag& tag) noexcept
 {
-  assert(false);
   return Writer{tag, stream};
 }
 
-void Writer::reportException(const std::exception& e)
+void Writer::reportException(const std::exception& /*e*/)
 {
   throw Exception::NotImplemented{};
 }

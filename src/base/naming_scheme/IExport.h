@@ -99,7 +99,7 @@ namespace NamingScheme
      *
      * @todo Is is possible to REMOVE this T* = nullptr.
      */
-    virtual SharedPtr<T> resolve_shared(token_iterator& tokens, T* = nullptr)
+    virtual SharedPtr<T> resolve_shared(token_iterator& /*tokens*/, T* = nullptr)
     /* requires (Threads::C_MutexHolder<T>) */ { return {}; }
   };
 

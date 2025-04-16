@@ -92,16 +92,16 @@ namespace Threads {
 
 
   template<C_MutexHolderWithGates Holder>
-  ReaderGate<Holder>::ReaderGate(const Holder& holder)
-      : lock(getMutex(holder))
-      , holder(holder)
+  ReaderGate<Holder>::ReaderGate(const Holder& _holder)
+      : lock(getMutex(_holder))
+      , holder(_holder)
   {
   }
 
   template<C_MutexHolderWithGates Holder>
-  ReaderGate<Holder>::ReaderGate(std::try_to_lock_t, const Holder& holder)
-      : lock(std::try_to_lock, getMutex(holder))
-      , holder(holder)
+  ReaderGate<Holder>::ReaderGate(std::try_to_lock_t, const Holder& _holder)
+      : lock(std::try_to_lock, getMutex(_holder))
+      , holder(_holder)
   {
   }
 
@@ -131,9 +131,9 @@ namespace Threads {
 
 
   template<C_MutexHolderWithGates Holder>
-  ReaderGateKeeper<Holder>::ReaderGateKeeper(Holder holder)
-      : lock(getMutex(holder))
-      , holder(std::move(holder))
+  ReaderGateKeeper<Holder>::ReaderGateKeeper(Holder _holder)
+      : lock(getMutex(_holder))
+      , holder(std::move(_holder))
   {
   }
 

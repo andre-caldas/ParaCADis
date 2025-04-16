@@ -89,7 +89,7 @@ namespace strip_detail
 {
   template<typename T>
   struct StripSmartPointerAux {
-    StripSmartPointerAux(T& t) : t(t) {}
+    StripSmartPointerAux(T& _t) : t(_t) {}
     T& operator()() { return t; }
     T& t;
   };

@@ -94,10 +94,8 @@ SphereCenterSurfacePoint::produceIgaSurface() const
 #include <base/naming_scheme/IExport.h>
 #include <base/naming_scheme/NameSearch.h>
 
-using namespace NamingScheme;
+template class NamingScheme::IExport<SphereCenterRadius2>;
+template class NamingScheme::IExport<SphereCenterSurfacePoint>;
 
-template class IExport<SphereCenterRadius2>;
-template class IExport<SphereCenterSurfacePoint>;
-
-template class NameSearch<SphereCenterRadius2>;
-template class NameSearch<SphereCenterSurfacePoint>;
+template class NamingScheme::NameSearch<SphereCenterRadius2>;
+template class NamingScheme::NameSearch<SphereCenterSurfacePoint>;

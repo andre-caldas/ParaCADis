@@ -35,7 +35,7 @@ namespace Threads
   {
   public:
     Sentinel end;
-    LockedIteratorSentinel(Sentinel&& end) : end(std::move(end)) {}
+    LockedIteratorSentinel(Sentinel&& _end) : end(std::move(_end)) {}
 
     LockedIteratorSentinel() = default;
     LockedIteratorSentinel(const LockedIteratorSentinel&) = default;
@@ -75,9 +75,9 @@ namespace Threads
      * some outter context has already locked it. It is very important that
      * the iterator does not live longer than the real lock.
      */
-    LockedIterator(SharedLock&& lock, ItType it)
-        : originalIterator(std::move(it))
-        , lock(std::make_shared<SharedLock>(std::move(lock)))
+    LockedIterator(SharedLock&& _lock, ItType _it)
+        : originalIterator(std::move(_it))
+        , lock(std::make_shared<SharedLock>(std::move(_lock)))
     {
     }
 

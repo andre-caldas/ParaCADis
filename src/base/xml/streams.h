@@ -25,6 +25,7 @@
 
 #include "streams_fwd.h"
 
+#include <cassert>
 #include <iostream>
 #include <vector>
 
@@ -42,9 +43,9 @@ namespace Xml
   class Reader
   {
   public:
-    Reader(const XmlTag& current_tag, std::istream& stream)
-        : current_tag(current_tag)
-        , stream(stream)
+    Reader(const XmlTag& _current_tag, std::istream& _stream)
+        : current_tag(_current_tag)
+        , stream(_stream)
     {
     }
 
@@ -63,15 +64,15 @@ namespace Xml
   class Writer
   {
   public:
-    Writer(const XmlTag& current_tag, std::istream& stream)
-        : current_tag(current_tag)
-        , stream(stream)
-    {
-    }
+    Writer(const XmlTag& _current_tag, std::istream& _stream)
+        : current_tag(_current_tag)
+        , stream(_stream)
+    { assert(false && "Not implemented."); }
 
     [[nodiscard]]
     Writer newTag(const XmlTag& tag) noexcept;
-    void   reportException(const std::exception& e);
+    [[noreturn]]
+    void reportException(const std::exception& e);
 
   private:
     const XmlTag& current_tag;
