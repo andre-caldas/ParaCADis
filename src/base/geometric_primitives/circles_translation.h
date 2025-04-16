@@ -52,10 +52,10 @@ namespace DataDescription
     constexpr auto& getSubTranslators() const
     {return sub_translators;}
 
-  private:
     inner_t inner;
     user_t  user;
 
+  private:
     point_translator_t center_tr;
     vector_translator_t normal_tr;
     const std::vector<GateTranslatorBase*> sub_translators = {&center_tr, &normal_tr};
@@ -92,10 +92,10 @@ namespace DataDescription
     constexpr auto& getSubTranslators() const
     {return sub_translators;}
 
-  private:
     inner_t inner;
     user_t  user;
 
+  private:
     point_translator_t a_tr, b_tr, c_tr;
     const std::vector<GateTranslatorBase*> sub_translators = {&a_tr, &b_tr, &c_tr};
   };

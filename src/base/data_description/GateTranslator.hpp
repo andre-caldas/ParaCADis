@@ -34,7 +34,7 @@ namespace DataDescription
   template<Threads::C_MutexHolderWithGates Inner, typename User>
   GateTranslator<Inner, User>::GateTranslator(SharedPtr<Inner> _inner)
       : inner(std::move(_inner))
-      , cache(*Threads::ReaderGate{inner})
+      , cache(*Threads::ReaderGate{*inner})
       , user(cache->user)
   {
     inner->getChangedSignal().connect(
