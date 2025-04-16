@@ -34,6 +34,7 @@ namespace DataDescription
     FloatPoint3D end;
     bool is_bounded_start;
     bool is_bounded_end;
+    bool operator==(const Line2Points&) const = default;
   };
 
   template<>
@@ -52,6 +53,7 @@ namespace DataDescription
     FloatVector3D direction;
     bool is_bounded_start;
     bool is_bounded_end;
+    bool operator==(const LinePointDirection&) const = default;
   };
 
   template<>

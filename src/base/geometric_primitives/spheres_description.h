@@ -35,6 +35,7 @@ namespace DataDescription
   {
     FloatPoint3D center;
     float        radius;
+    bool operator==(const SphereCenterRadius&) const = default;
   };
 
   template<>
@@ -53,6 +54,7 @@ namespace DataDescription
   {
     FloatPoint3D center;
     FloatPoint3D surface_point;
+    bool operator==(const SphereCenterSurfacePoint&) const = default;
   };
 
   template<>

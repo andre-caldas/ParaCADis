@@ -36,6 +36,7 @@ namespace DataDescription
     float radius;
     FloatPoint3D center;
     FloatVector3D normal;
+    bool operator==(const CircleRadiusCenterNormal&) const = default;
   };
 
   template<>
@@ -53,6 +54,7 @@ namespace DataDescription
   struct Circle3Points
   {
     FloatPoint3D a, b, c;
+    bool operator==(const Circle3Points&) const = default;
   };
 
   template<>
