@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include "Chainable.h"
 #include "ResultHolder.h"
 #include "types.h"
 
@@ -29,14 +30,13 @@
 
 namespace NamingScheme
 {
-  class ExporterBase;
-  template<typename T>
-  class IExport;
-
   template<typename T>
   class PathCachePolicyBase
   {
   public:
+    using exporter_holder_t = ResultHolder<ExporterCommon>;
+    using chainable_holder_t = ResultHolder<ChainableBase>;
+
     /**
      * An opportunity to reserve cache space once you know the tokens.
      */
@@ -46,8 +46,8 @@ namespace NamingScheme
      * Tokens that were not processed yet.
      */
     virtual token_iterator getTopTokens() const = 0;
-    virtual ResultHolder<IExport<ExporterBase>> getTopChainable() const = 0;
-    virtual const ResultHolder<ExporterBase>& getLastExporter() const = 0;
+    virtual chainable_holder_t getTopChainable() const = 0;
+    virtual const exporter_holder_t& getLastExporter() const = 0;
 
     /**
      * The final result, if not expired.
@@ -55,9 +55,8 @@ namespace NamingScheme
     virtual ResultHolder<T> getFinalResult() const = 0;
 
     virtual void setFinalResult(ResultHolder<T> result) = 0;
-    virtual void setExporter(ResultHolder<ExporterBase> exporter, token_iterator tokens) = 0;
-    virtual void pushChainable(
-        ResultHolder<IExport<ExporterBase>> exporter, token_iterator tokens) = 0;
+    virtual void setExporter(exporter_holder_t exporter, token_iterator tokens) = 0;
+    virtual void pushChainable(chainable_holder_t chainable, token_iterator tokens) = 0;
     virtual void invalidate() = 0;
 
     /**
@@ -74,6 +73,9 @@ namespace NamingScheme
   template<typename T>
   class TimedWeakChain : public PathCachePolicyBase<T>
   {
+    using exporter_holder_t = PathCachePolicyBase<T>::exporter_holder_t;
+    using chainable_holder_t = PathCachePolicyBase<T>::chainable_holder_t;
+
     using seconds_t    = std::chrono::seconds;
     using time_point_t = std::chrono::steady_clock::time_point;
 
@@ -85,14 +87,13 @@ namespace NamingScheme
     void invalidate() override;
 
     token_iterator getTopTokens() const override;
-    ResultHolder<IExport<ExporterBase>> getTopChainable() const override;
-    const ResultHolder<ExporterBase>& getLastExporter() const override;
+    chainable_holder_t getTopChainable() const override;
+    const exporter_holder_t& getLastExporter() const override;
     ResultHolder<T> getFinalResult() const override;
 
     void setFinalResult(ResultHolder<T> final) override;
-    void setExporter(ResultHolder<ExporterBase> exporter, token_iterator tokens) override;
-    void pushChainable(
-        ResultHolder<IExport<ExporterBase>> exporter, token_iterator tokens) override;
+    void setExporter(exporter_holder_t exporter, token_iterator tokens) override;
+    void pushChainable(chainable_holder_t exporter, token_iterator tokens) override;
 
     bool pruneCache() override;
     bool hasPartiallyExpired() const;
@@ -116,9 +117,9 @@ namespace NamingScheme
       operator bool() const { return holder; }
     };
 
-    std::vector<exporter_info_t<IExport<ExporterBase>>> chainables;
-    exporter_info_t<ExporterBase>                       last_exporter;
-    ResultHolder<T>                                     final_result;
+    std::vector<exporter_info_t<ChainableBase>> chainables;
+    exporter_info_t<ExporterCommon> last_exporter;
+    ResultHolder<T> final_result;
   };
 }
 

@@ -39,7 +39,7 @@ void init_document_tree(py::module_& parent_module)
   auto m = parent_module.def_submodule("document");
   m.doc() = "Manages the nodes in a ParaCADis document structure.";
 
-  py::class_<Container, ExporterBase, SharedPtr<Container>> cont(
+  py::class_<Container, ExporterCommon, SharedPtr<Container>> cont(
       m, "Container", py::multiple_inheritance(),
       "A container with coordinate system to hold other objects or containers.");
   cont.def(py::init<>(), "Creates an empty container.");

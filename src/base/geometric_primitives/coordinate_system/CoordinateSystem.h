@@ -30,16 +30,17 @@
  * Vector coordinates need to be interpreted in some context.
  * To place a coordinate system `C` inside some other coordinate system `G`,
  * we need to specify how points in `C` are converted to points in `G`.
- * This is what CoordinateSyste does.
+ * This is what CoordinateSystem does.
  *
  * In practice, however, the user does not care about how calculations are done.
  * The user does not care if we use quaternions, matrices or what.
  * For the user, this is basically a frame of reference.
  * The user wants to put things inside this coordinate system and have them
  * to appear on the right place.
- * So, I (André Caldas) refuse to call this a Quaternion. :-P
+ * So, I (André Caldas) refuse to call this a Rotation or a Quaternion. :-P
  *
- * By orthogonal, we mean rotation: det = 1 and orthonormal columns.
+ * By orthogonal, we mean rotation: det = 1 and orthonormal basis.
+ * I suppose a mathematician would call it an element of SO(3).
  * By placement we mean we can choose where is the origin of our coordinate system.
  */
 class CoordinateSystem

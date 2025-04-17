@@ -34,7 +34,7 @@ using namespace Document::Exception;
 using namespace NamingScheme;
 
 ElementAlreadyInContainer::ElementAlreadyInContainer(
-    const ExporterBase& element, const Container& container)
+    const ExporterCommon& element, const Container& container)
     : RunTimeError(std::format(
           "Container ({}) already has element ({}).", container.toString(),
           element.toString()))
@@ -50,7 +50,7 @@ ElementAlreadyInContainer::ElementAlreadyInContainer(
 }
 
 ElementNotInContainer::ElementNotInContainer(
-    const ExporterBase& element, const Container& container)
+    const ExporterCommon& element, const Container& container)
     : RunTimeError(std::format(
           "Container ({}) does not have element ({}).", container.toString(),
           element.toString()))

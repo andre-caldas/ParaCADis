@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include "Chainable.h"
 #include "Exporter.h"
 #include "IExport.h"
 #include "NameSearch.h"
@@ -50,17 +51,24 @@ namespace NamingScheme
 
   template<typename T>
   ResultHolder<T>
-  NameSearch<T>::resolve(SharedPtr<ExporterBase> root, token_iterator tokens)
+  NameSearch<T>::resolve(SharedPtr<ExporterCommon> root, token_iterator tokens)
   {
     // TODO: assert using std::enable_shared_from_this that we do not need a mutex.
+    // TODO: figure out what the above todo means. :-P
     assert(root == root->getSelfShared() && "Exporter cannot borrow a SharedPtr.");
-    auto root_chainable = root.cast_nothrow<IExport<ExporterBase>>();
-    if(!root_chainable) {
-      cache.setExporter(ResultHolder{std::move(root)}, tokens);
-    } else {
-      cache.pushChainable(ResultHolder{std::move(root_chainable)}, tokens);
+
+    ResultHolder exporter_holder{std::move(root)};
+    auto root_chainable = exporter_holder.cast<ChainableBase>();
+    if(root_chainable) {
+      cache.pushChainable(std::move(root_chainable), tokens);
       resolveExporter();
+    } else {
+      cache.setExporter(std::move(exporter_holder), tokens);
     }
+
+    /*
+     * No chaining is possible anymore.
+     */
     return resolveLastStep();
   }
 
@@ -68,13 +76,13 @@ namespace NamingScheme
   void NameSearch<T>::resolveExporter()
   {
     auto tokens = cache.getTopTokens();
-    auto next_chainable = cache.getTopChainable();
-    while(next_chainable && tokens) {
+    auto top_chainable = cache.getTopChainable();
+    while(top_chainable && tokens) {
       [[maybe_unused]] auto n_tokens = tokens.size();
 
-      auto current = next_chainable.template cast<ExporterBase>();
-      Threads::ReaderGate gate{next_chainable};
-      auto next_exporter = gate.getNonConst(next_chainable)
+      auto current = top_chainable.template cast<ExporterCommon>();
+      Threads::ReaderGate gate{top_chainable};
+      auto next_exporter = gate.getNonConst(top_chainable)
                                .resolve(current, tokens);
       gate.release();
 
@@ -84,18 +92,18 @@ namespace NamingScheme
         cache.setExporter(current, tokens);
         return;
       }
-      next_chainable = next_exporter.template cast<IExport<ExporterBase>>();
-      if(!next_chainable) {
+
+      top_chainable = next_exporter.template cast<ChainableBase>();
+      if(!top_chainable) {
         cache.setExporter(next_exporter, tokens);
         return;
       }
-
+      cache.pushChainable(top_chainable, tokens);
       assert(n_tokens != tokens.size() && "Resolution is not consuming tokens.");
-      cache.pushChainable(next_chainable, tokens);
     }
 
-    if(next_chainable) {
-      auto next = next_chainable.template cast<ExporterBase>();
+    if(top_chainable) {
+      auto next = top_chainable.template cast<ExporterCommon>();
       cache.setExporter(next, tokens);
     }
   }
@@ -116,7 +124,7 @@ namespace NamingScheme
     auto tokens = cache.getTopTokens();
 
             // Are we looking for an exporter?
-    if constexpr (std::is_same_v<std::remove_cv_t<T>, ExporterBase>) {
+    if constexpr (std::is_same_v<std::remove_cv_t<T>, ExporterCommon>) {
       if (tokens) {
         status = too_many_tokens;
         cache.invalidate();

@@ -27,7 +27,7 @@
 #include "types.h"
 
 #include <base/expected_behaviour/SharedPtrWrap.h>
-#include <base/naming_scheme/Chainables.h>
+#include <base/naming_scheme/Chainable.h>
 #include <base/naming_scheme/Exporter.h>
 #include <base/naming_scheme/IExport.h>
 #include <base/threads/safe_structs/ThreadSafeStruct.h>
@@ -59,7 +59,7 @@ class Line2Points
     , public NamingScheme::IExportStruct<bool, Line2PointsData,
                                 {&Line2PointsData::is_bounded_start, "is_bounded_start"},
                                 {&Line2PointsData::is_bounded_end, "is_bounded_end"}>
-    , public NamingScheme::Chainables<DeferenceablePoint>
+    , public NamingScheme::Chainable<DeferenceablePoint>
 {
   ONLY_SHAREDPTRWRAP()
   Line2Points(Point start, Point end,
@@ -67,7 +67,7 @@ class Line2Points
 
 public:
   SharedPtr<Line2Points> deepCopy() const;
-  SharedPtr<NamingScheme::ExporterBase> deepCopyExporter() const override
+  SharedPtr<NamingScheme::ExporterCommon> deepCopyExporter() const override
   { return deepCopy(); }
 
 private:
@@ -102,7 +102,7 @@ class LinePointDirection
     , public NamingScheme::IExportStruct<bool, LinePointDirectionData,
                                 {&LinePointDirectionData::is_bounded_start, "is_bounded_start"},
                                 {&LinePointDirectionData::is_bounded_end, "is_bounded_end"}>
-    , public NamingScheme::Chainables<DeferenceablePoint, DeferenceableVector>
+    , public NamingScheme::Chainable<DeferenceablePoint, DeferenceableVector>
 {
   ONLY_SHAREDPTRWRAP()
   LinePointDirection(Point start, Vector direction,
@@ -110,9 +110,9 @@ class LinePointDirection
 
 public:
   SharedPtr<LinePointDirection> deepCopy() const;
-  SharedPtr<NamingScheme::ExporterBase> deepCopyExporter() const override
+  SharedPtr<NamingScheme::ExporterCommon> deepCopyExporter() const override
   { return deepCopy(); }
 
 private:
-  SharedPtr<const iga_curve_t> produceIgaCurve() const override;
+  SharedPtr<const DocumentGeometry::iga_curve_t> produceIgaCurve() const override;
 };

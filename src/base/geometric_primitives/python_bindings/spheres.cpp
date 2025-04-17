@@ -37,7 +37,7 @@ using namespace NamingScheme;
 
 void init_geometric_primitives_spheres(py::module_& module)
 {
-  py::class_<SphereCenterRadius2, ExporterBase,
+  py::class_<SphereCenterRadius2, ExporterCommon,
              SharedPtr<SphereCenterRadius2>>(
       module, "SphereCenterRadius2",
       "A sphere determined by its center and squared radius.")
@@ -49,7 +49,7 @@ void init_geometric_primitives_spheres(py::module_& module)
            { return "<SPHERECENTERRADIUS2... (put info here)>"; });
 
 
-  py::class_<SphereCenterSurfacePoint, ExporterBase,
+  py::class_<SphereCenterSurfacePoint, ExporterCommon,
              SharedPtr<SphereCenterSurfacePoint>>(
       module, "SphereCenterSurfacePoint", py::multiple_inheritance(),
       "A sphere determined by its center and one surface point.")

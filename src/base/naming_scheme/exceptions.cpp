@@ -32,7 +32,7 @@ namespace NamingScheme::Exception
   }
 
   CannotResolve::CannotResolve(
-      SharedPtr<ExporterBase> /*parent_lock*/,
+      SharedPtr<ExporterCommon> /*parent_lock*/,
       const token_iterator& /*tokens*/, std::source_location _location)
       : RunTimeError("Cannot resolve accessor reference.", _location)
   {

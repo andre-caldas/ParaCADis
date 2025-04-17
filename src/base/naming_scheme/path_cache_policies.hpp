@@ -29,7 +29,9 @@
 #include <cmath>
 #include <ranges>
 
-using namespace NamingScheme;
+// TODO: indent! :-(
+namespace NamingScheme
+{
 
 template<typename T>
 void TimedWeakChain<T>::prepare(token_iterator& tokens)
@@ -66,7 +68,7 @@ token_iterator TimedWeakChain<T>::getTopTokens() const
 }
 
 template<typename T>
-ResultHolder<IExport<ExporterBase>>
+TimedWeakChain<T>::chainable_holder_t
 TimedWeakChain<T>::getTopChainable() const
 {
   if(chainables.empty()) {
@@ -79,7 +81,8 @@ TimedWeakChain<T>::getTopChainable() const
 }
 
 template<typename T>
-const ResultHolder<ExporterBase>& TimedWeakChain<T>::getLastExporter() const
+const TimedWeakChain<T>::exporter_holder_t&
+TimedWeakChain<T>::getLastExporter() const
 {
   assert((chainables.empty() || !chainables.back())
          && "All chainables must be unlocked.");
@@ -107,7 +110,8 @@ void TimedWeakChain<T>::setFinalResult(ResultHolder<T> final)
 }
 
 template<typename T>
-void TimedWeakChain<T>::setExporter(ResultHolder<ExporterBase> exporter, token_iterator tokens)
+void TimedWeakChain<T>::setExporter(
+    exporter_holder_t exporter, token_iterator tokens)
 {
   assert(exporter && "Cannot set an invalid exporter.");
   last_exporter = {std::move(exporter), tokens};
@@ -118,7 +122,7 @@ void TimedWeakChain<T>::setExporter(ResultHolder<ExporterBase> exporter, token_i
 
 template<typename T>
 void TimedWeakChain<T>::pushChainable(
-    ResultHolder<IExport<ExporterBase>> chainable, token_iterator tokens)
+    chainable_holder_t chainable, token_iterator tokens)
 {
   assert(!last_exporter && "Cannot set chainable after non-chainable.");
   assert(chainable && "Chainable is supposed to be locked.");
@@ -169,4 +173,6 @@ template<typename T>
 bool TimedWeakChain<T>::hasPartiallyExpired() const
 {
   return (std::chrono::steady_clock::now() - start) > layer_duration;
+}
+
 }

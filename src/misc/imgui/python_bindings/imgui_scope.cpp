@@ -44,13 +44,13 @@ using namespace ParacadisImGui;
 using namespace NamingScheme;
 
 namespace {
-  void create_geometry_dialog(ImGuiScope& self, SharedPtr<ExporterBase> exporter)
+  void create_geometry_dialog(ImGuiScope& self, SharedPtr<ExporterCommon> exporter)
   {
     GeometryCast::dispatch(
         std::move(exporter),
         [&self]<typename T>(SharedPtr<T> geo){
           auto lambda_draw = [](ImGuiScope::Translator<T>& /*translator*/){
-//            ImGui::;
+            ImGui::Text("Testando...");
             return true;
           };
           self.addMutexHolder(std::move(geo), std::move(lambda_draw));

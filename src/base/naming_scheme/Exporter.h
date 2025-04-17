@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
+ *   Copyright (c) 2023-2025 André Caldas <andre.em.caldas@gmail.com>       *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -47,35 +47,36 @@ namespace NamingScheme
     {a.getChangedSignal()} -> std::same_as<Threads::Signal<>&>;
   };
 
+
   /**
-   * A ExporterBase is an object that can be queried to resolve the next step in a path.
+   * Each exporter shall derive (only once) from this class.
    *
-   * @attention For each exported type, you need to subclass IExport<X>.
-   * @attention Probably you do not want to derive from this class.
-   * You should probably derive from IExport<X> or Chainable.
+   * Methods common to all exporters, including virtual methods
+   * are defined here.
    */
-  class ExporterBase : public SelfShared<ExporterBase>
+  class ExporterCommon
+    : public SelfShared<ExporterCommon>
   {
   public:
     // In IExport<>, generates ambiguity, so we put it here.
     using token_iterator = NamingScheme::token_iterator;
 
   protected:
-    ExporterBase()               = default;
-    ExporterBase(ExporterBase&&) = default;
+    ExporterCommon() = default;
+    ExporterCommon(ExporterCommon&&) = default;
 
     /// Do not really copy anything, because copies
     /// must have a different id and probably should have
     /// a different name.
-    ExporterBase(const ExporterBase&) = delete;
+    ExporterCommon(const ExporterCommon&) = delete;
 
   public:
-    virtual ~ExporterBase() = default;
+    virtual ~ExporterCommon() = default;
 
     /**
-     * Works as a bridge so that ExporterBase
+     * Works as a bridge so that ExporterCommon
      * can have access to its derived's getMutexLike(),
-     * so that ExporterBase is a Threads::C_MutexHolder.
+     * so that ExporterCommon is a Threads::C_MutexHolder.
      *
      * Could not decide between making a generic templated getMutex
      * or a virtual class... ended up doing both. :-(
@@ -92,13 +93,14 @@ namespace NamingScheme
     mutable Threads::Signal<> child_changed_sig;
 
     /**
-     * Descendants of ExporterBase must implement a deepCopyExporter() method.
+     * Descendants of ExporterCommon must implement
+     * a deepCopyExporter() method.
      *
      * @attention The policy is:
      * 1. Implement a deepCopy() specific for the derived type.
      * 2. Implement a deepCopyExporter() to return the result of deepCopy().
      */
-    virtual SharedPtr<ExporterBase> deepCopyExporter() const = 0;
+    virtual SharedPtr<ExporterCommon> deepCopyExporter() const = 0;
 
     /**
      * The signal that indicates some change has happened.
@@ -114,7 +116,8 @@ namespace NamingScheme
      *
      * TODO: make pure virtual.
      */
-    virtual std::string toString() const { return "Implement ExporterBase::toString()!"; }
+    virtual std::string toString() const
+    { return "Implement ExporterCommon::toString()!"; }
 
     Uuid        getUuid() const;
     std::string getName() const;
@@ -129,9 +132,9 @@ namespace NamingScheme
      * This is specially useful when serializing
      * and unserializing.
      *
-     * @param shared_ptr - a shared_ptr to the ExporterBase.
+     * @param shared_ptr - a shared_ptr to the ExporterCommon.
      */
-    static void registerUuid(SharedPtr<ExporterBase> shared_ptr);
+    static void registerUuid(SharedPtr<ExporterCommon> shared_ptr);
 
     /**
      * Search registered object by uuid.
@@ -139,7 +142,7 @@ namespace NamingScheme
      * @param uuid - string representation of the uuid.
      * @return A shared_ptr to the referenced object.
      */
-    static SharedPtr<ExporterBase> getByUuid(std::string uuid);
+    static SharedPtr<ExporterCommon> getByUuid(std::string uuid);
 
     /**
      * Search registered object by uuid.
@@ -147,7 +150,7 @@ namespace NamingScheme
      * @param uuid - the uuid.
      * @return A shared_ptr to the referenced object.
      */
-    static SharedPtr<ExporterBase> getByUuid(Uuid::uuid_type uuid);
+    static SharedPtr<ExporterCommon> getByUuid(Uuid::uuid_type uuid);
 
   private:
     NameAndUuid id;
@@ -156,7 +159,7 @@ namespace NamingScheme
 
   template<typename DataStruct>
   class Exporter
-      : public virtual ExporterBase
+      : public ExporterCommon
   {
   public:
     using data_t        = DataStruct;
@@ -211,6 +214,6 @@ namespace NamingScheme
       "Exporter should implement C_MutexHolder.");
 
   static_assert(
-      C_HasChangedSignal<ExporterBase>,
-      "ExporterBase must signalize changes.");
-}  // namespace NamingScheme
+      C_HasChangedSignal<ExporterCommon>,
+      "ExporterCommon must signalize changes.");
+}

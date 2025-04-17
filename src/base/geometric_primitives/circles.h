@@ -27,7 +27,7 @@
 #include "types.h"
 
 #include <base/expected_behaviour/SharedPtrWrap.h>
-#include <base/naming_scheme/Chainables.h>
+#include <base/naming_scheme/Chainable.h>
 #include <base/naming_scheme/IExport.h>
 
 /**
@@ -54,13 +54,13 @@ class CirclePointRadius2Normal
     , public NamingScheme::IExportStruct<Real, CirclePointRadius2NormalData,
                                 {&CirclePointRadius2NormalData::radius2, "radius2"},
                                 {&CirclePointRadius2NormalData::radius2, "r2"}>
-    , public NamingScheme::Chainables<DeferenceablePoint, DeferenceableVector>
+    , public NamingScheme::Chainable<DeferenceablePoint, DeferenceableVector>
 {
   ONLY_SHAREDPTRWRAP()
   CirclePointRadius2Normal(Point center, Real radius2, Vector normal = {1,0,0});
 public:
   SharedPtr<CirclePointRadius2Normal> deepCopy() const;
-  SharedPtr<NamingScheme::ExporterBase> deepCopyExporter() const override
+  SharedPtr<NamingScheme::ExporterCommon> deepCopyExporter() const override
   { return deepCopy(); }
 
 private:
@@ -91,13 +91,13 @@ class Circle3Points
                                 {&Circle3PointsData::b, "p2"},
                                 {&Circle3PointsData::c, "c"},
                                 {&Circle3PointsData::c, "p3"}>
-    , public NamingScheme::Chainables<DeferenceablePoint>
+    , public NamingScheme::Chainable<DeferenceablePoint>
 {
   ONLY_SHAREDPTRWRAP()
   Circle3Points(Point a, Point b, Point c);
 public:
   SharedPtr<Circle3Points> deepCopy() const;
-  SharedPtr<NamingScheme::ExporterBase> deepCopyExporter() const override
+  SharedPtr<NamingScheme::ExporterCommon> deepCopyExporter() const override
   { return deepCopy(); }
 
 private:

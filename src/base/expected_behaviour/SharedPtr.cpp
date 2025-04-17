@@ -44,4 +44,4 @@ JustLockPtr::JustLockPtr(std::shared_ptr<void>&& ptr) : lock(std::move(ptr))
 
 #include <base/naming_scheme/Exporter.h>
 
-template class SharedPtr<NamingScheme::ExporterBase>;
+template class SharedPtr<NamingScheme::ExporterCommon>;

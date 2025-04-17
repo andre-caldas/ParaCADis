@@ -35,7 +35,7 @@ SCENARIO("Nested containers", "[simple]")
     WHEN("we nest the containers")
     {
       a->addElement(b); // As a container
-      b->addElement(c.cast<NamingScheme::ExporterBase>());   // As an element
+      b->addElement(c.cast<NamingScheme::ExporterCommon>());   // As an element
       c->addElement(d);
       THEN("they actually belong to their 'parent' container")
       {
@@ -60,21 +60,21 @@ SCENARIO("Nested containers", "[simple]")
         REQUIRE_FALSE(d->contains(*c));
         REQUIRE_FALSE(d->contains(*d));
       }
-      THEN("even when they are disguised as 'ExporterBase'")
+      THEN("even when they are disguised as 'ExporterCommon'")
       {
-        REQUIRE(a->contains(static_cast<ExporterBase&>(*b)));
-        REQUIRE(b->contains(static_cast<ExporterBase&>(*c)));
-        REQUIRE(c->contains(static_cast<ExporterBase&>(*d)));
+        REQUIRE(a->contains(static_cast<ExporterCommon&>(*b)));
+        REQUIRE(b->contains(static_cast<ExporterCommon&>(*c)));
+        REQUIRE(c->contains(static_cast<ExporterCommon&>(*d)));
 
-        REQUIRE_FALSE(a->contains(static_cast<ExporterBase&>(*a)));
-        REQUIRE_FALSE(a->contains(static_cast<ExporterBase&>(*c)));
-        REQUIRE_FALSE(a->contains(static_cast<ExporterBase&>(*d)));
+        REQUIRE_FALSE(a->contains(static_cast<ExporterCommon&>(*a)));
+        REQUIRE_FALSE(a->contains(static_cast<ExporterCommon&>(*c)));
+        REQUIRE_FALSE(a->contains(static_cast<ExporterCommon&>(*d)));
       }
       AND_WHEN("we nest the same container in two places")
       {
         a->addElement(c);
         a->addElement(d);
-        THEN("even when they are disguised as 'ExporterBase'")
+        THEN("even when they are disguised as 'ExporterCommon'")
         {
           REQUIRE(a->contains(*b));
           REQUIRE(a->contains(*c));

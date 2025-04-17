@@ -31,7 +31,7 @@ namespace ParacadisImGui
   {
     static_assert(std::invocable<Func, Translator<Holder>&>,
                   "Function must be callable with Translator<Holder>& argument.");
-    auto translator = std::make_shared<Translator<Holder>>(std::move(holder));
+    SharedPtrWrap<Translator<Holder>> translator(std::move(holder));
     addTranslator(SharedPtr{std::move(translator)}, std::move(f));
   }
 

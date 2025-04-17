@@ -41,7 +41,7 @@ void init_geometric_primitives_coordinate_systems(py::module_& module)
   /*
    * Dummy base class: DeferenceableCoordinates.
    */
-  py::class_<DeferenceableCoordinates, ExporterBase,
+  py::class_<DeferenceableCoordinates, ExporterCommon,
              SharedPtr<DeferenceableCoordinates>>(
       module, "DeferenceableCoordinates", py::multiple_inheritance(),
       "Base class for coordinate systems that exports its parameters.")

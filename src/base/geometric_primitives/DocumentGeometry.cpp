@@ -29,7 +29,7 @@ using namespace Document;
 
 Threads::Signal<>& DocumentGeometry::getChangedSignal() const
 {
-  auto* exporter = dynamic_cast<const NamingScheme::ExporterBase*>(this);
+  auto* exporter = dynamic_cast<const NamingScheme::ExporterCommon*>(this);
   if(exporter) {
     return exporter->getChangedSignal();
   }

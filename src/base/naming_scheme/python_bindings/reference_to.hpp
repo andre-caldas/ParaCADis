@@ -60,10 +60,10 @@ bind_reference_to(py::module_& m, std::string type_name)
   py::class_<ReferenceTo, SharedPtr<ReferenceTo>>
   ref_to(m, ref_to_name.c_str(),
          "A path that can be resolved and locked to access data.");
-  ref_to.def(py::init<SharedPtr<ExporterBase>>());
-  ref_to.def(py::init<SharedPtr<ExporterBase>, std::string>());
-  ref_to.def(py::init<SharedPtr<ExporterBase>, std::string, std::string>());
-  ref_to.def(py::init<SharedPtr<ExporterBase>, std::string, std::string, std::string>());
+  ref_to.def(py::init<SharedPtr<ExporterCommon>>());
+  ref_to.def(py::init<SharedPtr<ExporterCommon>, std::string>());
+  ref_to.def(py::init<SharedPtr<ExporterCommon>, std::string, std::string>());
+  ref_to.def(py::init<SharedPtr<ExporterCommon>, std::string, std::string, std::string>());
   // construct. from base + strings. from path.
 
   ref_to.def("resolve", &ReferenceTo::resolve,

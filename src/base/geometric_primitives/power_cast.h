@@ -30,11 +30,11 @@
 #include <base/type_traits/PowerCast.h>
 
 /**
- * Used to "down-cast" ExporterBase and execute
+ * Used to "down-cast" ExporterCommon and execute
  * the propper method, according to the derived type.
  */
 using GeometryCast = TypeTraits::PowerCast<
-  NamingScheme::ExporterBase,
+  NamingScheme::ExporterCommon,
   DeferenceablePoint, DeferenceableVector,
   Line2Points, LinePointDirection,
   CirclePointRadius2Normal, Circle3Points,

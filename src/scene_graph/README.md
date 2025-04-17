@@ -16,7 +16,7 @@ And it also holds a "root" ContainerNode.
 The scene tree is populated recursivelly.
 For each Container in the document,
 there shall be a corresponding ContainerNode in our scene.
-And for each non-container ExporterBase,
+And for each non-container ExporterCommon,
 there shall be a MeshNode.
 
 

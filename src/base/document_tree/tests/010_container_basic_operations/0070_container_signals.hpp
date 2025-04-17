@@ -57,7 +57,7 @@ public:
 
 
   void report_add_non_container(SharedPtr<Container> to,
-                                SharedPtr<ExporterBase> what)
+                                SharedPtr<ExporterCommon> what)
   {
     messages.push(
         msg("add non-container", what->getUuid(), to->getUuid()));
@@ -72,7 +72,7 @@ public:
 
 
   void report_remove_non_container(SharedPtr<Container> from,
-                                   SharedPtr<ExporterBase> what)
+                                   SharedPtr<ExporterCommon> what)
   {
     messages.push(
         msg("remove non-container", what->getUuid(), from->getUuid()));
@@ -87,7 +87,7 @@ public:
 
 
   void report_move_non_container(SharedPtr<Container> from,
-                                 SharedPtr<ExporterBase> what,
+                                 SharedPtr<ExporterCommon> what,
                                  SharedPtr<Container> to)
   {
     messages.push(

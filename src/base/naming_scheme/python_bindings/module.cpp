@@ -46,8 +46,8 @@ py::module_ init_naming_scheme(py::module_& parent_module)
   path.def("__repr__",
            [](const PathToken&){ return "<PATHTOKEN... (put info here)>"; });
 
-  py::class_<ExporterBase, SharedPtr<ExporterBase>>
-  exporter(m, "ExporterBase", "Base class for types that export other types.");
+  py::class_<ExporterCommon, SharedPtr<ExporterCommon>>
+  exporter(m, "ExporterCommon", "Base class for types that export other types.");
 
   return m;
 }

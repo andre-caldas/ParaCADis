@@ -24,11 +24,9 @@
 
 namespace Document
 {
-
   std::string DocumentTree::toString() const
   {
     return std::format(
         "Root container for the whole document ({}).", getName());
   }
-
 }

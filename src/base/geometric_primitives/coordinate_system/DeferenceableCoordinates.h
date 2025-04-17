@@ -30,7 +30,6 @@
 #include <base/naming_scheme/Exporter.h>
 
 class DeferenceableCoordinates
-    : public virtual NamingScheme::ExporterBase
 {
 public:
   virtual CoordinateSystem getCoordinateSystem() const = 0;

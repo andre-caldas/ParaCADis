@@ -42,7 +42,7 @@ std::string Container::toString() const
 /*
  * Get element.
  */
-SharedPtr<ExporterBase> Container::getElement(uuid_type uuid) const
+SharedPtr<ExporterCommon> Container::getElement(uuid_type uuid) const
 {
   { // gate scope.
     Threads::ReaderGate gate{non_containers};
@@ -67,7 +67,7 @@ SharedPtr<Container> Container::getContainer(uuid_type uuid) const
 /*
  * Add elements.
  */
-void Container::addElement(SharedPtr<ExporterBase> element)
+void Container::addElement(SharedPtr<ExporterCommon> element)
 {
   auto ptr = element.cast<Container>();
   if (ptr) {
@@ -97,7 +97,7 @@ void Container::addContainer(SharedPtr<Container> container)
 /*
  * Remove elements.
  */
-void Container::removeElement(SharedPtr<ExporterBase> element)
+void Container::removeElement(SharedPtr<ExporterCommon> element)
 {
   auto ptr = element.cast<Container>();
   if (ptr) {
@@ -108,7 +108,7 @@ void Container::removeElement(SharedPtr<ExporterBase> element)
   removeElement(element->getUuid());
 }
 
-SharedPtr<ExporterBase> Container::removeElement(uuid_type uuid)
+SharedPtr<ExporterCommon> Container::removeElement(uuid_type uuid)
 {
   { // Gate scope
   Threads::WriterGate gate{non_containers};
@@ -187,7 +187,7 @@ bool Container::contains(uuid_type uuid) const
   return false;
 }
 
-bool Container::contains(const ExporterBase& element) const
+bool Container::contains(const ExporterCommon& element) const
 {
   return contains(element.getUuid());
 }
@@ -219,20 +219,25 @@ SharedPtr<DeferenceableCoordinates>
 Container::setCoordinates(SharedPtr<DeferenceableCoordinates> coordinates)
 {
   auto self = getSelfShared<Container>();
+
   auto old = coordinate_system.getSharedPtr();
   if(old) {
-    old->getChangedSignal().removeProxy(&coordinate_modified_sig);
+    auto& old_exporter = dynamic_cast<ExporterCommon&>(*old);
+    old_exporter.getChangedSignal()
+                .removeProxy(&coordinate_modified_sig);
   }
-  coordinates->getChangedSignal().setProxy(std::move(self), &Container::coordinate_modified_sig);
+
+  auto& coord_exporter = dynamic_cast<ExporterCommon&>(*coordinates);
+  coord_exporter.getChangedSignal()
+                .setProxy(std::move(self), &Container::coordinate_modified_sig);
   return coordinate_system.setSharedPtr(std::move(coordinates));
 }
 
 
-SharedPtr<ExporterBase>
-Container::resolve_shared(token_iterator& tokens, ExporterBase*)
+SharedPtr<ExporterCommon>
+Container::resolve_shared(token_iterator& tokens, ExporterCommon*)
 {
-  if(!tokens)
-  {
+  if(!tokens) {
     return {};
   }
 
@@ -240,11 +245,9 @@ Container::resolve_shared(token_iterator& tokens, ExporterBase*)
   Threads::ReaderGate gate{containers, non_containers};
 
   // Uuid.
-  if(token.isUuid())
-  {
+  if(token.isUuid()) {
     auto it_n = gate[non_containers].find(token);
-    if(it_n != gate[non_containers].end())
-    {
+    if(it_n != gate[non_containers].end()) {
       tokens.advance(1);
       return it_n->second;
     }

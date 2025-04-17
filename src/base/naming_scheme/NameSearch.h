@@ -33,7 +33,7 @@
 
 namespace NamingScheme
 {
-  class ExporterBase;
+  class ExporterCommon;
   template<typename T>
   class PathCachePolicyBase;
 
@@ -48,12 +48,23 @@ namespace NamingScheme
 
     /**
      * Resolves without trying the cache.
-     * @attention This does not automatically call tryCache()
+     *
+     * @attention
+     * This does not automatically call tryCache()
      * because we don't want anyone calling resolve without first
      * trying the cache. If the cache succeds, you do not need to
      * acquire a @a root.
+     *
+     * @attention
+     * We take an ExporterCommon instead of ExporterCommon
+     * because this method is intended to be called "externally".
+     * That is, we expect it to actually be called by passing
+     * SharedPtr<SomeExporterType>, where SomeExporterType
+     * descends from ExporterCommon.
+     * But we actually require SomeExporterType to descend from
+     * ExporterCommon. A downcast will be done internally.
      */
-    ResultHolder<T> resolve(SharedPtr<ExporterBase> root, token_iterator tokens);
+    ResultHolder<T> resolve(SharedPtr<ExporterCommon> root, token_iterator tokens);
 
     /**
      * Tries the cache.

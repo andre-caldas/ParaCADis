@@ -42,8 +42,9 @@
 namespace NamingScheme
 {
   template<typename T>
-  ResultHolder<T> IExport<T>::resolve(const ResultHolder<ExporterBase>& current,
-                                      token_iterator& tokens, T*)
+  ResultHolder<T> IExport<T>::resolve(
+      const ResultHolder<ExporterCommon>& current,
+      token_iterator& tokens, T*)
   {
     assert(Threads::LockPolicy::isLocked(current));
     assert(tokens && "Are you supposed to be calling this without any tokens?");
@@ -77,13 +78,13 @@ namespace NamingScheme
    */
   namespace {
     template<typename Sig>
-    void connect_signals(SharedPtr<ExporterBase>&& to, Sig& sig)
-    { sig.setProxy(std::move(to), &ExporterBase::child_changed_sig); }
+    void connect_signals(SharedPtr<ExporterCommon>&& to, Sig& sig)
+    { sig.setProxy(std::move(to), &ExporterCommon::child_changed_sig); }
 
     template<typename SigA, typename SigB, typename... Sigs>
-    void connect_signals(SharedPtr<ExporterBase>&& to, SigA& sig, SigB& sig2, Sigs&... sigs)
+    void connect_signals(SharedPtr<ExporterCommon>&& to, SigA& sig, SigB& sig2, Sigs&... sigs)
     {
-        sig.setProxy(to, &ExporterBase::child_changed_sig);
+        sig.setProxy(to, &ExporterCommon::child_changed_sig);
         connect_signals(std::move(to), sig2, sigs...);
     }
   }
@@ -96,19 +97,21 @@ namespace NamingScheme
   requires TypeTraits::C_AllNamedDataOfType<T, T*, decltype(dataInfo)...>
   void IExportStruct<T, DataStruct, dataInfo...>::init()
   {
-    static_assert(!std::is_base_of_v<ExporterBase, T>, "ExporterBase types need SharedPtrWrap.");
+    static_assert(!std::is_base_of_v<ExporterCommon, T>, "ExporterCommon types need SharedPtrWrap.");
     static_assert(sizeof...(dataInfo) > 0, "Need at least an exported data.");
 
     if constexpr(C_HasChangedSignal<T>) {
-      ExporterBase& ebase = dynamic_cast<ExporterBase&>(*this);
-      auto shared_ebase = ebase.getSelfShared();
+      // Throws if not ExporterCommon sibling.
+      // But this would be a bug: all IExport stuff must be a sibling of ExporterCommon.
+      ExporterCommon& ecommon = dynamic_cast<ExporterCommon&>(*this);
+      auto shared_ecommon = ecommon.getSelfShared();
 
       assert(dynamic_cast<Exporter<DataStruct>*>(this)
              && "The exported structure must be provided by Exporter<...>.");
 
       auto& data = dynamic_cast<Exporter<DataStruct>&>(*this);
       auto& unprotected = data.safeData._unsafeStructAccess();
-      connect_signals(std::move(shared_ebase),
+      connect_signals(std::move(shared_ecommon),
                       (unprotected.*(dataInfo.local_ptr)).getChangedSignal()...);
     }
   }
@@ -150,15 +153,15 @@ namespace NamingScheme
     static_assert(sizeof...(dataInfo) > 0, "Need at least an exported data.");
 
     if constexpr(C_HasChangedSignal<T>) {
-      ExporterBase& ebase = dynamic_cast<ExporterBase&>(*this);
-      auto shared_ebase = ebase.getSelfShared();
+      auto& ecommon = dynamic_cast<ExporterCommon&>(*this);
+      auto shared_ecommon = ecommon.getSelfShared();
 
       assert(dynamic_cast<Exporter<DataStruct>*>(this)
              && "The exported structure must be provided by Exporter<...>.");
 
       auto& data = dynamic_cast<Exporter<DataStruct>&>(*this);
       auto& unprotected = data.safeData._unsafeStructAccess();
-      connect_signals(std::move(shared_ebase),
+      connect_signals(std::move(shared_ecommon),
                       (unprotected.*(dataInfo.local_ptr)).getSharedPtr()->getChangedSignal()...);
     }
   }

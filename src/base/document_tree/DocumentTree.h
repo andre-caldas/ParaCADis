@@ -20,20 +20,15 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef DocumentTree_DocumentTree_H
-#define DocumentTree_DocumentTree_H
+#pragma once
 
 #include "Container.h"
 
 namespace Document
 {
-
   class DocumentTree : public Container
   {
   public:
     std::string toString() const override;
   };
-
 }
-
-#endif

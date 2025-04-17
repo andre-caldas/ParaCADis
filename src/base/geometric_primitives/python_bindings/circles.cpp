@@ -40,7 +40,7 @@ void init_geometric_primitives_circles(py::module_& module)
   /*
    * CirclePointRadius2Normal.
    */
-  py::class_<CirclePointRadius2Normal, ExporterBase,
+  py::class_<CirclePointRadius2Normal, ExporterCommon,
              SharedPtr<CirclePointRadius2Normal>>(
       module, "CirclePointRadius2Normal", py::multiple_inheritance(),
       "An oriented circle specified by a center point,"
@@ -60,7 +60,7 @@ void init_geometric_primitives_circles(py::module_& module)
   /*
    * Circle3Points.
    */
-  py::class_<Circle3Points, ExporterBase,
+  py::class_<Circle3Points, ExporterCommon,
              SharedPtr<Circle3Points>>(
       module, "Circle3Points", py::multiple_inheritance(),
       "An oriented circle specified by three points.")

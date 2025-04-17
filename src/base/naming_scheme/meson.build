@@ -11,6 +11,8 @@ naming_scheme_includes = [
   'exceptions.h',
   'path_cache_policies.h',
   'path_cache_policies.hpp',
+  'Chainable.h',
+  'Chainable.hpp',
   'Exporter.h',
   'IExport.h',
   'IExport.hpp',

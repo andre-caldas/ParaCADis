@@ -44,7 +44,7 @@ namespace NamingScheme::Exception
   {
   public:
     CannotResolve(
-        SharedPtr<ExporterBase> parent_lock, const token_iterator& tokens,
+        SharedPtr<ExporterCommon> parent_lock, const token_iterator& tokens,
         std::source_location location = std::source_location::current());
   };
 

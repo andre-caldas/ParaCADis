@@ -81,7 +81,7 @@ PathToObject::PathToObject(Uuid _root_uuid, ListOfPathTokens tokens)
 {
 }
 
-PathToObject::PathToObject(const SharedPtr<ExporterBase>& root, ListOfPathTokens tokens)
+PathToObject::PathToObject(const SharedPtr<ExporterCommon>& root, ListOfPathTokens tokens)
     : root_weak_ptr(root.getWeakPtr())
     , root_uuid(root->getUuid())
     , list_of_tokens(std::move(tokens))
@@ -111,7 +111,7 @@ PathToObject PathToObject::operator+(ListOfPathTokens extra_tokens) const
 }
 
 
-SharedPtr<ExporterBase> PathToObject::getRoot() const
+SharedPtr<ExporterCommon> PathToObject::getRoot() const
 {
   auto result = root_weak_ptr.lock();
   if(result) {

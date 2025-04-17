@@ -95,14 +95,14 @@ namespace DataDescription
      * Implementations may be selective and update only values
      * that have actually changed. But this is not a requirement.
      */
-    // @{
+    /// @{
     /**
      * Non-blocking attempt to update values.
      */
     virtual void tryInnerToUser() = 0;
     /// Blocking version that always succeeds.
     virtual void innerToUser() = 0;
-    // @}
+    /// @}
 
     /**
      * Methods to commit values from the "user side" to the "inner side".
@@ -110,14 +110,14 @@ namespace DataDescription
      * Implementations are REQUIRED to being selective and commit only values
      * that have actually changed.
      */
-    // @{
+    /// @{
     /**
      * Non-blocking attempt to commit values.
      */
     virtual void tryUserToInner() = 0;
     /// Blocking version that always succeeds.
     virtual void userToInner() = 0;
-    // @}
+    /// @}
   };
 
 
@@ -139,7 +139,7 @@ namespace DataDescription
      * @attention
      * May block, in order to initialize structs.
      */
-    // @{
+    /// @{
     /**
      * Translator with user and inner caches.
      */
@@ -150,7 +150,7 @@ namespace DataDescription
      */
     GateTranslator(SharedPtr<Inner> inner, user_t& user_cache)
       requires C_StructSubTranslator<cache_t>;
-    // @}
+    /// @}
 
     void innerToUser() override;
     void tryInnerToUser() override;

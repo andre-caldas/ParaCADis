@@ -68,7 +68,7 @@ public:
    * The pybind11 library needs this constructor to support conversion
    * of types managed by SharedPtr. For example, to pass a
    * SharedPtr<DeferenceablePoint> to a method that takes a
-   * SharedPtr<ExporterBase>, this implicit conversion is necessary.
+   * SharedPtr<ExporterCommon>, this implicit conversion is necessary.
    * The library only performs the conversion if SharedPtr implements
    * this constructor.
    */

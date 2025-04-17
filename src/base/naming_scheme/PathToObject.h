@@ -34,7 +34,7 @@
 namespace NamingScheme
 {
 
-  class ExporterBase;
+  class ExporterCommon;
 
   /**
    * @brief The list of tokens that composes a path.
@@ -71,7 +71,7 @@ namespace NamingScheme
    *
    * It is composed of:
    * 1. A url path to a document.
-   * 2. A Uuid that identifies a root shared ExporterBase.
+   * 2. A Uuid that identifies a root shared ExporterCommon.
    * 3. A sequence of PathToken that identifies the path
    *    to the referenced entity.
    *
@@ -86,7 +86,7 @@ namespace NamingScheme
   class PathToObject
   {
   protected:
-    WeakPtr<ExporterBase> root_weak_ptr;  ///< Try first.
+    WeakPtr<ExporterCommon> root_weak_ptr;  ///< Try first.
     Uuid                  root_uuid;      ///< Try second.
     std::string           root_url;       ///< Try this third. (not implemented)
 
@@ -101,7 +101,7 @@ namespace NamingScheme
      * @example `PathToObject(root, {"geometries", "second_line"});`
      */
     /// @{
-    PathToObject(const SharedPtr<ExporterBase>& root, ListOfPathTokens tokens = {});
+    PathToObject(const SharedPtr<ExporterCommon>& root, ListOfPathTokens tokens = {});
     PathToObject(Uuid root_uuid, ListOfPathTokens tokens = {});
     PathToObject(std::string root_url, ListOfPathTokens tokens = {});
     /// @}
@@ -111,7 +111,7 @@ namespace NamingScheme
     PathToObject operator+(PathToken extra_token) const;
     PathToObject operator+(ListOfPathTokens extra_tokens) const;
 
-    SharedPtr<ExporterBase> getRoot() const;
+    SharedPtr<ExporterCommon> getRoot() const;
     auto& getTokens() const { return list_of_tokens.getTokens(); }
 
     void                serialize(Xml::Writer& writer) const noexcept;

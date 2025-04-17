@@ -61,8 +61,8 @@ namespace NamingScheme
      * ResultHolder for data and an explicit mutex.
      */
     template<Threads::C_MutexLike Mutex>
-    ResultHolder(Mutex& m, SharedPtr<T> _data)
-        : mutex(m)
+    ResultHolder(Mutex&& m, SharedPtr<T> _data)
+        : mutex(std::forward<Mutex>(m))
         , data(std::move(_data))
         , data_weak(this->data)
     {}

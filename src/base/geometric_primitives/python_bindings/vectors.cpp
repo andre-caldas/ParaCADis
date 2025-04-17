@@ -83,7 +83,7 @@ void init_geometric_primitives_vectors(py::module_& module)
   /*
    * DeferenceableVector.
    */
-  py::class_<DeferenceableVector, ExporterBase,
+  py::class_<DeferenceableVector, ExporterCommon,
              SharedPtr<DeferenceableVector>>(
       module, "DeferenceableVector", py::multiple_inheritance(),
       "A vector that can be handled as a geometric object."

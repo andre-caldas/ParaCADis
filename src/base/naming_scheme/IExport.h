@@ -37,18 +37,16 @@
 namespace NamingScheme
 {
   /**
+   * An object that can be queried to resolve the next step in a path.
+   *
    * Any class that exports some type T must subclass IExport<T>.
    *
    * @attention
-   * In order for this class to be part of a chain of Exporter,
-   * it does need to subclass Exporter.
-   * We opted for **not making** `IExport<T>` a public virtual
-   * subclass of Exporter and instead giving the developer the
-   * **responsibility** to subclass it.
+   * In order for this class to be part of a chain of Exporters,
+   * it does need to subclass Chainable as well.
    */
   template<typename T>
   class IExport
-      : public virtual ExporterBase
   {
   protected:
     IExport() = default;
@@ -56,13 +54,15 @@ namespace NamingScheme
     IExport(const IExport&) = delete;
     IExport& operator=(IExport&&) = delete;
     IExport& operator=(const IExport&) = delete;
+    virtual ~IExport() = default;
 
   public:
     /**
      * Calls resolve_ptr() and resolve_share().
      */
-    virtual ResultHolder<T> resolve(const ResultHolder<ExporterBase>& current,
-                                    token_iterator& tokens, T* = nullptr);
+    virtual ResultHolder<T> resolve(
+        const ResultHolder<ExporterCommon>& current,
+        token_iterator& tokens, T* = nullptr);
 
   protected:
     /**
@@ -136,11 +136,12 @@ namespace NamingScheme
      * because the modification signals need to be chained.
      *
      * @attention
-     * Notice that ExporterBase is SelfSharedPtr and therefore, it should always
-     * be managed by a SharedPtr. This way, deferenceable stuff
+     * Notice that ExporterBase is SelfSharedPtr and therefore,
+     * it should always be managed by a SharedPtr.
+     * This way, deferenceable stuff
      * (that is, things derived from ExporterBase,
      * like DeferenceablePoint or CirclePointRadius2Normal)
-     * should be wrapped in a SharedPtrWrap anyways.
+     * is supposed to be always wrapped in a SharedPtrWrap anyways.
      *
      * Therefore, the correct way to handle ExporterBase estensions inside
      * IExportStruct is to declare a Data structure that contains a

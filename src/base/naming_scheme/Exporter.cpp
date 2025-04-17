@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
+ *   Copyright (c) 2023-2025 André Caldas <andre.em.caldas@gmail.com>       *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -26,48 +26,47 @@
 #include <base/threads/safe_structs/ThreadSafeMap.h>
 #include <base/threads/locks/LockPolicy.h>
 
+using namespace Threads::SafeStructs;
+
 namespace NamingScheme
 {
-
-  namespace
-  {
-    Threads::SafeStructs::ThreadSafeMap<Uuid::uuid_type, WeakPtr<ExporterBase>> map;
+  namespace {
+    ThreadSafeMap<Uuid::uuid_type, WeakPtr<ExporterCommon>> map;
   }
 
-  Uuid ExporterBase::getUuid() const
-  {
-    return id.getUuid();
-  }
 
-  ExporterBase::operator Uuid() const
+  Uuid ExporterCommon::getUuid() const
   {
     return id.getUuid();
   }
 
-  ExporterBase::operator Uuid::uuid_type() const
+  ExporterCommon::operator Uuid() const
+  {
+    return id.getUuid();
+  }
+
+  ExporterCommon::operator Uuid::uuid_type() const
   {
     return id.getUuid();
   }
 
 
-  std::string ExporterBase::getName() const
+  std::string ExporterCommon::getName() const
   {
     return id.getName();
   }
 
-  void ExporterBase::setName(std::string name)
+  void ExporterCommon::setName(std::string name)
   {
     id.setName(std::move(name));
   }
 
 
-  void ExporterBase::registerUuid(SharedPtr<ExporterBase> shared_ptr)
+  void ExporterCommon::registerUuid(SharedPtr<ExporterCommon> shared_ptr)
   {
     auto uuid = shared_ptr->getUuid();
     assert(uuid.isValid());
     Threads::WriterGate gate{map};
     gate->emplace(uuid, std::move(shared_ptr));
   }
-
-}  // namespace NamingScheme
-
+}

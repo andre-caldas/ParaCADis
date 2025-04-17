@@ -29,7 +29,7 @@
 #include "../types.h"
 
 #include <base/expected_behaviour/SharedPtrWrap.h>
-#include <base/naming_scheme/Chainables.h>
+#include <base/naming_scheme/Chainable.h>
 
 /**
  * DataStruct for orthogonal coordinate system.
@@ -52,7 +52,7 @@ class DeferenceableCoordinateSystem
                                 {&CartesianCoordinateSystemData::v1, name_v1},
                                 {&CartesianCoordinateSystemData::v2, "v2"},
                                 {&CartesianCoordinateSystemData::v2, name_v2}>
-    , public NamingScheme::Chainables<DeferenceablePoint, DeferenceableVector>
+    , public NamingScheme::Chainable<DeferenceablePoint, DeferenceableVector>
 {
   ONLY_SHAREDPTRWRAP()
   DeferenceableCoordinateSystem() = default;
@@ -62,7 +62,7 @@ public:
   CoordinateSystem getCoordinateSystem() const override;
 
   SharedPtr<DeferenceableCoordinateSystem> deepCopy() const;
-  SharedPtr<NamingScheme::ExporterBase> deepCopyExporter() const override
+  SharedPtr<NamingScheme::ExporterCommon> deepCopyExporter() const override
   { return deepCopy(); }
 };
 

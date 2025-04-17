@@ -80,7 +80,7 @@ void init_geometric_primitives_points(py::module_& module)
   /*
    * DeferenceablePoint.
    */
-  py::class_<DeferenceablePoint, ExporterBase,
+  py::class_<DeferenceablePoint, ExporterCommon,
              SharedPtr<DeferenceablePoint>>(
       module, "DeferenceablePoint", py::multiple_inheritance(),
       "A point that can be handled as a geometric object."

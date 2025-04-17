@@ -29,7 +29,7 @@
 
 namespace NamingScheme
 {
-  class ExporterBase;
+  class ExporterCommon;
 }
 
 namespace Document {
@@ -45,7 +45,7 @@ namespace Document::Exception
     ElementAlreadyInContainer(
         NamingScheme::Uuid element_uuid, const Container& container);
     ElementAlreadyInContainer(
-        const NamingScheme::ExporterBase& element, const Container& container);
+        const NamingScheme::ExporterCommon& element, const Container& container);
   };
 
   class ElementNotInContainer : public ::Exception::RunTimeError
@@ -54,7 +54,7 @@ namespace Document::Exception
     ElementNotInContainer(
         NamingScheme::Uuid element_uuid, const Container& container);
     ElementNotInContainer(
-        const NamingScheme::ExporterBase& element, const Container& container);
+        const NamingScheme::ExporterCommon& element, const Container& container);
   };
 
 }  // namespace Document

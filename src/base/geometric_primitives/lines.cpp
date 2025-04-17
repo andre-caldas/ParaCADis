@@ -22,6 +22,8 @@
 
 #include "lines.h"
 
+using namespace Document;
+
 Line2Points::Line2Points(Point start, Point end,
                          bool is_bounded_start, bool is_bounded_end)
     : Exporter(std::move(start), std::move(end), is_bounded_start, is_bounded_end)
@@ -35,7 +37,7 @@ SharedPtr<Line2Points> Line2Points::deepCopy() const
                                     gate->is_bounded_start, gate->is_bounded_end);
 }
 
-SharedPtr<const Line2Points::iga_curve_t> Line2Points::produceIgaCurve() const
+SharedPtr<const DocumentGeometry::iga_curve_t> Line2Points::produceIgaCurve() const
 {
   assert(false && "Implement!");
   return {};
@@ -55,7 +57,7 @@ SharedPtr<LinePointDirection> LinePointDirection::deepCopy() const
                                               gate->is_bounded_start, gate->is_bounded_end);
 }
 
-SharedPtr<const LinePointDirection::iga_curve_t> LinePointDirection::produceIgaCurve() const
+SharedPtr<const DocumentGeometry::iga_curve_t> LinePointDirection::produceIgaCurve() const
 {
   assert(false && "Implement!");
   return {};

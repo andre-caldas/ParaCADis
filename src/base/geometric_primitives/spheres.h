@@ -30,7 +30,7 @@
 #include <atomic>
 
 #include <base/expected_behaviour/SharedPtrWrap.h>
-#include <base/naming_scheme/Chainables.h>
+#include <base/naming_scheme/Chainable.h>
 #include <base/naming_scheme/IExport.h>
 
 #include <gismo/gismo.h>
@@ -55,13 +55,13 @@ class SphereCenterRadius2
     , public NamingScheme::IExportStruct<Real, SphereCenterRadius2Data,
                                 {&SphereCenterRadius2Data::radius2, "radius2"},
                                 {&SphereCenterRadius2Data::radius2, "r2"}>
-    , public NamingScheme::Chainables<DeferenceablePoint>
+    , public NamingScheme::Chainable<DeferenceablePoint>
 {
   ONLY_SHAREDPTRWRAP()
   SphereCenterRadius2(Point center, Real radius2);
 public:
   SharedPtr<SphereCenterRadius2> deepCopy() const;
-  SharedPtr<NamingScheme::ExporterBase> deepCopyExporter() const override
+  SharedPtr<NamingScheme::ExporterCommon> deepCopyExporter() const override
   { return deepCopy(); }
 
 private:
@@ -89,13 +89,13 @@ class SphereCenterSurfacePoint
     , public NamingScheme::IExportStruct<DeferenceablePoint, SphereCenterSurfacePointData,
                                 {&SphereCenterSurfacePointData::surface_point, "surface_point"},
                                 {&SphereCenterSurfacePointData::surface_point, "p"}>
-    , public NamingScheme::Chainables<DeferenceablePoint>
+    , public NamingScheme::Chainable<DeferenceablePoint>
 {
   ONLY_SHAREDPTRWRAP()
   SphereCenterSurfacePoint(Point center, Point surface_point);
 public:
   SharedPtr<SphereCenterSurfacePoint> deepCopy() const;
-  SharedPtr<NamingScheme::ExporterBase> deepCopyExporter() const override
+  SharedPtr<NamingScheme::ExporterCommon> deepCopyExporter() const override
   { return deepCopy(); }
 
 private:

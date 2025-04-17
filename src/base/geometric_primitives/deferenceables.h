@@ -62,7 +62,7 @@ public:
   operator Point() const noexcept;
 
   SharedPtr<DeferenceablePoint> deepCopy() const;
-  SharedPtr<NamingScheme::ExporterBase> deepCopyExporter() const override
+  SharedPtr<NamingScheme::ExporterCommon> deepCopyExporter() const override
   { return deepCopy(); }
 };
 
@@ -99,7 +99,7 @@ public:
   operator Vector() const noexcept;
 
   SharedPtr<DeferenceableVector> deepCopy() const;
-  SharedPtr<NamingScheme::ExporterBase> deepCopyExporter() const override
+  SharedPtr<NamingScheme::ExporterCommon> deepCopyExporter() const override
   { return deepCopy(); }
 
 //  std::string toString() const override;

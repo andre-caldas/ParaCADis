@@ -37,7 +37,7 @@ class WeakPtr;
 namespace NamingScheme
 {
 
-  class ExporterBase;
+  class ExporterCommon;
 
   using token_item = PathToken;
   template<typename R>

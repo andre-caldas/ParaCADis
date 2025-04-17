@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
+ *   Copyright (c) 2023-2025 André Caldas <andre.em.caldas@gmail.com>       *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,45 +20,42 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef NamingScheme_Chainables_impl_H
-#define NamingScheme_Chainables_impl_H
+#pragma once
 
-#include "Chainables.h"
+#include "Chainable.h"
 
 using namespace NamingScheme;
 
 template<typename... EachChainable>
-ResultHolder<ExporterBase>
-Chainables<EachChainable...>::resolve(const ResultHolder<ExporterBase>& current,
-                                      token_iterator &tokens, ExporterBase *)
+ResultHolder<ExporterCommon>
+Chainable<EachChainable...>::resolve(const ResultHolder<ExporterCommon>& current,
+                                      token_iterator& tokens, ExporterCommon*)
 {
-  auto chain_result = chain_resolve<EachChainable...>(current, tokens);
+  auto chain_result = Chainable<EachChainable...>::chain_resolve<EachChainable...>(current, tokens);
   if(chain_result) {
     return chain_result;
   }
-  return IExport<ExporterBase>::resolve(current, tokens);
+  return IExport<ExporterCommon>::resolve(current, tokens);
 }
 
 
 template<typename... EachChainable>
-template<C_IsChainable First, C_IsChainable... Others>
-ResultHolder<ExporterBase>
-Chainables<EachChainable...>::chain_resolve(const ResultHolder<ExporterBase>& current,
-                                            token_iterator& tokens)
+template<typename First, typename... Others>
+ResultHolder<ExporterCommon>
+Chainable<EachChainable...>::chain_resolve(
+    const ResultHolder<ExporterCommon>& current, token_iterator& tokens)
 {
   auto& exporter = dynamic_cast<IExport<First>&>(*this);
   auto result = exporter.resolve(current, tokens);
   if(result)
   {
-    return result.template cast<ExporterBase>();
+    return result.template cast<ExporterCommon>();
   }
 
-  if constexpr (sizeof...(Others) > 0)
+  if constexpr(sizeof...(Others) > 0)
   {
     return chain_resolve<Others...>(current, tokens);
   }
 
   return {};
 }
-
-#endif
