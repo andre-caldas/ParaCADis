@@ -101,12 +101,11 @@ const std::shared_ptr<T>& SharedPtr<T>::sliced() const
 
 template<typename T>
 template<typename S>
+  requires C_StaticCastableTo<T, S>
 SharedPtr<S> SharedPtr<T>::cast() const
 {
   if constexpr(std::is_same_v<T,S>) {
     return *this;
-  } else if constexpr(std::has_virtual_destructor_v<T>) {
-    return std::dynamic_pointer_cast<S>(sliced());
   } else {
     return std::static_pointer_cast<S>(sliced());
   }
@@ -114,15 +113,29 @@ SharedPtr<S> SharedPtr<T>::cast() const
 
 template<typename T>
 template<typename S>
+SharedPtr<S> SharedPtr<T>::cast() const
+{
+  return std::dynamic_pointer_cast<S>(sliced());
+}
+
+
+template<typename T>
+template<typename S>
+  requires C_StaticCastableTo<T, S>
 SharedPtr<S> SharedPtr<T>::cast_nothrow() const
 {
   if constexpr(std::is_same_v<T,S>) {
     return *this;
-  } else if constexpr(std::has_virtual_destructor_v<T>) {
-    return std::dynamic_pointer_cast<S>(sliced_nothrow());
   } else {
     return std::static_pointer_cast<S>(sliced_nothrow());
   }
+}
+
+template<typename T>
+template<typename S>
+SharedPtr<S> SharedPtr<T>::cast_nothrow() const
+{
+  return std::dynamic_pointer_cast<S>(sliced_nothrow());
 }
 
 

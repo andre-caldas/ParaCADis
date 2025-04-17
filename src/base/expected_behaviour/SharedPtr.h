@@ -35,6 +35,11 @@ namespace pybind11 {
 template<typename T>
 class WeakPtr;
 
+// TODO: move this somewhere else.
+template<typename S, typename T>
+concept C_StaticCastableTo = requires(S* p)
+{ static_cast<T*>(p); };
+
 /**
  * Safer to use shared_ptr.
  * Shall be used as the return value of a function
@@ -116,7 +121,14 @@ public:
   operator SharedPtr<S>() const { return {sliced()}; }
 
   template<typename S>
+  requires C_StaticCastableTo<T, S>
   SharedPtr<S> cast() const;
+  template<typename S>
+  SharedPtr<S> cast() const;
+
+  template<typename S>
+  requires C_StaticCastableTo<T, S>
+  SharedPtr<S> cast_nothrow() const;
   template<typename S>
   SharedPtr<S> cast_nothrow() const;
 
