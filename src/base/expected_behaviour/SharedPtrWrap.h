@@ -62,8 +62,17 @@ public:
     }
   }
 
+  /**
+   * We allow only moving during construction.
+   * But no attribution or copies.
+   */
+  /// @{
+  SharedPtrWrap(SharedPtrWrap&&) = default;
+
   SharedPtrWrap<T>& operator=(const SharedPtrWrap&) = delete;
-  auto operator==(const SharedPtrWrap&) = delete;
+  SharedPtrWrap<T>& operator=(SharedPtrWrap&&) = delete;
+  auto operator==(const SharedPtrWrap&) const = delete;
+  /// @}
 
   operator const T&() const { return **this; }
   operator       T&()       { return **this; }
