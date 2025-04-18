@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <base/expected_behaviour/JustLockPtr.h>
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/threads/safe_structs/ThreadSafeMap.h>
 
@@ -124,7 +125,7 @@ namespace Threads
 
     struct LockedData {
       SharedPtr<SignalQueue> queue;
-      SharedPtr<void> to_void;  // Just to auto disconnect.
+      JustLockPtr to_lock;  // Just to auto disconnect.
       std::function<void(Args... args)> call_back;
       /// @attention Can be used only once!
       bool push_to_queue(Args... args);
@@ -135,10 +136,10 @@ namespace Threads
 
     struct Data {
       WeakPtr<SignalQueue> queue_weak;
-      WeakPtr<void> to_void_weak;  // Just to auto disconnect.
+      JustLockWeak to_lock_weak;  // Just to auto disconnect.
       std::function<void(Args... args)> call_back;
       LockedData lock() const
-      {return {queue_weak.lock(), to_void_weak.lock(), call_back};}
+      {return {queue_weak.lock(), to_lock_weak.lock(), call_back};}
     };
 
     template<typename K, typename V>

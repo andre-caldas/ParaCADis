@@ -37,8 +37,8 @@ class WeakPtr;
 
 // TODO: move this somewhere else.
 template<typename S, typename T>
-concept C_StaticCastableTo = requires(S* p)
-{ static_cast<T*>(p); };
+concept C_DynamicCastableTo = requires(S* p)
+{ dynamic_cast<T*>(p); };
 
 /**
  * Safer to use shared_ptr.
@@ -121,16 +121,16 @@ public:
   operator SharedPtr<S>() const { return {sliced()}; }
 
   template<typename S>
-  requires C_StaticCastableTo<T, S>
+  requires C_DynamicCastableTo<T, S>
   SharedPtr<S> cast() const;
-  template<typename S>
-  SharedPtr<S> cast() const;
+//  template<typename S>
+//  SharedPtr<S> cast() const;
 
   template<typename S>
-  requires C_StaticCastableTo<T, S>
+  requires C_DynamicCastableTo<T, S>
   SharedPtr<S> cast_nothrow() const;
-  template<typename S>
-  SharedPtr<S> cast_nothrow() const;
+//  template<typename S>
+//  SharedPtr<S> cast_nothrow() const;
 
 private:
   explicit SharedPtr(T* ptr) : std::shared_ptr<T>(ptr) {}
@@ -164,31 +164,6 @@ public:
 
   template<typename S>
   WeakPtr<S> cast() const;
-};
-
-
-class JustLockPtr
-{
-public:
-  JustLockPtr() = default;
-  JustLockPtr(const JustLockPtr&) = default;
-  JustLockPtr(JustLockPtr&&) = default;
-
-  JustLockPtr& operator= (const JustLockPtr& other);
-  JustLockPtr& operator= (JustLockPtr&& other);
-
-  JustLockPtr(std::shared_ptr<void>&& ptr);
-
-  template<typename T>
-  JustLockPtr(const std::shared_ptr<T>& ptr);
-
-  template<typename T>
-  JustLockPtr(const SharedPtr<T>& ptr) : JustLockPtr(ptr.sliced()) {}
-
-  operator bool() const {return bool(lock);}
-
-private:
-  std::shared_ptr<void> lock;
 };
 
 #include "SharedPtr.hpp"

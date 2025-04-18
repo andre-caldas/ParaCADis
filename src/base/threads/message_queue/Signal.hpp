@@ -62,7 +62,7 @@ namespace Threads
     WriterGate gate{callBacks};
     auto key = ++id;
     gate->emplace(key, Data{.queue_weak = queue.getWeakPtr(),
-                            .to_void_weak = to.template cast<void>().getWeakPtr(),
+                            .to_lock_weak = to,
                             .call_back = std::move(lambda)});
     return key;
   }
@@ -90,7 +90,7 @@ namespace Threads
     WriterGate gate{callBacks};
     auto key = ++id;
     gate->emplace(key, Data{.queue_weak = queue.getWeakPtr(),
-                            .to_void_weak = to.template cast<void>().getWeakPtr(),
+                            .to_lock_weak = to,
                             .call_back = std::move(lambda)});
     return key;
   }
@@ -181,11 +181,11 @@ namespace Threads
     already_called = true;
 #endif
 
-    if(!queue || !to_void) {
+    if(!queue || !to_lock) {
       return false;
     }
     auto lambda = [cb = std::move(call_back), ...args = std::move(args)]{cb(args...);};
-    queue->push(std::move(lambda), to_void.get());
+    queue->push(std::move(lambda), to_lock.getVoidPtr());
     return true;
   }
 

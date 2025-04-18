@@ -1,5 +1,5 @@
 expected_behaviour_src = [
-  'SharedPtr.cpp'
+  'JustLockPtr.cpp',
 ]
 
 expected_behaviour_includes = [
@@ -7,6 +7,8 @@ expected_behaviour_includes = [
   'CycleGuard.hpp',
   'SelfShared.h',
   'SelfShared.hpp',
+  'JustLockPtr.h',
+  'JustLockPtr.hpp',
   'SharedPtr.h',
   'SharedPtr.hpp',
   'SharedPtrWrap.h',

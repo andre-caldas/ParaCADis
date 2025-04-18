@@ -20,28 +20,12 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "SharedPtr.h"
+#pragma once
 
-JustLockPtr& JustLockPtr::operator= (const JustLockPtr& other)
-{
-  assert(!lock && "Cannot attribute to an already locked lock.");
-  lock = other.lock;
-  return *this;
-}
+#include "JustLockPtr.h"
 
-JustLockPtr& JustLockPtr::operator= (JustLockPtr&& other)
-{
-  assert(!lock && "Cannot attribute to an already locked lock.");
-  lock = std::move(other.lock);
-  return *this;
-}
-
-JustLockPtr::JustLockPtr(std::shared_ptr<void>&& ptr) : lock(std::move(ptr))
+template<typename T>
+JustLockPtr::JustLockPtr(const std::shared_ptr<T>& ptr) : lock(ptr)
 {
   assert(lock && "You cannot hold an unlocked shared_ptr.");
 }
-
-
-#include <base/naming_scheme/Exporter.h>
-
-template class SharedPtr<NamingScheme::ExporterCommon>;
