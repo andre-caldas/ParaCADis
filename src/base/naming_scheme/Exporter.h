@@ -157,9 +157,18 @@ namespace NamingScheme
   };
 
 
-  template<typename DataStruct>
+  /**
+   * Use this to export the contents of a protected DataStruct.
+   *
+   * The parameter type Base is there for the case where one
+   * wants to gather together a common class of exporters.
+   * This common class shall derive from ExporterCommonBase.
+   *
+   * @see DeferenceableCoordinates.
+   */
+  template<typename DataStruct, typename Base = ExporterCommon>
   class Exporter
-      : public ExporterCommon
+      : public Base
   {
   public:
     using data_t        = DataStruct;

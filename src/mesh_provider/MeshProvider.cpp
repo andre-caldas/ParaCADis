@@ -37,14 +37,6 @@ MeshProvider::MeshProvider(SharedPtr<IgaProvider> iga_provider)
 {}
 
 SharedPtr<MeshProvider>
-MeshProvider::make_shared(SharedPtr<native_geometry_t> geometry,
-                          const SharedPtr<Threads::SignalQueue>& queue)
-{
-  auto iga_provider = IgaProvider::make_shared(std::move(geometry), queue);
-  return make_shared(std::move(iga_provider), queue);
-}
-
-SharedPtr<MeshProvider>
 MeshProvider::make_shared(SharedPtr<IgaProvider> iga_provider,
                           const SharedPtr<Threads::SignalQueue>& queue)
 {

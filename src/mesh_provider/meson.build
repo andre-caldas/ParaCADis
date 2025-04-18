@@ -8,7 +8,9 @@ mesh_provider_src = [
 mesh_provider_includes = [
   'GlThreadQueue.h',
   'IgaProvider.h',
+  'IgaProvider.hpp',
   'MeshProvider.h',
+  'MeshProvider.hpp',
   'OgreGismoMesh.h',
 ]
 

@@ -34,10 +34,11 @@ namespace py = pybind11;
 using namespace py::literals;
 
 using namespace NamingScheme;
+using namespace Document;
 
 void init_geometric_primitives_spheres(py::module_& module)
 {
-  py::class_<SphereCenterRadius2, ExporterCommon,
+  py::class_<SphereCenterRadius2, DocumentSurface,
              SharedPtr<SphereCenterRadius2>>(
       module, "SphereCenterRadius2",
       "A sphere determined by its center and squared radius.")
@@ -49,7 +50,7 @@ void init_geometric_primitives_spheres(py::module_& module)
            { return "<SPHERECENTERRADIUS2... (put info here)>"; });
 
 
-  py::class_<SphereCenterSurfacePoint, ExporterCommon,
+  py::class_<SphereCenterSurfacePoint, DocumentSurface,
              SharedPtr<SphereCenterSurfacePoint>>(
       module, "SphereCenterSurfacePoint", py::multiple_inheritance(),
       "A sphere determined by its center and one surface point.")

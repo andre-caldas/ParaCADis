@@ -34,13 +34,14 @@ namespace py = pybind11;
 using namespace py::literals;
 
 using namespace NamingScheme;
+using namespace Document;
 
 void init_geometric_primitives_lines(py::module_& module)
 {
   /*
    * Line2Points.
    */
-  py::class_<Line2Points, ExporterCommon, SharedPtr<Line2Points>>(
+  py::class_<Line2Points, DocumentCurve, SharedPtr<Line2Points>>(
       module, "Line2Points", py::multiple_inheritance(),
       "An oriented straight line, half-line or segment specified by two points.")
       .def(py::init(&SharedPtr<Line2Points>::make_shared<Point&, Point&, bool, bool>),
@@ -57,7 +58,7 @@ void init_geometric_primitives_lines(py::module_& module)
   /*
    * LinePointDirection.
    */
-  py::class_<LinePointDirection, ExporterCommon,
+  py::class_<LinePointDirection, DocumentCurve,
              SharedPtr<LinePointDirection>>(
       module, "LinePointDirection", py::multiple_inheritance(),
       "An oriented straight line, half-line or segment specified by"

@@ -42,8 +42,7 @@ struct CartesianCoordinateSystemData {
 
 template<CoordinateSystem::AxisOrder order, TemplateString name_v1, TemplateString name_v2>
 class DeferenceableCoordinateSystem
-    : public NamingScheme::Exporter<CartesianCoordinateSystemData>
-    , public DeferenceableCoordinates
+    : public NamingScheme::Exporter<CartesianCoordinateSystemData, DeferenceableCoordinates>
     , public NamingScheme::IExportStruct<DeferenceablePoint, CartesianCoordinateSystemData,
                                 {&CartesianCoordinateSystemData::origin, "origin"},
                                 {&CartesianCoordinateSystemData::origin, "o"}>

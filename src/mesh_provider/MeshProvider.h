@@ -32,8 +32,9 @@ namespace Mesh
   class MeshProvider
   {
   public:
+    template<Document::C_IsDocumentGeometry Geo>
     static SharedPtr<MeshProvider>
-    make_shared(SharedPtr<native_geometry_t> geometry,
+    make_shared(SharedPtr<Geo> geometry,
                 const SharedPtr<Threads::SignalQueue>& queue);
 
     static SharedPtr<MeshProvider>
@@ -51,3 +52,5 @@ namespace Mesh
     const SharedPtrWrap<OgreGismoMesh> mesh;
   };
 }
+
+#include "MeshProvider.hpp"

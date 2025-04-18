@@ -20,48 +20,36 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "module.h"
+#pragma once
 
-#include <base/expected_behaviour/SharedPtr.h>
-#include <base/geometric_primitives/DocumentGeometry.h>
-#include <python_bindings/types.h>
+#include "IgaProvider.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+#include <cassert>
 
-using namespace NamingScheme;
-using namespace Document;
+#include <gismo/gismo.h>
 
-void init_geometric_primitives(py::module_& parent_module)
+namespace Mesh
 {
-  auto m = parent_module.def_submodule("geometric_primitives");
-  m.doc() = "Basic geometric objects used in ParaCADis.";
+  /*
+   * IgaProvider
+   */
+  template<Document::C_IsDocumentGeometry Geo>
+  IgaProvider::IgaProvider(SharedPtr<Geo> geometry)
+      : geometryWeak(std::move(geometry))
+  {
+    slotUpdate();
+  }
 
-  py::class_<DocumentGeometry, NamingScheme::ExporterCommon, SharedPtr<DocumentGeometry>>(
-      m, "Document",
-      "Base class for geometries in the document tree.")
-      .def("__repr__",
-           [](const DocumentGeometry&){ return "<GEOMETRY... (put info here)>"; });
+  template<Document::C_IsDocumentGeometry Geo>
+  SharedPtr<IgaProvider>
+  IgaProvider::make_shared(SharedPtr<Geo> geometry,
+                           const SharedPtr<Threads::SignalQueue>& queue)
+  {
+    assert(geometry && "Invalid geometry passed");
+    if(!geometry) { return {}; }
 
-  py::class_<DocumentCurve, DocumentGeometry, SharedPtr<DocumentCurve>>(
-      m, "Curve",
-      "Base class for curves in the document tree.")
-      .def("__repr__",
-           [](const DocumentCurve&){ return "<CURVE... (put info here)>"; });
-
-  py::class_<DocumentSurface, DocumentGeometry, SharedPtr<DocumentSurface>>(
-      m, "Surface",
-      "Base class for surfaces in the document tree.")
-      .def("__repr__",
-           [](const DocumentSurface&){ return "<SURFACE... (put info here)>"; });
-
-  init_geometric_primitives_reals(m);
-  init_geometric_primitives_points(m);
-  init_geometric_primitives_vectors(m);
-
-  init_geometric_primitives_lines(m);
-  init_geometric_primitives_circles(m);
-  init_geometric_primitives_spheres(m);
-
-  init_geometric_primitives_coordinate_systems(m);
+    auto self = SharedPtr<IgaProvider>::from_pointer(new IgaProvider(geometry));
+    geometry->getChangedSignal().connect(geometry, queue, self, &IgaProvider::slotUpdate);
+    return self;
+  }
 }

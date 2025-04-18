@@ -41,8 +41,7 @@
 
 namespace Mesh
 {
-  using native_geometry_t = Document::DocumentGeometry;
-  using iga_geometry_t = native_geometry_t::iga_geometry_t;
+  using iga_geometry_t = Document::DocumentGeometry::iga_geometry_t;
 
   /**
    * Holds (shared_ptr to) a constant IgA geometry and emits a signal
@@ -76,14 +75,16 @@ namespace Mesh
       : public IgaGeometryHolder
   {
   public:
+    template<Document::C_IsDocumentGeometry Geo>
     static SharedPtr<IgaProvider>
-    make_shared(SharedPtr<native_geometry_t> geometry,
+    make_shared(SharedPtr<Geo> geometry,
                 const SharedPtr<Threads::SignalQueue>& queue);
 
   protected:
-    IgaProvider(SharedPtr<native_geometry_t> geometry);
+    template<Document::C_IsDocumentGeometry Geo>
+    IgaProvider(SharedPtr<Geo> geometry);
 
-    WeakPtr<native_geometry_t> geometryWeak;
+    WeakPtr<Document::DocumentGeometry> geometryWeak;
 
     /**
      * Called whenever DeferenceableGeometry changes.
@@ -91,3 +92,5 @@ namespace Mesh
     void slotUpdate();
   };
 }
+
+#include "IgaProvider.hpp"

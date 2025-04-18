@@ -26,17 +26,6 @@
 
 using namespace Document;
 
-
-Threads::Signal<>& DocumentGeometry::getChangedSignal() const
-{
-  auto* exporter = dynamic_cast<const NamingScheme::ExporterCommon*>(this);
-  if(exporter) {
-    return exporter->getChangedSignal();
-  }
-  assert(false && "DocumentGeometry has no known sibling with 'getChangedSignal()'");
-}
-
-
 SharedPtr<const DocumentGeometry::iga_geometry_t>
 DocumentCurve::getIgaGeometry() const
 {

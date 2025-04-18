@@ -47,7 +47,7 @@ namespace TypeTraits
 
     template<typename Func>
     static bool dispatch(Base* ptr, Func&& func) {
-      if (T* casted = dynamic_cast<T*>(ptr)) {
+      if(T* casted = dynamic_cast<T*>(ptr)) {
         func(casted);
         return true;
       }
@@ -56,7 +56,7 @@ namespace TypeTraits
 
     template<typename Func>
     static bool dispatch(SharedPtr<Base> ptr, Func&& func) {
-      if (auto casted = ptr.template cast<T>()) {
+      if(auto casted = ptr.template cast<T>()) {
         func(std::move(casted));
         return true;
       }

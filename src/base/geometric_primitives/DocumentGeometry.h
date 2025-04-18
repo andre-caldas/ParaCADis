@@ -23,13 +23,17 @@
 #pragma once
 
 #include <base/expected_behaviour/SharedPtr.h>
+#include <base/naming_scheme/Exporter.h>
 #include <base/threads/message_queue/Signal.h>
 
 #include <gismo/gismo.h>
 
+#include <concepts>
+
 namespace Document
 {
   class DocumentGeometry
+    : public NamingScheme::ExporterCommon
   {
   public:
     using iga_geometry_t = gismo::gsGeometry<real_t>;
@@ -38,7 +42,6 @@ namespace Document
 
     virtual SharedPtr<const iga_geometry_t> getIgaGeometry() const = 0;
     virtual ~DocumentGeometry() = default;
-    Threads::Signal<>& getChangedSignal() const;
   };
 
 
@@ -64,4 +67,8 @@ namespace Document
     mutable std::atomic<std::shared_ptr<const iga_surface_t>> gismoGeometry;
     virtual SharedPtr<const iga_surface_t> produceIgaSurface() const = 0;
   };
+
+
+  template<typename T>
+  concept C_IsDocumentGeometry = std::derived_from<T, DocumentGeometry>;
 }

@@ -43,8 +43,7 @@ struct CirclePointRadius2NormalData {
  * A counter-clockwise oriented circle, thumbs up (right-hand).
  */
 class CirclePointRadius2Normal
-    : public Document::DocumentCurve
-    , public NamingScheme::Exporter<CirclePointRadius2NormalData>
+    : public NamingScheme::Exporter<CirclePointRadius2NormalData, Document::DocumentCurve>
     , public NamingScheme::IExportStruct<DeferenceablePoint, CirclePointRadius2NormalData,
                                 {&CirclePointRadius2NormalData::center, "center"},
                                 {&CirclePointRadius2NormalData::center, "c"}>
@@ -82,8 +81,7 @@ struct Circle3PointsData {
  * Orientation given by the oriented triangle: a --> b --> c.
  */
 class Circle3Points
-    : public Document::DocumentCurve
-    , public NamingScheme::Exporter<Circle3PointsData>
+    : public NamingScheme::Exporter<Circle3PointsData, Document::DocumentCurve>
     , public NamingScheme::IExportStruct<DeferenceablePoint, Circle3PointsData,
                                 {&Circle3PointsData::a, "a"},
                                 {&Circle3PointsData::a, "p1"},

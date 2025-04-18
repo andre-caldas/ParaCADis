@@ -20,48 +20,20 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "module.h"
+#include "MeshProvider.h"
 
-#include <base/expected_behaviour/SharedPtr.h>
-#include <base/geometric_primitives/DocumentGeometry.h>
-#include <python_bindings/types.h>
+#include "OgreGismoMesh.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+#include <memory>
 
-using namespace NamingScheme;
-using namespace Document;
-
-void init_geometric_primitives(py::module_& parent_module)
+namespace Mesh
 {
-  auto m = parent_module.def_submodule("geometric_primitives");
-  m.doc() = "Basic geometric objects used in ParaCADis.";
-
-  py::class_<DocumentGeometry, NamingScheme::ExporterCommon, SharedPtr<DocumentGeometry>>(
-      m, "Document",
-      "Base class for geometries in the document tree.")
-      .def("__repr__",
-           [](const DocumentGeometry&){ return "<GEOMETRY... (put info here)>"; });
-
-  py::class_<DocumentCurve, DocumentGeometry, SharedPtr<DocumentCurve>>(
-      m, "Curve",
-      "Base class for curves in the document tree.")
-      .def("__repr__",
-           [](const DocumentCurve&){ return "<CURVE... (put info here)>"; });
-
-  py::class_<DocumentSurface, DocumentGeometry, SharedPtr<DocumentSurface>>(
-      m, "Surface",
-      "Base class for surfaces in the document tree.")
-      .def("__repr__",
-           [](const DocumentSurface&){ return "<SURFACE... (put info here)>"; });
-
-  init_geometric_primitives_reals(m);
-  init_geometric_primitives_points(m);
-  init_geometric_primitives_vectors(m);
-
-  init_geometric_primitives_lines(m);
-  init_geometric_primitives_circles(m);
-  init_geometric_primitives_spheres(m);
-
-  init_geometric_primitives_coordinate_systems(m);
+  template<Document::C_IsDocumentGeometry Geo>
+  SharedPtr<MeshProvider>
+  MeshProvider::make_shared(SharedPtr<Geo> geometry,
+                            const SharedPtr<Threads::SignalQueue>& queue)
+  {
+    auto iga_provider = IgaProvider::make_shared(std::move(geometry), queue);
+    return make_shared(std::move(iga_provider), queue);
+  }
 }
