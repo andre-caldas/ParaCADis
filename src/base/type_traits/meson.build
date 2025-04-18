@@ -1,7 +1,7 @@
 type_traits_src = [
 ]
 
-type_traits_includes = [
+headers_to_install += files(
   'IndexTraits.h',
   'IsIterator.h',
   'MultiIndexRecordInfo.h',
@@ -11,10 +11,6 @@ type_traits_includes = [
   'ReduceToRaw.h',
   'Utils.h',
   'NamedMember.h',
-]
-
-install_headers(type_traits_includes,
-  preserve_path: true,
 )
 
 type_traits_lib = shared_library(

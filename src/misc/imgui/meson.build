@@ -2,18 +2,13 @@ imgui_src = files(
   'ImGuiScope.cpp',
 )
 
-imgui_includes = files(
+headers_to_install += files(
   'ImGuiDialog.h',
   'ImGuiDialog.hpp',
   'ImGuiElement.h',
   'ImGuiElement.hpp',
   'ImGuiScope.h',
   'ImGuiScope.hpp',
-)
-
-install_headers(
-  imgui_includes,
-  preserve_path: true,
 )
 
 imgui_deps = [

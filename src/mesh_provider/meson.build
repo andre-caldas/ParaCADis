@@ -5,15 +5,11 @@ mesh_provider_src = [
   'OgreGismoMesh.cpp',
 ]
 
-mesh_provider_includes = [
+headers_to_install += files(
   'GlThreadQueue.h',
   'IgaProvider.h',
   'MeshProvider.h',
   'OgreGismoMesh.h',
-]
-
-install_headers(mesh_provider_includes,
-  preserve_path: true,
 )
 
 mesh_provider_deps = [

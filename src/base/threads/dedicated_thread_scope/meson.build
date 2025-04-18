@@ -3,7 +3,7 @@ threads_src += files(
   'ScopeOfScopes.cpp',
 )
 
-threads_includes += files(
+headers_to_install += files(
   'DedicatedThreadScope.h',
   'DedicatedThreadScope.hpp',
   'ScopeOfScopes.h',

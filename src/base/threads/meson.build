@@ -2,7 +2,8 @@ threads_dep = [dependency('threads')]
 threads_src = files(
   'utils.cpp',
 )
-threads_includes = files(
+
+headers_to_install += files(
   'utils.h',
 )
 
@@ -11,10 +12,6 @@ subdir('safe_structs')
 subdir('message_queue')
 subdir('dedicated_thread_scope')
 
-
-install_headers(threads_includes,
-  preserve_path: true,
-)
 
 threads_lib = library(
   'threads',

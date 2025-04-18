@@ -2,7 +2,7 @@ expected_behaviour_src = [
   'JustLockPtr.cpp',
 ]
 
-expected_behaviour_includes = [
+headers_to_install += files(
   'CycleGuard.h',
   'CycleGuard.hpp',
   'SelfShared.h',
@@ -12,10 +12,6 @@ expected_behaviour_includes = [
   'SharedPtr.h',
   'SharedPtr.hpp',
   'SharedPtrWrap.h',
-]
-
-install_headers(expected_behaviour_includes,
-  preserve_path: true,
 )
 
 expected_behaviour_lib = library(

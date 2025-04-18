@@ -4,15 +4,10 @@ document_tree_src = [
   'exceptions.cpp',
 ]
 
-document_tree_includes = [
+headers_to_install += files(
   'Container.h',
   'DocumentTree.h',
   'exceptions.h',
-]
-
-install_headers(
-  document_tree_includes,
-  preserve_path: true,
 )
 
 document_tree_lib = library(

@@ -3,6 +3,7 @@ project(
   version: '0.0.1',
   license: 'GPL3+',
   default_options: ['cpp_std=c++26', 'warning_level=3'],
+  meson_version: '>= 1.4.0',
 )
 
 subdir('src')

@@ -1,7 +1,7 @@
 threads_src += files(
 )
 
-threads_includes += files(
+headers_to_install += files(
   'common_records/WeakPtrRecord.h',
   'MultiIndexContainer.h',
   'MultiIndexContainer_inl.h',

@@ -7,7 +7,7 @@ naming_scheme_src = [
   'Uuid.cpp',
 ]
 
-naming_scheme_includes = [
+headers_to_install += files(
   'exceptions.h',
   'path_cache_policies.h',
   'path_cache_policies.hpp',
@@ -25,10 +25,6 @@ naming_scheme_includes = [
   'ReferenceToObject.h',
   'ReferenceToObject.hpp',
   'types.h',
-]
-
-install_headers(naming_scheme_includes,
-  preserve_path: true,
 )
 
 naming_scheme_lib = library(

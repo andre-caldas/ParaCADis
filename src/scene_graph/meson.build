@@ -5,16 +5,11 @@ scene_graph_src = [
   'SceneRoot.cpp',
 ]
 
-scene_graph_includes = [
+headers_to_install += files(
   'ContainerNode.h',
   'MeshNode.h',
   'RenderingScope.h',
   'SceneRoot.h',
-]
-
-install_headers(
-  scene_graph_includes,
-  preserve_path: true,
 )
 
 scene_graph_deps = [

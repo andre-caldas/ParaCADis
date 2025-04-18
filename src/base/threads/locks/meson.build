@@ -7,7 +7,7 @@ threads_src += files(
   'YesItIsAMutex.cpp',
 )
 
-threads_includes += files(
+headers_to_install += files(
   'exceptions.h',
   'gates.h',
   'LockedIterator.h',

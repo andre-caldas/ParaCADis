@@ -5,14 +5,10 @@ xml_src = [
   'exceptions.cpp',
 ]
 
-xml_includes = [
+headers_to_install += files(
   'exceptions.h',
   'streams.h',
   'streams_fwd.h',
-]
-
-install_headers(xml_includes,
-  preserve_path: true,
 )
 
 xml_lib = library(

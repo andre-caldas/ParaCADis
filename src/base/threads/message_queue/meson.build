@@ -2,7 +2,7 @@ threads_src += files(
   'SignalQueue.cpp',
 )
 
-threads_includes += files(
+headers_to_install += files(
   'Signal.h',
   'Signal.hpp',
   'MutexSignal.h',

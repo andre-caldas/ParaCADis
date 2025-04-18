@@ -3,16 +3,12 @@ data_description_src = files(
   'Description.cpp',
 )
 
-data_description_includes = files(
+headers_to_install += files(
   'DataTranslator.h',
   'GateTranslator.h',
   'GateTranslator.hpp',
   'Description.h',
   'Description.hpp',
-)
-
-install_headers(data_description_includes,
-  preserve_path: true,
 )
 
 data_description_lib = library(

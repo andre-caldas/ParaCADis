@@ -24,7 +24,9 @@ py_deps = [
 
 test_main_src = files('cpp_test.cpp')
 
-pybind_main_src = []
+pybind_main_src = files()
+
+headers_to_install = files()
 
 subdir('base')
 subdir('mesh_provider')
@@ -35,4 +37,18 @@ subdir('python_bindings')
 paracadis_exec = executable('paracadis', 'paracadis.cpp',
   include_directories: inc,
   dependencies: deps,
+)
+
+fs = import('fs')
+
+# https://github.com/mesonbuild/meson/issues/13094
+headers_to_install_with_paths = []
+foreach f : headers_to_install
+  headers_to_install_with_paths += fs.relative_to(f, '')
+endforeach
+
+install_headers(
+  headers_to_install_with_paths,
+  subdir: meson.project_name(),
+  preserve_path: true,
 )

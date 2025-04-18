@@ -13,7 +13,7 @@ geometric_primitives_src = files(
   'spheres_translation.cpp',
 )
 
-geometric_primitives_includes = files(
+headers_to_install += files(
   'all_translators.h',
   'checks.h',
   'deferenceables.h',
@@ -35,10 +35,6 @@ geometric_primitives_includes = files(
 )
 
 subdir('coordinate_system')
-
-install_headers(geometric_primitives_includes,
-  preserve_path: true,
-)
 
 geometric_primitives_lib = library(
   'geometric_primitives',

@@ -4,7 +4,7 @@ geometric_primitives_src += files(
   'DeferenceableCoordinateSystem.cpp',
 )
 
-geometric_primitives_includes += files(
+headers_to_install += files(
   'CoordinateSystem.h',
   'DeferenceableCoordinatePoints.h',
   'DeferenceableCoordinateSystem.h',
