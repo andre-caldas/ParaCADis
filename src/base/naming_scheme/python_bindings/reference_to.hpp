@@ -39,9 +39,11 @@ using namespace py::literals;
 
 template<typename T>
 py::class_<NamingScheme::ReferenceTo<T>, SharedPtr<NamingScheme::ReferenceTo<T>>>
+
 bind_reference_to(py::module_& m, std::string type_name)
 {
   // TODO: use string_view concatenation in c++26. :-)
+  using namespace NamingScheme;
 
   using ReferenceTo  = NamingScheme::ReferenceTo<T>;
   using ResultHolder = NamingScheme::ResultHolder<T>;

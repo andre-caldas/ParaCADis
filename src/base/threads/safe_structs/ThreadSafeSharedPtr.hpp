@@ -20,32 +20,32 @@
  *                                                                          *
  ***************************************************************************/
 
+#pragma once
+
 #include "ThreadSafeSharedPtr.h"
 
 namespace Threads::SafeStructs
 {
+  template<typename T>
+  ThreadSafeSharedPtr<T>::ThreadSafeSharedPtr(SharedPtr<T> shared_ptr)
+      : theSharedPtr(std::move(shared_ptr))
+  {}
 
-template<typename T>
-ThreadSafeSharedPtr<T>::ThreadSafeSharedPtr(SharedPtr<T> shared_ptr)
-    : theSharedPtr(std::move(shared_ptr))
-{}
+  template<typename T>
+  SharedPtr<T>
+  ThreadSafeSharedPtr<T>::getSharedPtr() const
+  {
+    Threads::SharedLock lock{mutex};
+    return theSharedPtr;
+  }
 
-template<typename T>
-SharedPtr<T>
-ThreadSafeSharedPtr<T>::getSharedPtr() const
-{
-  Threads::SharedLock lock{mutex};
-  return theSharedPtr;
+  template<typename T>
+  SharedPtr<T>
+  ThreadSafeSharedPtr<T>::setSharedPtr(SharedPtr<T> shared_ptr)
+  {
+    Threads::ExclusiveLock lock{mutex};
+    SharedPtr<T> result = std::move(theSharedPtr);
+    theSharedPtr = std::move(shared_ptr);
+    return result;
+  }
 }
-
-template<typename T>
-SharedPtr<T>
-ThreadSafeSharedPtr<T>::setSharedPtr(SharedPtr<T> shared_ptr)
-{
-  Threads::ExclusiveLock lock{mutex};
-  SharedPtr<T> result = std::move(theSharedPtr);
-  theSharedPtr = std::move(shared_ptr);
-  return result;
-}
-
-}  // namespace Threads::SafeStructs

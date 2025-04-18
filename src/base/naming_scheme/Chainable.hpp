@@ -24,38 +24,39 @@
 
 #include "Chainable.h"
 
-using namespace NamingScheme;
-
-template<typename... EachChainable>
-ResultHolder<ExporterCommon>
-Chainable<EachChainable...>::resolve(const ResultHolder<ExporterCommon>& current,
-                                      token_iterator& tokens, ExporterCommon*)
+namespace NamingScheme
 {
-  auto chain_result = Chainable<EachChainable...>::chain_resolve<EachChainable...>(current, tokens);
-  if(chain_result) {
-    return chain_result;
-  }
-  return IExport<ExporterCommon>::resolve(current, tokens);
-}
-
-
-template<typename... EachChainable>
-template<typename First, typename... Others>
-ResultHolder<ExporterCommon>
-Chainable<EachChainable...>::chain_resolve(
-    const ResultHolder<ExporterCommon>& current, token_iterator& tokens)
-{
-  auto& exporter = dynamic_cast<IExport<First>&>(*this);
-  auto result = exporter.resolve(current, tokens);
-  if(result)
+  template<typename... EachChainable>
+  ResultHolder<ExporterCommon>
+  Chainable<EachChainable...>::resolve(const ResultHolder<ExporterCommon>& current,
+                                       token_iterator& tokens, ExporterCommon*)
   {
-    return result.template cast<ExporterCommon>();
+    auto chain_result = Chainable<EachChainable...>::chain_resolve<EachChainable...>(current, tokens);
+    if(chain_result) {
+      return chain_result;
+    }
+    return IExport<ExporterCommon>::resolve(current, tokens);
   }
 
-  if constexpr(sizeof...(Others) > 0)
+
+  template<typename... EachChainable>
+  template<typename First, typename... Others>
+  ResultHolder<ExporterCommon>
+  Chainable<EachChainable...>::chain_resolve(
+      const ResultHolder<ExporterCommon>& current, token_iterator& tokens)
   {
-    return chain_resolve<Others...>(current, tokens);
-  }
+    auto& exporter = dynamic_cast<IExport<First>&>(*this);
+    auto result = exporter.resolve(current, tokens);
+    if(result)
+    {
+      return result.template cast<ExporterCommon>();
+    }
 
-  return {};
+    if constexpr(sizeof...(Others) > 0)
+    {
+      return chain_resolve<Others...>(current, tokens);
+    }
+
+    return {};
+  }
 }
