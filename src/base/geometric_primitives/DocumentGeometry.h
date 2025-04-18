@@ -23,7 +23,7 @@
 #pragma once
 
 #include <base/expected_behaviour/SharedPtr.h>
-#include <base/naming_scheme/Exporter.h>
+#include <base/naming/Exporter.h>
 #include <base/threads/message_queue/Signal.h>
 
 #include <gismo/gismo.h>
@@ -33,7 +33,7 @@
 namespace Document
 {
   class DocumentGeometry
-    : public virtual NamingScheme::ExporterCommon
+    : public virtual Naming::ExporterCommon
   {
   public:
     using iga_geometry_t = gismo::gsGeometry<real_t>;

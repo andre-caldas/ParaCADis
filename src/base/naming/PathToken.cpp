@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,18 +20,39 @@
  *                                                                          *
  ***************************************************************************/
 
-#pragma once
+#include "PathToken.h"
 
-#include <pybind11/pybind11.h>
+#include "exceptions.h"
 
-#include <base/naming_scheme/ReferenceToObject.h>
+#include <base/xml/streams.h>
 
-#include <python_bindings/types.h>
+#include <cassert>
 
-namespace py = pybind11;
+using namespace Naming;
 
-template<typename T>
-py::class_<NamingScheme::ReferenceTo<T>, SharedPtr<NamingScheme::ReferenceTo<T>>>
-bind_reference_to(py::module_& m, std::string type_name);
+PathToken::PathToken(std::string name_or_uuid)
+{
+  assert(!name_or_uuid.empty());
+  if(Uuid::isValid(name_or_uuid)) {
+    uuid = Uuid{std::move(name_or_uuid)};
+  } else {
+    uuid = Uuid{0};
+    name = std::move(name_or_uuid);
+  }
+}
 
-#include"reference_to.hpp"
+std::string PathToken::toString() const
+{
+  if (isName()) { return name; }
+  return uuid;
+}
+
+void PathToken::serialize(Xml::Writer& /*writer*/) const noexcept
+{
+  assert(false);
+}
+
+PathToken PathToken::unserialize(Xml::Reader& /*reader*/)
+{
+  throw Exception::NotImplemented{};
+}

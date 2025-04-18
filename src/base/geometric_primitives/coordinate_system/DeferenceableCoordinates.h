@@ -27,10 +27,10 @@
 #include "../deferenceables.h"
 #include "../types.h"
 
-#include <base/naming_scheme/Exporter.h>
+#include <base/naming/Exporter.h>
 
 class DeferenceableCoordinates
-    : public virtual NamingScheme::ExporterCommon
+    : public virtual Naming::ExporterCommon
 {
 public:
   virtual CoordinateSystem getCoordinateSystem() const = 0;

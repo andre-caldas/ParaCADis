@@ -27,9 +27,9 @@
 #include "types.h"
 
 #include <base/expected_behaviour/SharedPtrWrap.h>
-#include <base/naming_scheme/Chainable.h>
-#include <base/naming_scheme/Exporter.h>
-#include <base/naming_scheme/IExport.h>
+#include <base/naming/Chainable.h>
+#include <base/naming/Exporter.h>
+#include <base/naming/IExport.h>
 #include <base/threads/safe_structs/ThreadSafeStruct.h>
 
 
@@ -50,16 +50,16 @@ struct Line2PointsData {
  */
 class Line2Points
     : public Document::DocumentCurve
-    , public NamingScheme::Exporter<Line2PointsData>
-    , public NamingScheme::IExportStruct<DeferenceablePoint, Line2PointsData,
+    , public Naming::Exporter<Line2PointsData>
+    , public Naming::IExportStruct<DeferenceablePoint, Line2PointsData,
                                 {&Line2PointsData::start, "start"},
                                 {&Line2PointsData::start, "a"},
                                 {&Line2PointsData::end, "end"},
                                 {&Line2PointsData::end, "b"}>
-    , public NamingScheme::IExportStruct<bool, Line2PointsData,
+    , public Naming::IExportStruct<bool, Line2PointsData,
                                 {&Line2PointsData::is_bounded_start, "is_bounded_start"},
                                 {&Line2PointsData::is_bounded_end, "is_bounded_end"}>
-    , public NamingScheme::Chainable<DeferenceablePoint>
+    , public Naming::Chainable<DeferenceablePoint>
 {
   ONLY_SHAREDPTRWRAP()
   Line2Points(Point start, Point end,
@@ -67,7 +67,7 @@ class Line2Points
 
 public:
   SharedPtr<Line2Points> deepCopy() const;
-  SharedPtr<NamingScheme::ExporterCommon> deepCopyExporter() const override
+  SharedPtr<Naming::ExporterCommon> deepCopyExporter() const override
   { return deepCopy(); }
 
 private:
@@ -92,17 +92,17 @@ struct LinePointDirectionData {
  */
 class LinePointDirection
     : public Document::DocumentCurve
-    , public NamingScheme::Exporter<LinePointDirectionData>
-    , public NamingScheme::IExportStruct<DeferenceablePoint, LinePointDirectionData,
+    , public Naming::Exporter<LinePointDirectionData>
+    , public Naming::IExportStruct<DeferenceablePoint, LinePointDirectionData,
                                 {&LinePointDirectionData::start, "start"},
                                 {&LinePointDirectionData::start, "a"}>
-    , public NamingScheme::IExportStruct<DeferenceableVector, LinePointDirectionData,
+    , public Naming::IExportStruct<DeferenceableVector, LinePointDirectionData,
                                 {&LinePointDirectionData::direction, "direction"},
                                 {&LinePointDirectionData::direction, "v"}>
-    , public NamingScheme::IExportStruct<bool, LinePointDirectionData,
+    , public Naming::IExportStruct<bool, LinePointDirectionData,
                                 {&LinePointDirectionData::is_bounded_start, "is_bounded_start"},
                                 {&LinePointDirectionData::is_bounded_end, "is_bounded_end"}>
-    , public NamingScheme::Chainable<DeferenceablePoint, DeferenceableVector>
+    , public Naming::Chainable<DeferenceablePoint, DeferenceableVector>
 {
   ONLY_SHAREDPTRWRAP()
   LinePointDirection(Point start, Vector direction,
@@ -110,7 +110,7 @@ class LinePointDirection
 
 public:
   SharedPtr<LinePointDirection> deepCopy() const;
-  SharedPtr<NamingScheme::ExporterCommon> deepCopyExporter() const override
+  SharedPtr<Naming::ExporterCommon> deepCopyExporter() const override
   { return deepCopy(); }
 
 private:

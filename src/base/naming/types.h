@@ -20,40 +20,34 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef NamedScheme_Exception_H
-#define NamedScheme_Exception_H
+#ifndef NamingScheme_Types_H
+#define NamingScheme_Types_H
 
-#include "types.h"
+#include "PathToken.h"
 
-#include <base/exceptions.h>
 #include <base/expected_behaviour/SharedPtr.h>
 
-namespace NamingScheme::Exception
+#include <concepts>
+#include <ranges>
+#include <vector>
+
+template<typename T>
+class WeakPtr;
+
+namespace Naming
 {
-  using namespace ::Exception;
 
-  class InvalidName : public RunTimeError
-  {
-  public:
-    InvalidName(
-        std::string_view     name,
-        std::source_location location = std::source_location::current());
-  };
+  class ExporterCommon;
 
-  class CannotResolve : public RunTimeError
-  {
-  public:
-    CannotResolve(
-        SharedPtr<ExporterCommon> parent_lock, const token_iterator& tokens,
-        std::source_location location = std::source_location::current());
-  };
+  using token_item = PathToken;
+  template<typename R>
+  concept C_TokenRange
+      = std::ranges::range<R>
+        && std::convertible_to<std::ranges::range_value_t<R>, const token_item&>;
+  using token_vector   = std::vector<PathToken>;
+  using token_iterator = std::ranges::subrange<token_vector::const_iterator>;
+  static_assert(C_TokenRange<token_vector>);
 
-  class NoExport : public RunTimeError
-  {
-  public:
-    NoExport(std::source_location location = std::source_location::current());
-  };
-
-}  // namespace NamingScheme::Exception
+}  // namespace Naming
 
 #endif

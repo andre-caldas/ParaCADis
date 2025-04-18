@@ -22,7 +22,7 @@
 
 #include "DocumentGeometry.h"
 
-#include <base/naming_scheme/Exporter.h>
+#include <base/naming/Exporter.h>
 
 using namespace Document;
 

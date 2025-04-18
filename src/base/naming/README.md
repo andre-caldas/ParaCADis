@@ -1,6 +1,6 @@
 # Access objects and their (exported) members
 
-The *NamingScheme* infrastructure allows one to use a *string path*
+The *Naming* infrastructure allows one to use a *string path*
 to identify variables, and get access to them.
 This is very similar to *ObjectIdentifier*, but cleaner.
 We do not use generic types like *void\**, *boost::any* or *std::any*.
@@ -14,11 +14,11 @@ is very suited to work with resources that are shared between different objects.
 
 ## Referenced objects
 
-The *NamingScheme* infrastructure is very declarative.
+The *Naming* infrastructure is very declarative.
 Objects that can be referenced declare themselves as so,
-by subclassing `NamingScheme::ReferencedObject`.
+by subclassing `Naming::ReferencedObject`.
 If this referenced object *exports* some of its members,
-it declares so by subclassing the template `NamingScheme::IExport<T>`.
+it declares so by subclassing the template `Naming::IExport<T>`.
 For example:
 ```
 class Sphere
@@ -42,20 +42,20 @@ implement `IExport<>::resolve_share`.
 
 ## References to objects and members
 
-The template class `NamingScheme::ReferenceTo<T>`
+The template class `Naming::ReferenceTo<T>`
 represents a reference to a variable of type `T`
-that can be accessed through the *NamingScheme scheme*.
-An object of type `NamingScheme::ReferenceTo<T>` is instantiated by passing to the constructor:
+that can be accessed through the *Naming scheme*.
+An object of type `Naming::ReferenceTo<T>` is instantiated by passing to the constructor:
 1. A `std::shared_ptr<ReferencedObject>` that holds a known *root object*.
 2. A sequence of "strings" (or uuid/uuid) that represent a *path* to the shared resource.
 
-For convenience, there is an `NamingScheme::Chainable` class,
-that subclasses `NamingScheme::ReferencedObject` and `NamingScheme::IExport<ReferencedObject>`.
+For convenience, there is an `Naming::Chainable` class,
+that subclasses `Naming::ReferencedObject` and `Naming::IExport<ReferencedObject>`.
 
 
 ## The path
 
-The referenced objects have an `NamingScheme::NameAndUuid name_and_uuid`.
+The referenced objects have an `Naming::NameAndUuid name_and_uuid`.
 This gives to each of them a unique id (we use `boost::uuid` by now).
 And it can also have an optional *name*.
 By the way... this optional name cannot "look like" a *uuid*.
@@ -63,7 +63,7 @@ By the way... this optional name cannot "look like" a *uuid*.
 A *path* is basically a *(probably chainable) root object*
 and a sequence of strings (*names* or *uuids*) that identifies a chain of objects.
 But the *path* can be longer than that!
-When we reach the last `NamingScheme::ReferencedObject` in the chain,
+When we reach the last `Naming::ReferencedObject` in the chain,
 the remaining part of the *path* identifies the variable this `ReferencedObject` exports.
 
 
@@ -81,7 +81,7 @@ It then implements a `double* resolve_ptr(...)` method.
 A function that expects a *reference to a double*
 states that **(usually) at compile time**:
 ```
-    void i_use_a_double(NamingScheme::ReferenceTo<double> ref);
+    void i_use_a_double(Naming::ReferenceTo<double> ref);
 ```
 There is no messing around with `boost::any` or the like.
 There are no chains of `if(...TypeId...)` tests.
@@ -102,7 +102,7 @@ if the objects are relocated or renamed on the document tree.
 In particular, an `IExport<T>` object cannot export a raw pointer to something
 that might get destroyed.
 
-The *NamingScheme infrastructure* does not inform references about changes
+The *Naming infrastructure* does not inform references about changes
 on the tree structure. But the reference can be "refreshed".
 In this case, it is resolved again and a boolean is set to inform if
 the pointed address has changed since the last time.

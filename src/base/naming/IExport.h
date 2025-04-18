@@ -34,7 +34,7 @@
 #include <map>
 
 
-namespace NamingScheme
+namespace Naming
 {
   /**
    * An object that can be queried to resolve the next step in a path.
@@ -216,7 +216,7 @@ namespace NamingScheme
     const std::map<std::string, SharedPtrWrap<T> DataStruct::*> map
         = {{dataInfo.name.string, dataInfo.local_ptr}...};
   };
-}  // namespace NamingScheme
+}  // namespace Naming
 
 // TODO: remove this and use modules.
 #include "IExport.hpp"

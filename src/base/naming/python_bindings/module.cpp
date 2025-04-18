@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
+ *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,26 +20,34 @@
  *                                                                          *
  ***************************************************************************/
 
-#pragma once
+#include <pybind11/pybind11.h>
 
-#include "ReferenceToObject.h"
+#include "module.h"
 
-namespace NamingScheme
+#include <base/naming/Exporter.h>
+#include <base/naming/PathToken.h>
+
+#include <python_bindings/types.h>
+
+namespace py = pybind11;
+using namespace py::literals;
+using namespace Naming;
+
+py::module_ init_naming_scheme(py::module_& parent_module)
 {
-  template<typename T, std::derived_from<PathCachePolicyBase<T>> CachePolicy>
-  ResultHolder<T> ReferenceTo<T, CachePolicy>::resolve() const
-  {
-    auto result = searchResult.tryCache();
-    if(result) {
-      return result;
-    }
-    return searchResult.resolve(path.getRoot(), path.getTokens());
-  }
+  auto m = parent_module.def_submodule("naming");
+  m.doc() = "Implements object access through a name/path mechanism.";
 
-  template<typename T, std::derived_from<PathCachePolicyBase<T>> CachePolicy>
-  PathToObject& ReferenceTo<T, CachePolicy>::getPath()
-  {
-    searchResult.invalidate();
-    return path;
-  }
+  py::class_<PathToken, SharedPtr<PathToken>>
+  path(m, "PathToken",
+       "A token that composes a path to an object."
+       " Usually it is a name or a path_token returned by some method.");
+  path.def(py::init<std::string>());
+  path.def("__repr__",
+           [](const PathToken&){ return "<PATHTOKEN... (put info here)>"; });
+
+  py::class_<ExporterCommon, SharedPtr<ExporterCommon>>
+  exporter(m, "ExporterCommon", "Base class for types that export other types.");
+
+  return m;
 }

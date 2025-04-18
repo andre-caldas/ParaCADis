@@ -20,59 +20,81 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef NamingScheme_Uuid_H
-#define NamingScheme_Uuid_H
+#include "Uuid.h"
 
-#include <base/xml/streams_fwd.h>
+#include "exceptions.h"
 
-#include <string>
-#include <cassert>
+#include <base/xml/streams.h>
 
-#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+
+#include <regex>
 
 namespace std
 {
-  template<>
-  struct hash<boost::uuids::uuid> {
-    size_t operator()(const boost::uuids::uuid& uuid) const noexcept;
-  };
+  size_t hash<boost::uuids::uuid>::operator()(const boost::uuids::uuid& uuid) const noexcept
+  {
+    return boost::uuids::hash_value(uuid);
+  }
 }
 
-namespace NamingScheme
+namespace
 {
+  boost::uuids::random_generator random_generator;
+  boost::uuids::string_generator string_generator;
+  boost::uuids::nil_generator    zero_generator;
+}
 
-  class Uuid
-  {
-  public:
-    using uuid_type = boost::uuids::uuid;
-    uuid_type uuid;
+using namespace Naming;
 
-    Uuid();
-    Uuid(int i);
-    Uuid(uuid_type _uuid) : uuid(_uuid) {}
-    Uuid(std::string_view uuid_str);
-    virtual ~Uuid() = default;
+Uuid::Uuid() : uuid(random_generator())
+{
+}
 
-    bool isValid() const;
-    static bool isValid(std::string_view uuid_str);
+Uuid::Uuid(int i) : uuid(zero_generator())
+{
+  assert(i == 0);
+}
 
-    constexpr uuid_type getUuid() const { return uuid; }
-    constexpr operator uuid_type() const { return uuid; }
+Uuid::Uuid(std::string_view uuid_str)
+try : uuid(string_generator(uuid_str.cbegin(), uuid_str.cend())) {
+} catch (const std::runtime_error&) {
+  // TODO: name an exception.
+  throw;
+}
 
-    std::string toString() const { return boost::uuids::to_string(uuid); }
-    operator std::string() const { return toString(); }
+bool Uuid::isValid() const
+{
+  return !uuid.is_nil();
+}
 
-    bool operator==(const Uuid& other) const { return uuid == other.uuid; }
+bool Uuid::isValid(std::string_view uuid_str)
+{
+  // Unfortunately, boost does not implement a method
+  // to check for valid uuid strings.
+  static const std::regex pattern(
+      "[{]?"
+      "[0-9a-fA-F]{8}-?"
+      "[0-9a-fA-F]{4}-?"
+      "[0-9a-fA-F]{4}-?"
+      "[0-9a-fA-F]{4}-?"
+      "[0-9a-fA-F]{12}-?"
+      "[}]?",
+      std::regex::optimize
+  );
+  return std::regex_match(uuid_str.cbegin(), uuid_str.cend(), pattern);
+}
 
-    void        serialize(Xml::Writer& writer) const noexcept;
-    static Uuid unserialize(Xml::Reader& reader);
-  };
 
-  struct Uuid_Tag : Xml::XmlTag {
-    std::string_view getName() const override { return "Uuid"; }
-  };
+void Uuid::serialize(Xml::Writer& /*writer*/) const noexcept
+{
+  assert(false);
+}
 
-}  // namespace NamingScheme
-
-#endif
+Uuid Uuid::unserialize(Xml::Reader& /*reader*/)
+{
+  throw Exception::NotImplemented{};
+}

@@ -27,9 +27,9 @@
 #include "reference_to.h"
 
 #include <base/expected_behaviour/SharedPtr.h>
-#include <base/naming_scheme/PathToken.h>
-#include <base/naming_scheme/ReferenceToObject.h>
-#include <base/naming_scheme/ResultHolder.h>
+#include <base/naming/PathToken.h>
+#include <base/naming/ReferenceToObject.h>
+#include <base/naming/ResultHolder.h>
 
 #include <base/threads/locks/reader_locks.h>
 #include <base/threads/locks/writer_locks.h>
@@ -38,15 +38,15 @@ namespace py = pybind11;
 using namespace py::literals;
 
 template<typename T>
-py::class_<NamingScheme::ReferenceTo<T>, SharedPtr<NamingScheme::ReferenceTo<T>>>
+py::class_<Naming::ReferenceTo<T>, SharedPtr<Naming::ReferenceTo<T>>>
 
 bind_reference_to(py::module_& m, std::string type_name)
 {
   // TODO: use string_view concatenation in c++26. :-)
-  using namespace NamingScheme;
+  using namespace Naming;
 
-  using ReferenceTo  = NamingScheme::ReferenceTo<T>;
-  using ResultHolder = NamingScheme::ResultHolder<T>;
+  using ReferenceTo  = Naming::ReferenceTo<T>;
+  using ResultHolder = Naming::ResultHolder<T>;
   using ReaderGate   = Threads::ReaderGateKeeper<ResultHolder>;
   using WriterGate   = Threads::WriterGateKeeper<ResultHolder>;
 

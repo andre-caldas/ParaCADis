@@ -22,7 +22,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include <base/naming_scheme/Uuid.h>
+#include <base/naming/Uuid.h>
 #include <base/threads/locks/writer_locks.h>
 #include <base/threads/message_queue/SignalQueue.h>
 #include <base/threads/safe_structs/ThreadSafeQueue.h>
@@ -33,7 +33,7 @@
 #include <vector>
 
 using namespace Document;
-using namespace NamingScheme;
+using namespace Naming;
 using namespace Threads;
 using namespace Threads::SafeStructs;
 

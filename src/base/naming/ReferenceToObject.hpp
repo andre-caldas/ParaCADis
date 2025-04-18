@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023-2025 André Caldas <andre.em.caldas@gmail.com>       *
+ *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -22,41 +22,24 @@
 
 #pragma once
 
-#include "Chainable.h"
+#include "ReferenceToObject.h"
 
-namespace NamingScheme
+namespace Naming
 {
-  template<typename... EachChainable>
-  ResultHolder<ExporterCommon>
-  Chainable<EachChainable...>::resolve(const ResultHolder<ExporterCommon>& current,
-                                       token_iterator& tokens, ExporterCommon*)
+  template<typename T, std::derived_from<PathCachePolicyBase<T>> CachePolicy>
+  ResultHolder<T> ReferenceTo<T, CachePolicy>::resolve() const
   {
-    auto chain_result = Chainable<EachChainable...>::chain_resolve<EachChainable...>(current, tokens);
-    if(chain_result) {
-      return chain_result;
+    auto result = searchResult.tryCache();
+    if(result) {
+      return result;
     }
-    return IExport<ExporterCommon>::resolve(current, tokens);
+    return searchResult.resolve(path.getRoot(), path.getTokens());
   }
 
-
-  template<typename... EachChainable>
-  template<typename First, typename... Others>
-  ResultHolder<ExporterCommon>
-  Chainable<EachChainable...>::chain_resolve(
-      const ResultHolder<ExporterCommon>& current, token_iterator& tokens)
+  template<typename T, std::derived_from<PathCachePolicyBase<T>> CachePolicy>
+  PathToObject& ReferenceTo<T, CachePolicy>::getPath()
   {
-    auto& exporter = dynamic_cast<IExport<First>&>(*this);
-    auto result = exporter.resolve(current, tokens);
-    if(result)
-    {
-      return result.template cast<ExporterCommon>();
-    }
-
-    if constexpr(sizeof...(Others) > 0)
-    {
-      return chain_resolve<Others...>(current, tokens);
-    }
-
-    return {};
+    searchResult.invalidate();
+    return path;
   }
 }

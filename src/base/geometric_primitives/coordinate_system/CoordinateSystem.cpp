@@ -24,8 +24,8 @@
 
 #include <cassert>
 
-#include "exceptions.h"
-#include "types.h"
+#include "../exceptions.h"
+#include "../types.h"
 
 CoordinateSystem::CoordinateSystem(Point origin) : _origin(std::move(origin))
 {

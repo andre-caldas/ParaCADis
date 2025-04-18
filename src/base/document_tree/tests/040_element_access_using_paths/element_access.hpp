@@ -21,7 +21,7 @@
  ***************************************************************************/
 
 #include <base/document_tree/Container.h>
-#include <base/naming_scheme/ReferenceToObject.h>
+#include <base/naming/ReferenceToObject.h>
 
 using namespace Document;
 using namespace Threads;

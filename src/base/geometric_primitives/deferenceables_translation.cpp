@@ -95,8 +95,8 @@ namespace DataDescription
     }
   }
 
-  template class DataTranslator<DeferenceablePointData>;
+  template struct DataTranslator<DeferenceablePointData>;
   template class DataTranslator<DeferenceablePointData, FloatPoint3D>;
-  template class DataTranslator<DeferenceableVectorData>;
+  template struct DataTranslator<DeferenceableVectorData>;
   template class DataTranslator<DeferenceableVectorData, FloatVector3D>;
 }

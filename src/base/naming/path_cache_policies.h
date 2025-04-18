@@ -28,12 +28,14 @@
 
 #include <chrono>
 
-namespace NamingScheme
+namespace Naming
 {
   template<typename T>
   class PathCachePolicyBase
   {
   public:
+    virtual ~PathCachePolicyBase() = default;
+
     using exporter_holder_t = ResultHolder<ExporterCommon>;
     using chainable_holder_t = ResultHolder<ChainableBase>;
 

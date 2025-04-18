@@ -33,7 +33,7 @@
 namespace py = pybind11;
 using namespace py::literals;
 
-using namespace NamingScheme;
+using namespace Naming;
 using namespace Document;
 
 void init_geometric_primitives_spheres(py::module_& module)

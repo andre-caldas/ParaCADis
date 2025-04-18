@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,34 +20,56 @@
  *                                                                          *
  ***************************************************************************/
 
-#include <pybind11/pybind11.h>
+#ifndef NamingScheme_PathToken_H
+#define NamingScheme_PathToken_H
 
-#include "module.h"
+#include "Uuid.h"
 
-#include <base/naming_scheme/Exporter.h>
-#include <base/naming_scheme/PathToken.h>
+#include <base/xml/streams_fwd.h>
 
-#include <python_bindings/types.h>
+#include <string>
 
-namespace py = pybind11;
-using namespace py::literals;
-using namespace NamingScheme;
-
-py::module_ init_naming_scheme(py::module_& parent_module)
+namespace Naming
 {
-  auto m = parent_module.def_submodule("naming_scheme");
-  m.doc() = "Implements object access through a name/path mechanism.";
 
-  py::class_<PathToken, SharedPtr<PathToken>>
-  path(m, "PathToken",
-       "A token that composes a path to an object."
-       " Usually it is a name or a path_token returned by some method.");
-  path.def(py::init<std::string>());
-  path.def("__repr__",
-           [](const PathToken&){ return "<PATHTOKEN... (put info here)>"; });
+  /**
+   * Each token in a path is a name or uuid, represented by PathToken.
+   */
+  class PathToken
+  {
+  private:
+    Uuid        uuid;
+    std::string name;
 
-  py::class_<ExporterCommon, SharedPtr<ExporterCommon>>
-  exporter(m, "ExporterCommon", "Base class for types that export other types.");
+  public:
+    PathToken(PathToken&&)                 = default;
+    PathToken(const PathToken&)            = default;
+    PathToken& operator=(PathToken&&)      = default;
+    PathToken& operator=(const PathToken&) = default;
 
-  return m;
-}
+    PathToken(Uuid::uuid_type _uuid) : uuid(_uuid) {}
+    PathToken(std::string name_or_uuid);
+
+    std::string        toString() const;
+    const std::string& getName() const { return name; }
+    Uuid               getUuid() const { return uuid; }
+
+    bool isName() const { return !uuid.isValid(); }
+    bool isUuid() const { return uuid.isValid(); }
+
+    operator Uuid::uuid_type() const { return uuid; }
+    operator std::string() const { return toString(); }
+
+    bool operator==(std::string_view name_) const { return name_ == name; }
+
+    void             serialize(Xml::Writer& writer) const noexcept;
+    static PathToken unserialize(Xml::Reader& reader);
+  };
+
+  struct PathToken_Tag : Xml::XmlTag {
+    std::string_view getName() const override { return "PathToken"; }
+  };
+
+}  // namespace Naming
+
+#endif

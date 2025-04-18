@@ -29,7 +29,7 @@
 
 #include <string>
 
-namespace NamingScheme
+namespace Naming
 {
 
   class PathToken;
@@ -100,6 +100,6 @@ namespace NamingScheme
     std::string_view getName() const override { return "NameAndUuid"; }
   };
 
-}  // namespace NamingScheme
+}  // namespace Naming
 
 #endif  // NamingScheme_NameAndUuid_H

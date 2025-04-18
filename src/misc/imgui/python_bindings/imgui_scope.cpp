@@ -31,7 +31,7 @@
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/geometric_primitives/power_cast.h>
 #include <base/geometric_primitives/all_translators.h>
-#include <base/naming_scheme/Exporter.h>
+#include <base/naming/Exporter.h>
 
 #include <misc/imgui/ImGuiScope.h>
 
@@ -41,7 +41,7 @@ namespace py = pybind11;
 using namespace py::literals;
 
 using namespace ParacadisImGui;
-using namespace NamingScheme;
+using namespace Naming;
 
 namespace {
   void create_geometry_dialog(ImGuiScope& self, SharedPtr<ExporterCommon> exporter)

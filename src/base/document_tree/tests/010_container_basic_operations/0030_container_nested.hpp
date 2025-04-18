@@ -35,7 +35,7 @@ SCENARIO("Nested containers", "[simple]")
     WHEN("we nest the containers")
     {
       a->addElement(b); // As a container
-      b->addElement(c.cast<NamingScheme::ExporterCommon>());   // As an element
+      b->addElement(c.cast<Naming::ExporterCommon>());   // As an element
       c->addElement(d);
       THEN("they actually belong to their 'parent' container")
       {

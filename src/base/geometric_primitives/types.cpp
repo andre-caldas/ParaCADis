@@ -26,11 +26,11 @@
  * Template instantiation.
  * There is no need to include NameSearch_impl.h for those.
  */
-#include <base/naming_scheme/IExport.h>
-#include <base/naming_scheme/NameSearch.h>
+#include <base/naming/IExport.h>
+#include <base/naming/NameSearch.h>
 
-template class NamingScheme::IExport<Real>;
-template class NamingScheme::IExport<Point>;
+template class Naming::IExport<Real>;
+template class Naming::IExport<Point>;
 
-template class NamingScheme::NameSearch<Real>;
-template class NamingScheme::NameSearch<Point>;
+template class Naming::NameSearch<Real>;
+template class Naming::NameSearch<Point>;

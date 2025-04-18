@@ -39,7 +39,7 @@ namespace DataDescription
    * Or, you are just forgetting to include the propper `.h` file.
    */
   template<typename Inner, typename User = void>
-  class DataTranslator
+  struct DataTranslator
   {
     static_assert(sizeof(Inner) == 0,
                   "Did you forget to include the specialization?");

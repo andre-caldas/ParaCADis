@@ -27,7 +27,7 @@
 #include <base/threads/safe_structs/ThreadSafeMap.h>
 
 using namespace Document;
-using namespace NamingScheme;
+using namespace Naming;
 
 SharedPtr<Container> Container::deepCopy() const
 {

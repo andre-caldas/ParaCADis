@@ -24,14 +24,14 @@
 
 #include "Container.h"
 
-#include <base/naming_scheme/exceptions.h>
+#include <base/naming/exceptions.h>
 
 #include <format>
 
 using namespace ::Exception;
 using namespace Document;
 using namespace Document::Exception;
-using namespace NamingScheme;
+using namespace Naming;
 
 ElementAlreadyInContainer::ElementAlreadyInContainer(
     const ExporterCommon& element, const Container& container)
@@ -42,7 +42,7 @@ ElementAlreadyInContainer::ElementAlreadyInContainer(
 }
 
 ElementAlreadyInContainer::ElementAlreadyInContainer(
-    NamingScheme::Uuid element_uuid, const Container& container)
+    Naming::Uuid element_uuid, const Container& container)
     : RunTimeError(std::format(
           "Container ({}) does not have element ({}).", container.toString(),
           element_uuid.toString()))
@@ -58,7 +58,7 @@ ElementNotInContainer::ElementNotInContainer(
 }
 
 ElementNotInContainer::ElementNotInContainer(
-    NamingScheme::Uuid element_uuid, const Container& container)
+    Naming::Uuid element_uuid, const Container& container)
     : RunTimeError(std::format(
           "Container ({}) does not have element ({}).", container.toString(),
           element_uuid.toString()))

@@ -25,8 +25,8 @@
 #include "types.h"
 
 #include <base/expected_behaviour/SharedPtrWrap.h>
-#include <base/naming_scheme/Exporter.h>
-#include <base/naming_scheme/IExport.h>
+#include <base/naming/Exporter.h>
+#include <base/naming/IExport.h>
 
 #include <concepts>
 
@@ -47,8 +47,8 @@ struct DeferenceablePointData {
  * coordinates directly accessed and simply use it.
  */
 class DeferenceablePoint
-    : public NamingScheme::Exporter<DeferenceablePointData>
-    , public NamingScheme::IExportStruct<Real, DeferenceablePointData,
+    : public Naming::Exporter<DeferenceablePointData>
+    , public Naming::IExportStruct<Real, DeferenceablePointData,
                                        {&DeferenceablePointData::x, "x"},
                                        {&DeferenceablePointData::y, "y"},
                                        {&DeferenceablePointData::z, "z"}>
@@ -62,7 +62,7 @@ public:
   operator Point() const noexcept;
 
   SharedPtr<DeferenceablePoint> deepCopy() const;
-  SharedPtr<NamingScheme::ExporterCommon> deepCopyExporter() const override
+  SharedPtr<Naming::ExporterCommon> deepCopyExporter() const override
   { return deepCopy(); }
 };
 
@@ -84,8 +84,8 @@ struct DeferenceableVectorData {
  * coordinates directly accessed and simply use it.
  */
 class DeferenceableVector
-    : public NamingScheme::Exporter<DeferenceableVectorData>
-    , public NamingScheme::IExportStruct<Real, DeferenceableVectorData,
+    : public Naming::Exporter<DeferenceableVectorData>
+    , public Naming::IExportStruct<Real, DeferenceableVectorData,
                                        {&DeferenceableVectorData::x, "x"},
                                        {&DeferenceableVectorData::y, "y"},
                                        {&DeferenceableVectorData::z, "z"}>
@@ -99,7 +99,7 @@ public:
   operator Vector() const noexcept;
 
   SharedPtr<DeferenceableVector> deepCopy() const;
-  SharedPtr<NamingScheme::ExporterCommon> deepCopyExporter() const override
+  SharedPtr<Naming::ExporterCommon> deepCopyExporter() const override
   { return deepCopy(); }
 
 //  std::string toString() const override;

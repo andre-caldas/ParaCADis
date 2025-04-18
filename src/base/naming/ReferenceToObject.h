@@ -34,7 +34,7 @@
 #include <type_traits>
 #include <vector>
 
-namespace NamingScheme
+namespace Naming
 {
 
   /**
@@ -84,7 +84,7 @@ namespace NamingScheme
     mutable NameSearch<T> searchResult{cache};
   };
 
-}  // namespace NamingScheme
+}  // namespace Naming
 
 #include "ReferenceToObject.hpp"
 

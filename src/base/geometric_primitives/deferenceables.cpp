@@ -82,11 +82,11 @@ SharedPtr<DeferenceableVector> DeferenceableVector::deepCopy() const
  * Template instantiation.
  * There is no need to include NameSearch_impl.h for those.
  */
-#include <base/naming_scheme/IExport.h>
-#include <base/naming_scheme/NameSearch.h>
+#include <base/naming/IExport.h>
+#include <base/naming/NameSearch.h>
 
-template class NamingScheme::IExport<DeferenceablePoint>;
-template class NamingScheme::IExport<DeferenceableVector>;
+template class Naming::IExport<DeferenceablePoint>;
+template class Naming::IExport<DeferenceableVector>;
 
-template class NamingScheme::NameSearch<DeferenceablePoint>;
-template class NamingScheme::NameSearch<DeferenceableVector>;
+template class Naming::NameSearch<DeferenceablePoint>;
+template class Naming::NameSearch<DeferenceableVector>;

@@ -20,81 +20,58 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "Uuid.h"
+#include "NameAndUuid.h"
 
+#include "PathToken.h"
 #include "exceptions.h"
 
 #include <base/xml/streams.h>
 
-#include <boost/uuid/nil_generator.hpp>
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/string_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include <cassert>
 
-#include <regex>
+using namespace Naming;
 
-namespace std
-{
-  size_t hash<boost::uuids::uuid>::operator()(const boost::uuids::uuid& uuid) const noexcept
-  {
-    return boost::uuids::hash_value(uuid);
-  }
-}
-
-namespace
-{
-  boost::uuids::random_generator random_generator;
-  boost::uuids::string_generator string_generator;
-  boost::uuids::nil_generator    zero_generator;
-}
-
-using namespace NamingScheme;
-
-Uuid::Uuid() : uuid(random_generator())
+NameAndUuid::NameAndUuid(const Uuid& _uuid) : uuid(_uuid)
 {
 }
 
-Uuid::Uuid(int i) : uuid(zero_generator())
+NameAndUuid::NameAndUuid(const Uuid& _uuid, std::string _name)
+    : uuid(_uuid)
+    , name(std::move(_name))
 {
-  assert(i == 0);
 }
 
-Uuid::Uuid(std::string_view uuid_str)
-try : uuid(string_generator(uuid_str.cbegin(), uuid_str.cend())) {
-} catch (const std::runtime_error&) {
-  // TODO: name an exception.
-  throw;
-}
-
-bool Uuid::isValid() const
+bool NameAndUuid::isValidName(std::string_view name_str)
 {
-  return !uuid.is_nil();
+  if (name_str.empty()) { return true; }
+  return !Uuid::isValid(name_str);
 }
 
-bool Uuid::isValid(std::string_view uuid_str)
+void NameAndUuid::setName(std::string name_str)
 {
-  // Unfortunately, boost does not implement a method
-  // to check for valid uuid strings.
-  static const std::regex pattern(
-      "[{]?"
-      "[0-9a-fA-F]{8}-?"
-      "[0-9a-fA-F]{4}-?"
-      "[0-9a-fA-F]{4}-?"
-      "[0-9a-fA-F]{4}-?"
-      "[0-9a-fA-F]{12}-?"
-      "[}]?",
-      std::regex::optimize
-  );
-  return std::regex_match(uuid_str.cbegin(), uuid_str.cend(), pattern);
+  assert(uuid.isValid());  // We have a valid uuid.
+  if (!isValidName(name_str)) { throw Exception::InvalidName(std::move(name_str)); }
+  name = std::move(name_str);
 }
 
+bool NameAndUuid::pointsToMe(const PathToken& name_or_uuid) const
+{
+  if (name_or_uuid.isUuid()) { return (uuid == name_or_uuid.getUuid()); }
+  return !name.empty() && (name == name_or_uuid.getName());
+}
 
-void Uuid::serialize(Xml::Writer& /*writer*/) const noexcept
+std::string NameAndUuid::toString() const
+{
+  if (hasName()) { return name; }
+  return uuid;
+}
+
+void NameAndUuid::serialize(Xml::Writer& /*writer*/) const noexcept
 {
   assert(false);
 }
 
-Uuid Uuid::unserialize(Xml::Reader& /*reader*/)
+NameAndUuid NameAndUuid::unserialize(Xml::Reader& /*reader*/)
 {
   throw Exception::NotImplemented{};
 }

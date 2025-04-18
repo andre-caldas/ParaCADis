@@ -27,7 +27,7 @@
 
 #include <concepts>
 
-namespace NamingScheme
+namespace Naming
 {
   /**
    * Access to resolved names must comply with the "gate paradigm",
@@ -169,4 +169,4 @@ namespace NamingScheme
 
   static_assert(Threads::C_MutexHolderWithGates<ResultHolder<int>>,
                 "Result gates is 'with gates'.");
-}  // namespace NamingScheme
+}  // namespace Naming

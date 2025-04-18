@@ -28,7 +28,7 @@
 
 #include <base/geometric_primitives/deferenceables.h>
 #include <base/geometric_primitives/types.h>
-#include <base/naming_scheme/python_bindings/reference_to.h>
+#include <base/naming/python_bindings/reference_to.h>
 
 #include <python_bindings/types.h>
 
@@ -37,7 +37,7 @@
 namespace py = pybind11;
 using namespace py::literals;
 
-using namespace NamingScheme;
+using namespace Naming;
 
 void init_geometric_primitives_points(py::module_& module)
 {

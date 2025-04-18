@@ -20,56 +20,59 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef NamingScheme_PathToken_H
-#define NamingScheme_PathToken_H
-
-#include "Uuid.h"
+#ifndef NamingScheme_Uuid_H
+#define NamingScheme_Uuid_H
 
 #include <base/xml/streams_fwd.h>
 
 #include <string>
+#include <cassert>
 
-namespace NamingScheme
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+
+namespace std
+{
+  template<>
+  struct hash<boost::uuids::uuid> {
+    size_t operator()(const boost::uuids::uuid& uuid) const noexcept;
+  };
+}
+
+namespace Naming
 {
 
-  /**
-   * Each token in a path is a name or uuid, represented by PathToken.
-   */
-  class PathToken
+  class Uuid
   {
-  private:
-    Uuid        uuid;
-    std::string name;
-
   public:
-    PathToken(PathToken&&)                 = default;
-    PathToken(const PathToken&)            = default;
-    PathToken& operator=(PathToken&&)      = default;
-    PathToken& operator=(const PathToken&) = default;
+    using uuid_type = boost::uuids::uuid;
+    uuid_type uuid;
 
-    PathToken(Uuid::uuid_type _uuid) : uuid(_uuid) {}
-    PathToken(std::string name_or_uuid);
+    Uuid();
+    Uuid(int i);
+    Uuid(uuid_type _uuid) : uuid(_uuid) {}
+    Uuid(std::string_view uuid_str);
+    virtual ~Uuid() = default;
 
-    std::string        toString() const;
-    const std::string& getName() const { return name; }
-    Uuid               getUuid() const { return uuid; }
+    bool isValid() const;
+    static bool isValid(std::string_view uuid_str);
 
-    bool isName() const { return !uuid.isValid(); }
-    bool isUuid() const { return uuid.isValid(); }
+    constexpr uuid_type getUuid() const { return uuid; }
+    constexpr operator uuid_type() const { return uuid; }
 
-    operator Uuid::uuid_type() const { return uuid; }
+    std::string toString() const { return boost::uuids::to_string(uuid); }
     operator std::string() const { return toString(); }
 
-    bool operator==(std::string_view name_) const { return name_ == name; }
+    bool operator==(const Uuid& other) const { return uuid == other.uuid; }
 
-    void             serialize(Xml::Writer& writer) const noexcept;
-    static PathToken unserialize(Xml::Reader& reader);
+    void        serialize(Xml::Writer& writer) const noexcept;
+    static Uuid unserialize(Xml::Reader& reader);
   };
 
-  struct PathToken_Tag : Xml::XmlTag {
-    std::string_view getName() const override { return "PathToken"; }
+  struct Uuid_Tag : Xml::XmlTag {
+    std::string_view getName() const override { return "Uuid"; }
   };
 
-}  // namespace NamingScheme
+}  // namespace Naming
 
 #endif

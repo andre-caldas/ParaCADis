@@ -29,7 +29,7 @@
 namespace py = pybind11;
 using namespace py::literals;
 
-using namespace NamingScheme;
+using namespace Naming;
 using namespace Document;
 
 void init_geometric_primitives(py::module_& parent_module)
@@ -37,7 +37,7 @@ void init_geometric_primitives(py::module_& parent_module)
   auto m = parent_module.def_submodule("geometric_primitives");
   m.doc() = "Basic geometric objects used in ParaCADis.";
 
-  py::class_<DocumentGeometry, NamingScheme::ExporterCommon, SharedPtr<DocumentGeometry>>(
+  py::class_<DocumentGeometry, Naming::ExporterCommon, SharedPtr<DocumentGeometry>>(
       m, "Document",
       "Base class for geometries in the document tree.")
       .def("__repr__",

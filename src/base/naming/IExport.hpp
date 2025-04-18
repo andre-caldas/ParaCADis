@@ -39,7 +39,7 @@
 #include <base/threads/locks/LockPolicy.h>
 #include <base/threads/message_queue/Signal.h>
 
-namespace NamingScheme
+namespace Naming
 {
   template<typename T>
   ResultHolder<T> IExport<T>::resolve(

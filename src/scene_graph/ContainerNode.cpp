@@ -125,7 +125,7 @@ namespace SceneGraph
     }
     queue->unblock(this);
 
-    std::vector<SharedPtr<NamingScheme::ExporterCommon>> new_non_containers;
+    std::vector<SharedPtr<Naming::ExporterCommon>> new_non_containers;
     { // Lock
       auto view_lock = my_container->nonContainersView();
       new_non_containers.reserve(view_lock.size());

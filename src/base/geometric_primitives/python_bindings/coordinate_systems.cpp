@@ -34,7 +34,7 @@
 namespace py = pybind11;
 using namespace py::literals;
 
-using namespace NamingScheme;
+using namespace Naming;
 
 void init_geometric_primitives_coordinate_systems(py::module_& module)
 {

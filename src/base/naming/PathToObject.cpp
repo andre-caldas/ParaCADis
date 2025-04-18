@@ -27,7 +27,7 @@
 
 #include <base/exceptions.h>
 
-using namespace NamingScheme;
+using namespace Naming;
 
 ListOfPathTokens::ListOfPathTokens(std::initializer_list<PathToken> init) : tokens(init)
 {

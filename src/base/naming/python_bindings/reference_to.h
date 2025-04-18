@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
+ *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,58 +20,18 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "NameAndUuid.h"
+#pragma once
 
-#include "PathToken.h"
-#include "exceptions.h"
+#include <pybind11/pybind11.h>
 
-#include <base/xml/streams.h>
+#include <base/naming/ReferenceToObject.h>
 
-#include <cassert>
+#include <python_bindings/types.h>
 
-using namespace NamingScheme;
+namespace py = pybind11;
 
-NameAndUuid::NameAndUuid(const Uuid& _uuid) : uuid(_uuid)
-{
-}
+template<typename T>
+py::class_<Naming::ReferenceTo<T>, SharedPtr<Naming::ReferenceTo<T>>>
+bind_reference_to(py::module_& m, std::string type_name);
 
-NameAndUuid::NameAndUuid(const Uuid& _uuid, std::string _name)
-    : uuid(_uuid)
-    , name(std::move(_name))
-{
-}
-
-bool NameAndUuid::isValidName(std::string_view name_str)
-{
-  if (name_str.empty()) { return true; }
-  return !Uuid::isValid(name_str);
-}
-
-void NameAndUuid::setName(std::string name_str)
-{
-  assert(uuid.isValid());  // We have a valid uuid.
-  if (!isValidName(name_str)) { throw Exception::InvalidName(std::move(name_str)); }
-  name = std::move(name_str);
-}
-
-bool NameAndUuid::pointsToMe(const PathToken& name_or_uuid) const
-{
-  if (name_or_uuid.isUuid()) { return (uuid == name_or_uuid.getUuid()); }
-  return !name.empty() && (name == name_or_uuid.getName());
-}
-
-std::string NameAndUuid::toString() const
-{
-  if (hasName()) { return name; }
-  return uuid;
-}
-
-void NameAndUuid::serialize(Xml::Writer& /*writer*/) const noexcept
-{
-  assert(false);
-}
-
-NameAndUuid NameAndUuid::unserialize(Xml::Reader& /*reader*/)
-{
-  throw Exception::NotImplemented{};
-}
+#include"reference_to.hpp"

@@ -65,6 +65,8 @@ namespace DataDescription
   class GateTranslatorBase
   {
   public:
+    virtual ~GateTranslatorBase() = default;
+
     /**
      * Attempts to synchronize all values back and forth without blocking the process.
      *

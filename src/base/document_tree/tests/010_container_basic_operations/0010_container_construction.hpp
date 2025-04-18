@@ -29,7 +29,7 @@ SCENARIO("Container basic manipulations", "[simple]")
   GIVEN("a Container")
   {
     Container a;
-    auto      uuid = a.getUuid();
+    auto uuid = a.getUuid();
     REQUIRE(a.getUuid().isValid());
     THEN("name is unset and the uuid is valid")
     {
@@ -47,11 +47,11 @@ SCENARIO("Container basic manipulations", "[simple]")
       }
       AND_WHEN("we set the name again")
       {
-        std::string name("another name!!");
-        a.setName(name);
+        std::string name2("another name!!");
+        a.setName(name2);
         THEN("the name must be set")
         {
-          REQUIRE(a.getName() == name);
+          REQUIRE(a.getName() == name2);
           REQUIRE(a.getUuid() == uuid);
         }
         AND_WHEN("we reset it")
@@ -70,8 +70,8 @@ SCENARIO("Container basic manipulations", "[simple]")
   GIVEN("two instances of a Container")
   {
     Container a, b;
-    auto      uuid_a = a.getUuid();
-    auto      uuid_b = b.getUuid();
+    auto uuid_a = a.getUuid();
+    auto uuid_b = b.getUuid();
 
     REQUIRE(a.getUuid().isValid());
     REQUIRE(b.getUuid().isValid());

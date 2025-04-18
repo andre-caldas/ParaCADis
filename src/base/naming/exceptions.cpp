@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
+ *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,34 +20,26 @@
  *                                                                          *
  ***************************************************************************/
 
-#ifndef NamingScheme_Types_H
-#define NamingScheme_Types_H
+#include "exceptions.h"
 
-#include "PathToken.h"
+#include <format>
 
-#include <base/expected_behaviour/SharedPtr.h>
-
-#include <concepts>
-#include <ranges>
-#include <vector>
-
-template<typename T>
-class WeakPtr;
-
-namespace NamingScheme
+namespace Naming::Exception
 {
+  InvalidName::InvalidName(std::string_view name, std::source_location _location)
+      : RunTimeError(std::format("Name cannot look like a UUID ({}).", name), _location)
+  {
+  }
 
-  class ExporterCommon;
+  CannotResolve::CannotResolve(
+      SharedPtr<ExporterCommon> /*parent_lock*/,
+      const token_iterator& /*tokens*/, std::source_location _location)
+      : RunTimeError("Cannot resolve accessor reference.", _location)
+  {
+  }
 
-  using token_item = PathToken;
-  template<typename R>
-  concept C_TokenRange
-      = std::ranges::range<R>
-        && std::convertible_to<std::ranges::range_value_t<R>, const token_item&>;
-  using token_vector   = std::vector<PathToken>;
-  using token_iterator = std::ranges::subrange<token_vector::const_iterator>;
-  static_assert(C_TokenRange<token_vector>);
-
-}  // namespace NamingScheme
-
-#endif
+  NoExport::NoExport(std::source_location _location)
+      : RunTimeError("Object does not export required type.", _location)
+  {
+  }
+}

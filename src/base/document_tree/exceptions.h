@@ -25,9 +25,9 @@
 
 #include <base/exceptions.h>
 #include <base/expected_behaviour/SharedPtr.h>
-#include <base/naming_scheme/Uuid.h>
+#include <base/naming/Uuid.h>
 
-namespace NamingScheme
+namespace Naming
 {
   class ExporterCommon;
 }
@@ -43,18 +43,18 @@ namespace Document::Exception
   {
   public:
     ElementAlreadyInContainer(
-        NamingScheme::Uuid element_uuid, const Container& container);
+        Naming::Uuid element_uuid, const Container& container);
     ElementAlreadyInContainer(
-        const NamingScheme::ExporterCommon& element, const Container& container);
+        const Naming::ExporterCommon& element, const Container& container);
   };
 
   class ElementNotInContainer : public ::Exception::RunTimeError
   {
   public:
     ElementNotInContainer(
-        NamingScheme::Uuid element_uuid, const Container& container);
+        Naming::Uuid element_uuid, const Container& container);
     ElementNotInContainer(
-        const NamingScheme::ExporterCommon& element, const Container& container);
+        const Naming::ExporterCommon& element, const Container& container);
   };
 
 }  // namespace Document

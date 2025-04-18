@@ -31,7 +31,7 @@
 #include <vector>
 #include <initializer_list>
 
-namespace NamingScheme
+namespace Naming
 {
 
   class ExporterCommon;
@@ -126,6 +126,6 @@ namespace NamingScheme
     const subtag_list& getSubTags() const override;
   };
 
-}  // namespace NamingScheme
+}  // namespace Naming
 
 #endif

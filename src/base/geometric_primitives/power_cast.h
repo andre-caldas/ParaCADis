@@ -34,7 +34,7 @@
  * the propper method, according to the derived type.
  */
 using GeometryCast = TypeTraits::PowerCast<
-  NamingScheme::ExporterCommon,
+  Naming::ExporterCommon,
   DeferenceablePoint, DeferenceableVector,
   Line2Points, LinePointDirection,
   CirclePointRadius2Normal, Circle3Points,

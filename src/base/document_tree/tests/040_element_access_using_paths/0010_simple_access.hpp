@@ -72,10 +72,10 @@ SCENARIO("Accessing a container element using a path", "[simple]")
 
       AND_WHEN("we set up a reference")
       {
-        NamingScheme::ReferenceTo<DeferenceablePoint>      p_ref{a, pname};
-        NamingScheme::ReferenceTo<DeferenceableVector>     v_ref{a, vname};
-        NamingScheme::ReferenceTo<LinePointDirection>      l_ref{a, lname};
-        NamingScheme::ReferenceTo<CirclePointRadius2Normal> c_ref{a, cname};
+        Naming::ReferenceTo<DeferenceablePoint>      p_ref{a, pname};
+        Naming::ReferenceTo<DeferenceableVector>     v_ref{a, vname};
+        Naming::ReferenceTo<LinePointDirection>      l_ref{a, lname};
+        Naming::ReferenceTo<CirclePointRadius2Normal> c_ref{a, cname};
 
         THEN("we get a working reference")
         {
@@ -86,26 +86,26 @@ SCENARIO("Accessing a container element using a path", "[simple]")
 
           AND_WHEN("we set up an even further reference")
           {
-            NamingScheme::ReferenceTo<Real> px_ref{a, pname, "x"};
-            NamingScheme::ReferenceTo<Real> py_ref{a, pname, "y"};
-            NamingScheme::ReferenceTo<Real> pz_ref{a, pname, "z"};
-            NamingScheme::ReferenceTo<Real> pbad_ref{a, pname, "x bad"};
+            Naming::ReferenceTo<Real> px_ref{a, pname, "x"};
+            Naming::ReferenceTo<Real> py_ref{a, pname, "y"};
+            Naming::ReferenceTo<Real> pz_ref{a, pname, "z"};
+            Naming::ReferenceTo<Real> pbad_ref{a, pname, "x bad"};
 
-            NamingScheme::ReferenceTo<Real> vx_ref{a, vname, "x"};
-            NamingScheme::ReferenceTo<Real> vy_ref{a, vname, "y"};
-            NamingScheme::ReferenceTo<Real> vz_ref{a, vname, "z"};
-            NamingScheme::ReferenceTo<Real> vbad_ref{a, vname, "y bad"};
+            Naming::ReferenceTo<Real> vx_ref{a, vname, "x"};
+            Naming::ReferenceTo<Real> vy_ref{a, vname, "y"};
+            Naming::ReferenceTo<Real> vz_ref{a, vname, "z"};
+            Naming::ReferenceTo<Real> vbad_ref{a, vname, "y bad"};
 
-            NamingScheme::ReferenceTo<Real> lsx_ref{a, lname, "start", "x"};
-            NamingScheme::ReferenceTo<Real> lsy_ref{a, lname, "start", "y"};
-            NamingScheme::ReferenceTo<Real> lsz_ref{a, lname, "start", "z"};
-            NamingScheme::ReferenceTo<Real> ldx_ref{a, lname, "direction", "x"};
-            NamingScheme::ReferenceTo<Real> lbad_ref{a, vname, "start"};
+            Naming::ReferenceTo<Real> lsx_ref{a, lname, "start", "x"};
+            Naming::ReferenceTo<Real> lsy_ref{a, lname, "start", "y"};
+            Naming::ReferenceTo<Real> lsz_ref{a, lname, "start", "z"};
+            Naming::ReferenceTo<Real> ldx_ref{a, lname, "direction", "x"};
+            Naming::ReferenceTo<Real> lbad_ref{a, vname, "start"};
 
-            NamingScheme::ReferenceTo<Real> ccx_ref{a, cname, "center", "x"};
-            NamingScheme::ReferenceTo<Real> cnx_ref{a, cname, "normal", "x"};
-            NamingScheme::ReferenceTo<Real>  cr_ref{a, cname, "radius2"};
-            NamingScheme::ReferenceTo<DeferenceablePoint>
+            Naming::ReferenceTo<Real> ccx_ref{a, cname, "center", "x"};
+            Naming::ReferenceTo<Real> cnx_ref{a, cname, "normal", "x"};
+            Naming::ReferenceTo<Real>  cr_ref{a, cname, "radius2"};
+            Naming::ReferenceTo<DeferenceablePoint>
                                            cbad_ref{a, lname, "center", "x"};
 
             THEN("we get working references")

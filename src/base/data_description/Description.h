@@ -32,6 +32,7 @@ namespace DataDescription
   class DescriptionBase
   {
   public:
+    virtual ~DescriptionBase() = default;
     virtual const char* describeClass() const;
     virtual const char* describe(void* ptr) const;
   };

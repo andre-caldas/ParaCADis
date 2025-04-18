@@ -32,7 +32,7 @@
 
 #include <type_traits>
 
-namespace NamingScheme
+namespace Naming
 {
   template<typename T>
   ResultHolder<T> NameSearch<T>::tryCache()

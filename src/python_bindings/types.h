@@ -25,9 +25,9 @@
 #include <pybind11/pybind11.h>
 
 #include <base/expected_behaviour/SharedPtr.h>
-#include <base/naming_scheme/Uuid.h>
+#include <base/naming/Uuid.h>
 
-PYBIND11_MAKE_OPAQUE(NamingScheme::Uuid::uuid_type);
+PYBIND11_MAKE_OPAQUE(Naming::Uuid::uuid_type);
 
 /*
  * A SharedPtr<T> is copy constructible even if T is not!

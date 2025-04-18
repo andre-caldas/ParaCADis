@@ -24,9 +24,9 @@
 
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/geometric_primitives/coordinate_system/DeferenceableCoordinates.h>
-#include <base/naming_scheme/Chainable.h>
-#include <base/naming_scheme/Exporter.h>
-#include <base/naming_scheme/IExport.h>
+#include <base/naming/Chainable.h>
+#include <base/naming/Exporter.h>
+#include <base/naming/IExport.h>
 #include <base/threads/safe_structs/ThreadSafeMap.h>
 #include <base/threads/safe_structs/ThreadSafeSharedPtr.h>
 #include <base/threads/message_queue/Signal.h>
@@ -38,17 +38,17 @@
 namespace Document
 {
   class Container
-      : public virtual NamingScheme::ExporterCommon
-      , public NamingScheme::IExport<Container>
-      , public NamingScheme::IExport<DeferenceableCoordinates>
-      , public NamingScheme::Chainable<Container, DeferenceableCoordinates>
+      : public virtual Naming::ExporterCommon
+      , public Naming::IExport<Container>
+      , public Naming::IExport<DeferenceableCoordinates>
+      , public Naming::Chainable<Container, DeferenceableCoordinates>
   {
-    using ExporterCommon = NamingScheme::ExporterCommon;
+    using ExporterCommon = Naming::ExporterCommon;
     template<typename T>
-    using IExport = NamingScheme::IExport<T>;
+    using IExport = Naming::IExport<T>;
 
   public:
-    using uuid_type = NamingScheme::Uuid::uuid_type;
+    using uuid_type = Naming::Uuid::uuid_type;
 
     SharedPtr<Container> deepCopy() const;
     SharedPtr<ExporterCommon> deepCopyExporter() const override

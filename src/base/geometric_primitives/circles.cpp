@@ -134,11 +134,11 @@ Circle3Points::produceIgaCurve() const
  * Template instantiation.
  * There is no need to include NameSearch_impl.h for those.
  */
-#include <base/naming_scheme/IExport.h>
-#include <base/naming_scheme/NameSearch.h>
+#include <base/naming/IExport.h>
+#include <base/naming/NameSearch.h>
 
-template class NamingScheme::IExport<CirclePointRadius2Normal>;
-template class NamingScheme::IExport<Circle3Points>;
+template class Naming::IExport<CirclePointRadius2Normal>;
+template class Naming::IExport<Circle3Points>;
 
-template class NamingScheme::NameSearch<CirclePointRadius2Normal>;
-template class NamingScheme::NameSearch<Circle3Points>;
+template class Naming::NameSearch<CirclePointRadius2Normal>;
+template class Naming::NameSearch<Circle3Points>;

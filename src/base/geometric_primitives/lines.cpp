@@ -67,11 +67,11 @@ SharedPtr<const DocumentGeometry::iga_curve_t> LinePointDirection::produceIgaCur
  * Template instantiation.
  * There is no need to include NameSearch_impl.h for those.
  */
-#include <base/naming_scheme/IExport.h>
-#include <base/naming_scheme/NameSearch.h>
+#include <base/naming/IExport.h>
+#include <base/naming/NameSearch.h>
 
-template class NamingScheme::IExport<Line2Points>;
-template class NamingScheme::IExport<LinePointDirection>;
+template class Naming::IExport<Line2Points>;
+template class Naming::IExport<LinePointDirection>;
 
-template class NamingScheme::NameSearch<Line2Points>;
-template class NamingScheme::NameSearch<LinePointDirection>;
+template class Naming::NameSearch<Line2Points>;
+template class Naming::NameSearch<LinePointDirection>;

@@ -37,7 +37,7 @@ namespace Document {
   class DocumentGeometry;
 }
 
-namespace NamingScheme {
+namespace Naming {
   class ExporterCommon;
 }
 
@@ -45,7 +45,7 @@ namespace SceneGraph {
   using document_t  = Document::DocumentTree;
   using container_t = Document::Container;
   using geometry_t  = Document::DocumentGeometry;
-  using non_container_t = NamingScheme::ExporterCommon;
+  using non_container_t = Naming::ExporterCommon;
 
   class SceneRoot;
   class ContainerNode;

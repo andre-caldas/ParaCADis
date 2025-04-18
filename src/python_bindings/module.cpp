@@ -26,7 +26,7 @@
 
 #include <base/document_tree/python_bindings/module.h>
 #include <base/geometric_primitives/python_bindings/module.h>
-#include <base/naming_scheme/python_bindings/module.h>
+#include <base/naming/python_bindings/module.h>
 #include <base/expected_behaviour/SharedPtr.h>
 
 PYBIND11_MODULE(paracadis, m) {

@@ -36,7 +36,7 @@
 #include <string>
 #include <utility>
 
-namespace NamingScheme
+namespace Naming
 {
   template<typename T>
   class IExport;
@@ -59,7 +59,7 @@ namespace NamingScheme
   {
   public:
     // In IExport<>, generates ambiguity, so we put it here.
-    using token_iterator = NamingScheme::token_iterator;
+    using token_iterator = Naming::token_iterator;
 
   protected:
     ExporterCommon() = default;

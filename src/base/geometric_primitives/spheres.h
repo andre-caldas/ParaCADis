@@ -30,8 +30,8 @@
 #include <atomic>
 
 #include <base/expected_behaviour/SharedPtrWrap.h>
-#include <base/naming_scheme/Chainable.h>
-#include <base/naming_scheme/IExport.h>
+#include <base/naming/Chainable.h>
+#include <base/naming/IExport.h>
 
 #include <gismo/gismo.h>
 
@@ -48,24 +48,24 @@ struct SphereCenterRadius2Data {
  */
 class SphereCenterRadius2
     : public Document::DocumentSurface
-    , public NamingScheme::Exporter<SphereCenterRadius2Data>
-    , public NamingScheme::IExportStruct<DeferenceablePoint, SphereCenterRadius2Data,
+    , public Naming::Exporter<SphereCenterRadius2Data>
+    , public Naming::IExportStruct<DeferenceablePoint, SphereCenterRadius2Data,
                                 {&SphereCenterRadius2Data::center, "center"},
                                 {&SphereCenterRadius2Data::center, "c"}>
-    , public NamingScheme::IExportStruct<Real, SphereCenterRadius2Data,
+    , public Naming::IExportStruct<Real, SphereCenterRadius2Data,
                                 {&SphereCenterRadius2Data::radius2, "radius2"},
                                 {&SphereCenterRadius2Data::radius2, "r2"}>
-    , public NamingScheme::Chainable<DeferenceablePoint>
+    , public Naming::Chainable<DeferenceablePoint>
 {
   ONLY_SHAREDPTRWRAP()
   SphereCenterRadius2(Point center, Real radius2);
 public:
   SharedPtr<SphereCenterRadius2> deepCopy() const;
-  SharedPtr<NamingScheme::ExporterCommon> deepCopyExporter() const override
+  SharedPtr<Naming::ExporterCommon> deepCopyExporter() const override
   { return deepCopy(); }
 
 private:
-  SharedPtr<const iga_surface_t> produceIgaSurface() const;
+  SharedPtr<const iga_surface_t> produceIgaSurface() const override;
 };
 
 
@@ -82,22 +82,22 @@ struct SphereCenterSurfacePointData {
  */
 class SphereCenterSurfacePoint
     : public Document::DocumentSurface
-    , public NamingScheme::Exporter<SphereCenterSurfacePointData>
-    , public NamingScheme::IExportStruct<DeferenceablePoint, SphereCenterSurfacePointData,
+    , public Naming::Exporter<SphereCenterSurfacePointData>
+    , public Naming::IExportStruct<DeferenceablePoint, SphereCenterSurfacePointData,
                                 {&SphereCenterSurfacePointData::center, "center"},
                                 {&SphereCenterSurfacePointData::center, "c"}>
-    , public NamingScheme::IExportStruct<DeferenceablePoint, SphereCenterSurfacePointData,
+    , public Naming::IExportStruct<DeferenceablePoint, SphereCenterSurfacePointData,
                                 {&SphereCenterSurfacePointData::surface_point, "surface_point"},
                                 {&SphereCenterSurfacePointData::surface_point, "p"}>
-    , public NamingScheme::Chainable<DeferenceablePoint>
+    , public Naming::Chainable<DeferenceablePoint>
 {
   ONLY_SHAREDPTRWRAP()
   SphereCenterSurfacePoint(Point center, Point surface_point);
 public:
   SharedPtr<SphereCenterSurfacePoint> deepCopy() const;
-  SharedPtr<NamingScheme::ExporterCommon> deepCopyExporter() const override
+  SharedPtr<Naming::ExporterCommon> deepCopyExporter() const override
   { return deepCopy(); }
 
 private:
-  SharedPtr<const iga_surface_t> produceIgaSurface() const;
+  SharedPtr<const iga_surface_t> produceIgaSurface() const override;
 };

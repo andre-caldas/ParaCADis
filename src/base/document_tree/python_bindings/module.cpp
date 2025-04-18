@@ -26,13 +26,13 @@
 
 #include <base/document_tree/Container.h>
 #include <base/document_tree/DocumentTree.h>
-#include <base/naming_scheme/PathToken.h>
+#include <base/naming/PathToken.h>
 #include <python_bindings/types.h>
 
 namespace py = pybind11;
 using namespace py::literals;
 using namespace Document;
-using namespace NamingScheme;
+using namespace Naming;
 
 void init_document_tree(py::module_& parent_module)
 {

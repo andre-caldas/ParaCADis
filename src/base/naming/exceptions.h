@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,26 +20,40 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "exceptions.h"
+#ifndef NamedScheme_Exception_H
+#define NamedScheme_Exception_H
 
-#include <format>
+#include "types.h"
 
-namespace NamingScheme::Exception
+#include <base/exceptions.h>
+#include <base/expected_behaviour/SharedPtr.h>
+
+namespace Naming::Exception
 {
-  InvalidName::InvalidName(std::string_view name, std::source_location _location)
-      : RunTimeError(std::format("Name cannot look like a UUID ({}).", name), _location)
-  {
-  }
+  using namespace ::Exception;
 
-  CannotResolve::CannotResolve(
-      SharedPtr<ExporterCommon> /*parent_lock*/,
-      const token_iterator& /*tokens*/, std::source_location _location)
-      : RunTimeError("Cannot resolve accessor reference.", _location)
+  class InvalidName : public RunTimeError
   {
-  }
+  public:
+    InvalidName(
+        std::string_view     name,
+        std::source_location location = std::source_location::current());
+  };
 
-  NoExport::NoExport(std::source_location _location)
-      : RunTimeError("Object does not export required type.", _location)
+  class CannotResolve : public RunTimeError
   {
-  }
-}
+  public:
+    CannotResolve(
+        SharedPtr<ExporterCommon> parent_lock, const token_iterator& tokens,
+        std::source_location location = std::source_location::current());
+  };
+
+  class NoExport : public RunTimeError
+  {
+  public:
+    NoExport(std::source_location location = std::source_location::current());
+  };
+
+}  // namespace Naming::Exception
+
+#endif

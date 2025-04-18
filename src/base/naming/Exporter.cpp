@@ -28,7 +28,7 @@
 
 using namespace Threads::SafeStructs;
 
-namespace NamingScheme
+namespace Naming
 {
   namespace {
     ThreadSafeMap<Uuid::uuid_type, WeakPtr<ExporterCommon>> map;

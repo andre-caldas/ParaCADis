@@ -32,7 +32,7 @@ install_headers(naming_scheme_includes,
 )
 
 naming_scheme_lib = library(
-  'naming_scheme',
+  'naming',
   naming_scheme_src,
   install: true,
   include_directories: inc,

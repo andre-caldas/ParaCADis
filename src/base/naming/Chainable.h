@@ -28,7 +28,7 @@
 
 #include <concepts>
 
-namespace NamingScheme
+namespace Naming
 {
   /**
    * Checks if a class can be chained. That is, if it exports anything.

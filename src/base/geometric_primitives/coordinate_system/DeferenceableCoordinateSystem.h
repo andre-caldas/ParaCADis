@@ -29,7 +29,7 @@
 #include "../types.h"
 
 #include <base/expected_behaviour/SharedPtrWrap.h>
-#include <base/naming_scheme/Chainable.h>
+#include <base/naming/Chainable.h>
 
 /**
  * DataStruct for orthogonal coordinate system.
@@ -43,16 +43,16 @@ struct CartesianCoordinateSystemData {
 template<CoordinateSystem::AxisOrder order, TemplateString name_v1, TemplateString name_v2>
 class DeferenceableCoordinateSystem
     : public DeferenceableCoordinates
-    , public NamingScheme::Exporter<CartesianCoordinateSystemData>
-    , public NamingScheme::IExportStruct<DeferenceablePoint, CartesianCoordinateSystemData,
+    , public Naming::Exporter<CartesianCoordinateSystemData>
+    , public Naming::IExportStruct<DeferenceablePoint, CartesianCoordinateSystemData,
                                 {&CartesianCoordinateSystemData::origin, "origin"},
                                 {&CartesianCoordinateSystemData::origin, "o"}>
-    , public NamingScheme::IExportStruct<DeferenceableVector, CartesianCoordinateSystemData,
+    , public Naming::IExportStruct<DeferenceableVector, CartesianCoordinateSystemData,
                                 {&CartesianCoordinateSystemData::v1, "v1"},
                                 {&CartesianCoordinateSystemData::v1, name_v1},
                                 {&CartesianCoordinateSystemData::v2, "v2"},
                                 {&CartesianCoordinateSystemData::v2, name_v2}>
-    , public NamingScheme::Chainable<DeferenceablePoint, DeferenceableVector>
+    , public Naming::Chainable<DeferenceablePoint, DeferenceableVector>
 {
   ONLY_SHAREDPTRWRAP()
   DeferenceableCoordinateSystem() = default;
@@ -62,7 +62,7 @@ public:
   CoordinateSystem getCoordinateSystem() const override;
 
   SharedPtr<DeferenceableCoordinateSystem> deepCopy() const;
-  SharedPtr<NamingScheme::ExporterCommon> deepCopyExporter() const override
+  SharedPtr<Naming::ExporterCommon> deepCopyExporter() const override
   { return deepCopy(); }
 };
 

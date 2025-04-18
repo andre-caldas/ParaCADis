@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2023-2024 André Caldas <andre.em.caldas@gmail.com>       *
+ *   Copyright (c) 2023-2025 André Caldas <andre.em.caldas@gmail.com>       *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,39 +20,43 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "PathToken.h"
+#pragma once
 
-#include "exceptions.h"
+#include "Chainable.h"
 
-#include <base/xml/streams.h>
-
-#include <cassert>
-
-using namespace NamingScheme;
-
-PathToken::PathToken(std::string name_or_uuid)
+namespace Naming
 {
-  assert(!name_or_uuid.empty());
-  if(Uuid::isValid(name_or_uuid)) {
-    uuid = Uuid{std::move(name_or_uuid)};
-  } else {
-    uuid = Uuid{0};
-    name = std::move(name_or_uuid);
+  template<typename... EachChainable>
+  ResultHolder<ExporterCommon>
+  Chainable<EachChainable...>::resolve(const ResultHolder<ExporterCommon>& current,
+                                       token_iterator& tokens, ExporterCommon*)
+  {
+    auto chain_result = Chainable<EachChainable...>::chain_resolve<EachChainable...>(current, tokens);
+    if(chain_result) {
+      return chain_result;
+    }
+    return IExport<ExporterCommon>::resolve(current, tokens);
   }
-}
 
-std::string PathToken::toString() const
-{
-  if (isName()) { return name; }
-  return uuid;
-}
 
-void PathToken::serialize(Xml::Writer& /*writer*/) const noexcept
-{
-  assert(false);
-}
+  template<typename... EachChainable>
+  template<typename First, typename... Others>
+  ResultHolder<ExporterCommon>
+  Chainable<EachChainable...>::chain_resolve(
+      const ResultHolder<ExporterCommon>& current, token_iterator& tokens)
+  {
+    auto& exporter = dynamic_cast<IExport<First>&>(*this);
+    auto result = exporter.resolve(current, tokens);
+    if(result)
+    {
+      return result.template cast<ExporterCommon>();
+    }
 
-PathToken PathToken::unserialize(Xml::Reader& /*reader*/)
-{
-  throw Exception::NotImplemented{};
+    if constexpr(sizeof...(Others) > 0)
+    {
+      return chain_resolve<Others...>(current, tokens);
+    }
+
+    return {};
+  }
 }

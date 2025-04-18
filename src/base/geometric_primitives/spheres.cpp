@@ -91,11 +91,11 @@ SphereCenterSurfacePoint::produceIgaSurface() const
  * Template instantiation.
  * There is no need to include NameSearch_impl.h for those.
  */
-#include <base/naming_scheme/IExport.h>
-#include <base/naming_scheme/NameSearch.h>
+#include <base/naming/IExport.h>
+#include <base/naming/NameSearch.h>
 
-template class NamingScheme::IExport<SphereCenterRadius2>;
-template class NamingScheme::IExport<SphereCenterSurfacePoint>;
+template class Naming::IExport<SphereCenterRadius2>;
+template class Naming::IExport<SphereCenterSurfacePoint>;
 
-template class NamingScheme::NameSearch<SphereCenterRadius2>;
-template class NamingScheme::NameSearch<SphereCenterSurfacePoint>;
+template class Naming::NameSearch<SphereCenterRadius2>;
+template class Naming::NameSearch<SphereCenterSurfacePoint>;

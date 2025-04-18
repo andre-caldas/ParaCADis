@@ -23,7 +23,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 using namespace Document;
-using namespace NamingScheme;
+using namespace Naming;
 
 SCENARIO("Populate a with simple objects", "[simple]")
 {

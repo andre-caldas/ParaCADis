@@ -29,7 +29,7 @@
 #include <cmath>
 #include <ranges>
 
-namespace NamingScheme
+namespace Naming
 {
   template<typename T>
   void TimedWeakChain<T>::prepare(token_iterator& tokens)

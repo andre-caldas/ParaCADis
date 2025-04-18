@@ -31,7 +31,7 @@
 
 #include <concepts>
 
-namespace NamingScheme
+namespace Naming
 {
   class ExporterCommon;
   template<typename T>

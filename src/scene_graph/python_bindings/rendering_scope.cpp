@@ -22,7 +22,7 @@
 
 #include <pybind11/pybind11.h>
 
-#include "scene.h"
+#include "rendering_scope.h"
 
 #include <exception>
 
