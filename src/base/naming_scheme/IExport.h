@@ -47,6 +47,7 @@ namespace NamingScheme
    */
   template<typename T>
   class IExport
+      : public virtual ExporterCommon
   {
   protected:
     IExport() = default;

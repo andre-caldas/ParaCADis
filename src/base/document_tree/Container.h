@@ -38,7 +38,7 @@
 namespace Document
 {
   class Container
-      : public NamingScheme::ExporterCommon
+      : public virtual NamingScheme::ExporterCommon
       , public NamingScheme::IExport<Container>
       , public NamingScheme::IExport<DeferenceableCoordinates>
       , public NamingScheme::Chainable<Container, DeferenceableCoordinates>

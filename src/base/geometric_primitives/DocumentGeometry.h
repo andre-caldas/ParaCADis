@@ -33,7 +33,7 @@
 namespace Document
 {
   class DocumentGeometry
-    : public NamingScheme::ExporterCommon
+    : public virtual NamingScheme::ExporterCommon
   {
   public:
     using iga_geometry_t = gismo::gsGeometry<real_t>;

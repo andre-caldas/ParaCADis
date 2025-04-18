@@ -47,7 +47,8 @@ struct SphereCenterRadius2Data {
  * A sphere determined by its center and the squared radius.
  */
 class SphereCenterRadius2
-    : public NamingScheme::Exporter<SphereCenterRadius2Data, Document::DocumentSurface>
+    : public Document::DocumentSurface
+    , public NamingScheme::Exporter<SphereCenterRadius2Data>
     , public NamingScheme::IExportStruct<DeferenceablePoint, SphereCenterRadius2Data,
                                 {&SphereCenterRadius2Data::center, "center"},
                                 {&SphereCenterRadius2Data::center, "c"}>
@@ -80,7 +81,8 @@ struct SphereCenterSurfacePointData {
  * A sphere determined by its center and a point on its surface.
  */
 class SphereCenterSurfacePoint
-    : public NamingScheme::Exporter<SphereCenterSurfacePointData, Document::DocumentSurface>
+    : public Document::DocumentSurface
+    , public NamingScheme::Exporter<SphereCenterSurfacePointData>
     , public NamingScheme::IExportStruct<DeferenceablePoint, SphereCenterSurfacePointData,
                                 {&SphereCenterSurfacePointData::center, "center"},
                                 {&SphereCenterSurfacePointData::center, "c"}>

@@ -49,7 +49,8 @@ struct Line2PointsData {
  * It can be bounded by the any of the two points.
  */
 class Line2Points
-    : public NamingScheme::Exporter<Line2PointsData, Document::DocumentCurve>
+    : public Document::DocumentCurve
+    , public NamingScheme::Exporter<Line2PointsData>
     , public NamingScheme::IExportStruct<DeferenceablePoint, Line2PointsData,
                                 {&Line2PointsData::start, "start"},
                                 {&Line2PointsData::start, "a"},
@@ -90,7 +91,8 @@ struct LinePointDirectionData {
  * It can be bounded in the starting point, or not.
  */
 class LinePointDirection
-    : public NamingScheme::Exporter<LinePointDirectionData, Document::DocumentCurve>
+    : public Document::DocumentCurve
+    , public NamingScheme::Exporter<LinePointDirectionData>
     , public NamingScheme::IExportStruct<DeferenceablePoint, LinePointDirectionData,
                                 {&LinePointDirectionData::start, "start"},
                                 {&LinePointDirectionData::start, "a"}>

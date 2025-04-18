@@ -222,14 +222,12 @@ Container::setCoordinates(SharedPtr<DeferenceableCoordinates> coordinates)
 
   auto old = coordinate_system.getSharedPtr();
   if(old) {
-    auto& old_exporter = dynamic_cast<ExporterCommon&>(*old);
-    old_exporter.getChangedSignal()
-                .removeProxy(&coordinate_modified_sig);
+    old->getChangedSignal()
+        .removeProxy(&coordinate_modified_sig);
   }
 
-  auto& coord_exporter = dynamic_cast<ExporterCommon&>(*coordinates);
-  coord_exporter.getChangedSignal()
-                .setProxy(std::move(self), &Container::coordinate_modified_sig);
+  coordinates->getChangedSignal()
+              .setProxy(std::move(self), &Container::coordinate_modified_sig);
   return coordinate_system.setSharedPtr(std::move(coordinates));
 }
 

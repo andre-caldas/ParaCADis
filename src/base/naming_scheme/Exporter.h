@@ -166,9 +166,9 @@ namespace NamingScheme
    *
    * @see DeferenceableCoordinates.
    */
-  template<typename DataStruct, typename Base = ExporterCommon>
+  template<typename DataStruct>
   class Exporter
-      : public Base
+      : public virtual ExporterCommon
   {
   public:
     using data_t        = DataStruct;

@@ -103,8 +103,7 @@ namespace NamingScheme
     if constexpr(C_HasChangedSignal<T>) {
       // Throws if not ExporterCommon sibling.
       // But this would be a bug: all IExport stuff must be a sibling of ExporterCommon.
-      ExporterCommon& ecommon = dynamic_cast<ExporterCommon&>(*this);
-      auto shared_ecommon = ecommon.getSelfShared();
+      auto shared_ecommon = ExporterCommon::getSelfShared();
 
       assert(dynamic_cast<Exporter<DataStruct>*>(this)
              && "The exported structure must be provided by Exporter<...>.");
@@ -153,8 +152,7 @@ namespace NamingScheme
     static_assert(sizeof...(dataInfo) > 0, "Need at least an exported data.");
 
     if constexpr(C_HasChangedSignal<T>) {
-      auto& ecommon = dynamic_cast<ExporterCommon&>(*this);
-      auto shared_ecommon = ecommon.getSelfShared();
+      auto shared_ecommon = ExporterCommon::getSelfShared();
 
       assert(dynamic_cast<Exporter<DataStruct>*>(this)
              && "The exported structure must be provided by Exporter<...>.");
