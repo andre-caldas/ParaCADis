@@ -35,7 +35,8 @@
 
 namespace Mesh
 {
-  using iga_geometry_t = Document::DocumentGeometry::iga_geometry_t;
+  using native_geometry_t = Document::DocumentGeometry;
+  using iga_geometry_t = native_geometry_t::iga_geometry_t;
 
   /**
    * A mesh for the IgA geometries provided by G+Smo.

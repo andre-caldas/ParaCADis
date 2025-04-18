@@ -32,9 +32,8 @@ namespace Mesh
   class MeshProvider
   {
   public:
-    template<Document::C_IsDocumentGeometry Geo>
     static SharedPtr<MeshProvider>
-    make_shared(SharedPtr<Geo> geometry,
+    make_shared(SharedPtr<native_geometry_t> geometry,
                 const SharedPtr<Threads::SignalQueue>& queue);
 
     static SharedPtr<MeshProvider>
@@ -49,8 +48,6 @@ namespace Mesh
     void slotUpdate();
 
     const SharedPtr<IgaProvider> igaProvider;
-    const SharedPtrWrap<OgreGismoMesh> mesh;
+    SharedPtrWrap<OgreGismoMesh> mesh;
   };
 }
-
-#include "MeshProvider.hpp"
