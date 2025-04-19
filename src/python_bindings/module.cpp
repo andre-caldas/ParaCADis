@@ -22,17 +22,22 @@
 
 #include "types.h"
 
-#include <pybind11/pybind11.h>
-
 #include <base/document_tree/python_bindings/module.h>
 #include <base/geometric_primitives/python_bindings/module.h>
 #include <base/naming/python_bindings/module.h>
+
 #include <base/expected_behaviour/SharedPtr.h>
+#include <base/naming/Exporter.h>
+
+using namespace Naming;
 
 PYBIND11_MODULE(paracadis, m) {
   m.doc() = "ParaCADis python interface library.";
 
-  init_naming_scheme(m);
-  init_geometric_primitives(m);
+  py::class_<ExporterCommon, SharedPtr<ExporterCommon>>
+  exporter(m, "ExporterCommon", "Base class for types that export other types.");
+
+  init_naming(m);
+  init_geo(m);
   init_document_tree(m);
 }

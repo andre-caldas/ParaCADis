@@ -20,25 +20,25 @@
  *                                                                          *
  ***************************************************************************/
 
-#include <pybind11/pybind11.h>
-
 #include "rendering_scope.h"
 
 #include <exception>
 
-#include <python_bindings/types.h>
-
 #include <scene_graph/RenderingScope.h>
+
+#include <python_bindings/types.h>
 
 namespace py = pybind11;
 using namespace py::literals;
+
 using namespace Threads;
 using namespace SceneGraph;
 
-void init_rendering_scope(py::module_& m)
+void init_rendering_scope(py::module_& module)
 {
+  py::module_::import("paracadis.threads");
   py::class_<RenderingScope, ScopeOfScopes, SharedPtr<RenderingScope>>(
-      m, "RenderingScope",
+      module, "RenderingScope",
       "The rendering scope is a ScopeOfScopes registered to be executed"
       "\nby the rendering thread."
       "\n"

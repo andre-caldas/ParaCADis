@@ -20,10 +20,6 @@
  *                                                                          *
  ***************************************************************************/
 
-#include <pybind11/pybind11.h>
-#include <pybind11/operators.h>
-#include <pybind11/stl.h>
-
 #include "module.h"
 
 #include <base/geometric_primitives/deferenceables.h>
@@ -37,7 +33,7 @@ using namespace py::literals;
 
 using namespace Naming;
 
-void init_geometric_primitives_reals(py::module_& module)
+void init_geo_reals(py::module_& module)
 {
   py::class_<Real, SharedPtr<Real>>(
       module, "Real",

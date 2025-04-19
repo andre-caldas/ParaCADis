@@ -20,9 +20,9 @@
  *                                                                          *
  ***************************************************************************/
 
-#include <pybind11/pybind11.h>
-
 #include "imgui_scope.h"
+
+#include <python_bindings/types.h>
 
 namespace py = pybind11;
 

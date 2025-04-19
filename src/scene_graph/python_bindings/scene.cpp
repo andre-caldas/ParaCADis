@@ -20,13 +20,9 @@
  *                                                                          *
  ***************************************************************************/
 
-#include <pybind11/pybind11.h>
-
 #include "scene.h"
 
 #include <exception>
-
-#include <python_bindings/types.h>
 
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/document_tree/DocumentTree.h>
@@ -39,8 +35,11 @@
 
 #include <Python.h>
 
+#include <python_bindings/types.h>
+
 namespace py = pybind11;
 using namespace py::literals;
+
 using namespace Document;
 using namespace SceneGraph;
 
@@ -75,10 +74,10 @@ namespace {
   }
 }
 
-void init_scene(py::module_& m)
+void init_scene(py::module_& module)
 {
   py::class_<SceneRoot, SharedPtr<SceneRoot>>(
-      m, "Scene",
+      module, "Scene",
       "A scene graph with a message queue that keeps it updated.")
       .def(py::init(&new_scene),
            "Creates an empty scene and associates it to an OGRE SceneManager.")

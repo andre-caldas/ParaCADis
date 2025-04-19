@@ -1,4 +1,4 @@
-naming_scheme_src = [
+naming_src = [
   'exceptions.cpp',
   'Exporter.cpp',
   'NameAndUuid.cpp',
@@ -27,15 +27,15 @@ headers_to_install += files(
   'types.h',
 )
 
-naming_scheme_lib = library(
+naming_lib = library(
   'naming',
-  naming_scheme_src,
+  naming_src,
   install: true,
   include_directories: inc,
   implicit_include_directories: false,
   link_with: libs_upto_now,
 )
 
-libs_upto_now += [naming_scheme_lib]
+libs_upto_now += [naming_lib]
 
 subdir('python_bindings')

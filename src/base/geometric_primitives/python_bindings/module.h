@@ -22,23 +22,23 @@
 
 #pragma once
 
-#include <pybind11/pybind11.h>
-
 #include <base/expected_behaviour/SharedPtr.h>
+
+#include <python_bindings/types.h>
 
 namespace py = pybind11;
 
-void init_geometric_primitives(py::module_& parent_module);
+void init_geo(py::module_& parent_module);
 
-void init_geometric_primitives_reals(py::module_& module);
-void init_geometric_primitives_points(py::module_& module);
-void init_geometric_primitives_vectors(py::module_& module);
+void init_geo_reals(py::module_& module);
+void init_geo_points(py::module_& module);
+void init_geo_vectors(py::module_& module);
 
-void init_geometric_primitives_lines(py::module_& module);
-void init_geometric_primitives_circles(py::module_& module);
-void init_geometric_primitives_spheres(py::module_& module);
+void init_geo_lines(py::module_& module);
+void init_geo_circles(py::module_& module);
+void init_geo_spheres(py::module_& module);
 
-void init_geometric_primitives_coordinate_systems(py::module_& module);
+void init_geo_coordinate_systems(py::module_& module);
 
 template<typename T, typename X = double>
 SharedPtr<T> new_from_vector(const std::vector<X>& v) {

@@ -20,15 +20,12 @@
  *                                                                          *
  ***************************************************************************/
 
-#include <pybind11/pybind11.h>
-#include <pybind11/operators.h>
-#include <pybind11/stl.h>
-
 #include "module.h"
 
 #include <base/geometric_primitives/coordinate_system/DeferenceableCoordinateSystem.h>
 #include <base/geometric_primitives/coordinate_system/DeferenceableCoordinatePoints.h>
 #include <base/geometric_primitives/types.h>
+
 #include <python_bindings/types.h>
 
 namespace py = pybind11;
@@ -36,7 +33,7 @@ using namespace py::literals;
 
 using namespace Naming;
 
-void init_geometric_primitives_coordinate_systems(py::module_& module)
+void init_geo_coordinate_systems(py::module_& module)
 {
   /*
    * Dummy base class: DeferenceableCoordinates.

@@ -4,7 +4,7 @@ pybind_scene_graph_src = files(
   'scene.cpp',
 )
 
-paracadis_sg_py_lib = py_ins.extension_module(
+paracadis_sene_graph_py_lib = py_ins.extension_module(
   'paracadis_scene_graph',
   pybind_scene_graph_src,
   install: true,

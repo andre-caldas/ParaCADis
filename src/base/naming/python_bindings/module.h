@@ -22,10 +22,8 @@
 
 #pragma once
 
-#include <pybind11/pybind11.h>
-
 #include <python_bindings/types.h>
 
 namespace py = pybind11;
 
-py::module_ init_naming_scheme(py::module_& parent_module);
+py::module_ init_naming(py::module_& parent_module);

@@ -20,8 +20,6 @@
  *                                                                          *
  ***************************************************************************/
 
-#include <pybind11/pybind11.h>
-
 #include "scopes.h"
 
 #include <base/threads/dedicated_thread_scope/DedicatedThreadScope.h>
@@ -31,9 +29,10 @@
 
 namespace py = pybind11;
 using namespace py::literals;
+
 using namespace Threads;
 
-void init_thread_scope(py::module_& m)
+void init_thread_scope(py::module_& module)
 {
   /*
    * This only declares the class.
@@ -42,15 +41,19 @@ void init_thread_scope(py::module_& m)
    * this class will not be instantiable in python.
    */
   py::class_<DedicatedThreadScopeBase, SharedPtr<DedicatedThreadScopeBase>>(
-      m, "DedicatedThreadScope",
+      module, "DedicatedThreadScope",
       "Safely executes instructions in a dedicated thread."
       " This object cannot be instantiated in python"
       " and cannot be extended in python.")
-    .def("__repr__",
-         [](const DedicatedThreadScopeBase&){ return "<DEDICATEDTHREADSCOPE>"; });
+      .def("__repr__",
+           [](const DedicatedThreadScopeBase&){ return "<DEDICATEDTHREADSCOPE>"; });
+}
 
+
+void init_scope_of_scopes(py::module_& module)
+{
   py::class_<ScopeOfScopes, DedicatedThreadScopeBase, SharedPtr<ScopeOfScopes>>(
-      m, "A scope that is an array of scopes.",
+      module, "A scope that is an array of scopes.",
       "Safely adds new scopes.")
     .def("addScope", &ScopeOfScopes::addScope, "scope"_a,
            "Adds a scope that will be automatically removed when it is garbage collected.")

@@ -20,13 +20,9 @@
  *                                                                          *
  ***************************************************************************/
 
-#include <pybind11/pybind11.h>
-
 #include "imgui_scope.h"
 
 #include <exception>
-
-#include <python_bindings/types.h>
 
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/geometric_primitives/power_cast.h>
@@ -36,6 +32,8 @@
 #include <misc/imgui/ImGuiScope.h>
 
 #include <OGRE/Overlay/OgreImGuiOverlay.h>
+
+#include <python_bindings/types.h>
 
 namespace py = pybind11;
 using namespace py::literals;
@@ -58,17 +56,17 @@ namespace {
   }
 }
 
-void init_imgui(py::module_& m)
+void init_imgui(py::module_& module)
 {
   py::module_::import("Ogre.Bites");
   py::class_<ImGuiScope, SharedPtr<ImGuiScope>>(
-    m, "ImGuiScope",
-    "Manipulates Dear ImGui's elements.")
-    .def(py::init<>(),
-         "Creates a ImGui scope you need to add to the RenderingScope.")
-    .def("create_geometry_dialog",
-         create_geometry_dialog , "native_geometry"_a,
-         "Creates a 'dialog' for a dataset.")
-    .def("__repr__",
-         [](const ImGuiScope&){ return "<ImGuiScope... (put info here)>"; });
+      module, "ImGuiScope",
+      "Manipulates Dear ImGui's elements.")
+      .def(py::init<>(),
+           "Creates a ImGui scope you need to add to the RenderingScope.")
+      .def("create_geometry_dialog",
+           create_geometry_dialog , "native_geometry"_a,
+           "Creates a 'dialog' for a dataset.")
+      .def("__repr__",
+           [](const ImGuiScope&){ return "<ImGuiScope... (put info here)>"; });
 }

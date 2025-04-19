@@ -22,8 +22,6 @@
 
 #pragma once
 
-#include <pybind11/pybind11.h>
-
 #include <base/naming/ReferenceToObject.h>
 
 #include <python_bindings/types.h>
@@ -32,6 +30,6 @@ namespace py = pybind11;
 
 template<typename T>
 py::class_<Naming::ReferenceTo<T>, SharedPtr<Naming::ReferenceTo<T>>>
-bind_reference_to(py::module_& m, std::string type_name);
+bind_reference_to(py::module_& module, std::string type_name);
 
 #include"reference_to.hpp"

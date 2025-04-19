@@ -20,14 +20,11 @@
  *                                                                          *
  ***************************************************************************/
 
-#include <pybind11/pybind11.h>
-#include <pybind11/operators.h>
-#include <pybind11/stl.h>
-
 #include "module.h"
 
 #include <base/geometric_primitives/lines.h>
 #include <base/geometric_primitives/types.h>
+
 #include <python_bindings/types.h>
 
 namespace py = pybind11;
@@ -36,7 +33,7 @@ using namespace py::literals;
 using namespace Naming;
 using namespace Document;
 
-void init_geometric_primitives_lines(py::module_& module)
+void init_geo_lines(py::module_& module)
 {
   /*
    * Line2Points.

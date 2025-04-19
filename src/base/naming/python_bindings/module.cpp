@@ -20,8 +20,6 @@
  *                                                                          *
  ***************************************************************************/
 
-#include <pybind11/pybind11.h>
-
 #include "module.h"
 
 #include <base/naming/Exporter.h>
@@ -31,23 +29,21 @@
 
 namespace py = pybind11;
 using namespace py::literals;
+
 using namespace Naming;
 
-py::module_ init_naming_scheme(py::module_& parent_module)
+py::module_ init_naming(py::module_& parent_module)
 {
-  auto m = parent_module.def_submodule("naming");
-  m.doc() = "Implements object access through a name/path mechanism.";
+  auto module = parent_module.def_submodule("naming");
+  module.doc() = "Implements object access through a name/path mechanism.";
 
   py::class_<PathToken, SharedPtr<PathToken>>
-  path(m, "PathToken",
+  path(module, "PathToken",
        "A token that composes a path to an object."
        " Usually it is a name or a path_token returned by some method.");
   path.def(py::init<std::string>());
   path.def("__repr__",
            [](const PathToken&){ return "<PATHTOKEN... (put info here)>"; });
 
-  py::class_<ExporterCommon, SharedPtr<ExporterCommon>>
-  exporter(m, "ExporterCommon", "Base class for types that export other types.");
-
-  return m;
+  return module;
 }

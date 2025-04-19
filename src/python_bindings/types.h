@@ -23,6 +23,7 @@
 #pragma once
 
 #include <pybind11/pybind11.h>
+#include <pybind11/operators.h>
 
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/naming/Uuid.h>

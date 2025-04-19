@@ -20,10 +20,10 @@
  *                                                                          *
  ***************************************************************************/
 
-#include <pybind11/pybind11.h>
-
 #include "rendering_scope.h"
 #include "scene.h"
+
+#include <python_bindings/types.h>
 
 namespace py = pybind11;
 

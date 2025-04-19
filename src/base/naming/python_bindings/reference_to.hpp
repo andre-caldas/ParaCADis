@@ -22,8 +22,6 @@
 
 #pragma once
 
-#include <pybind11/pybind11.h>
-
 #include "reference_to.h"
 
 #include <base/expected_behaviour/SharedPtr.h>
@@ -34,13 +32,15 @@
 #include <base/threads/locks/reader_locks.h>
 #include <base/threads/locks/writer_locks.h>
 
+#include <python_bindings/types.h>
+
 namespace py = pybind11;
 using namespace py::literals;
 
 template<typename T>
 py::class_<Naming::ReferenceTo<T>, SharedPtr<Naming::ReferenceTo<T>>>
 
-bind_reference_to(py::module_& m, std::string type_name)
+bind_reference_to(py::module_& module, std::string type_name)
 {
   // TODO: use string_view concatenation in c++26. :-)
   using namespace Naming;
@@ -60,7 +60,7 @@ bind_reference_to(py::module_& m, std::string type_name)
    * A path so some object.
    */
   py::class_<ReferenceTo, SharedPtr<ReferenceTo>>
-  ref_to(m, ref_to_name.c_str(),
+  ref_to(module, ref_to_name.c_str(),
          "A path that can be resolved and locked to access data.");
   ref_to.def(py::init<SharedPtr<ExporterCommon>>());
   ref_to.def(py::init<SharedPtr<ExporterCommon>, std::string>());
@@ -103,7 +103,7 @@ bind_reference_to(py::module_& m, std::string type_name)
    * A gate that allows reading data from the resolved reference.
    */
   py::class_<ReaderGate, SharedPtr<ReaderGate>>
-  rgate(m, reader_gate_name.c_str(),
+  rgate(module, reader_gate_name.c_str(),
   R"(Locks the <" + type_name + "> for reading.
 
   A "gate" is necessary to access the resolved object.
@@ -151,7 +151,7 @@ bind_reference_to(py::module_& m, std::string type_name)
    * A gate that allows writing data to the resolved reference.
    */
   py::class_<WriterGate, SharedPtr<WriterGate>>
-  wgate{m, writer_gate_name.c_str(),
+  wgate{module, writer_gate_name.c_str(),
   R"(Locks the <" + type_name + "> for writing.
 
   A "writer gate" is necessary to exclusively access the resolved
@@ -197,7 +197,7 @@ bind_reference_to(py::module_& m, std::string type_name)
    * Holds an instance for the resolved object.
    */
   py::class_<ResultHolder, SharedPtr<ResultHolder>>
-  holder{m, result_holder_name.c_str()};
+  holder{module, result_holder_name.c_str()};
   //holder.def(py::init<>());
   holder.def("rgate",
              [](ResultHolder& self) -> SharedPtr<ReaderGate>
