@@ -20,20 +20,10 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "module.h"
-
-#include "scopes.h"
+#pragma once
 
 #include <python_bindings/types.h>
 
 namespace py = pybind11;
-using namespace py::literals;
 
-void init_threads(py::module_& parent_module)
-{
-  auto module = parent_module.def_submodule("threads");
-  module.doc() = "Multithreading goddies for ParaCADis.";
-
-  init_thread_scope(module);
-  init_scope_of_scopes(module);
-}
+void init_threads(py::module_& module);

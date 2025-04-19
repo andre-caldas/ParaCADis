@@ -101,6 +101,7 @@ void init_geo_reals(py::module_& module)
              CGAL::to_double(self));
            });
   py::implicitly_convertible<const int, Real>();
+  py::implicitly_convertible<const float, Real>();
   py::implicitly_convertible<const double, Real>();
   bind_reference_to<Real>(module, "Real");
 }

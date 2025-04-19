@@ -29,6 +29,7 @@
 #include <format>
 
 #include <python_bindings/types.h>
+#include <pybind11/stl.h>  // We need to convert [1,2,3] to Point.
 
 namespace py = pybind11;
 using namespace py::literals;

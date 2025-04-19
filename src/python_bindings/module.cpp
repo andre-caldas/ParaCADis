@@ -25,6 +25,7 @@
 #include <base/document_tree/python_bindings/module.h>
 #include <base/geometric_primitives/python_bindings/module.h>
 #include <base/naming/python_bindings/module.h>
+#include <base/threads/python_bindings/module.h>
 
 #include <base/expected_behaviour/SharedPtr.h>
 #include <base/naming/Exporter.h>
@@ -40,4 +41,5 @@ PYBIND11_MODULE(paracadis, m) {
   init_naming(m);
   init_geo(m);
   init_document_tree(m);
+  init_threads(m);
 }

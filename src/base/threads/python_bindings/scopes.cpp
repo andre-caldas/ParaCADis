@@ -20,7 +20,7 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "scopes.h"
+#include "module.h"
 
 #include <base/threads/dedicated_thread_scope/DedicatedThreadScope.h>
 #include <base/threads/dedicated_thread_scope/ScopeOfScopes.h>
@@ -55,10 +55,10 @@ void init_scope_of_scopes(py::module_& module)
   py::class_<ScopeOfScopes, DedicatedThreadScopeBase, SharedPtr<ScopeOfScopes>>(
       module, "A scope that is an array of scopes.",
       "Safely adds new scopes.")
-    .def("addScope", &ScopeOfScopes::addScope, "scope"_a,
+      .def("addScope", &ScopeOfScopes::addScope, "scope"_a,
            "Adds a scope that will be automatically removed when it is garbage collected.")
-    .def("addScopeKeepAlive", &ScopeOfScopes::addScopeKeepAlive, "scope"_a,
+      .def("addScopeKeepAlive", &ScopeOfScopes::addScopeKeepAlive, "scope"_a,
            "Adds a scope that will never be removed.")
-    .def("__repr__",
+      .def("__repr__",
          [](const ScopeOfScopes&){ return "<SCOPEOFSCOPES>"; });
 }
