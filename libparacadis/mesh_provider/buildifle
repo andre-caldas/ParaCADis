@@ -8,3 +8,7 @@ lib{mesh_provider}: \
 
 libs_upto_now += lib{mesh_provider}
 
+lib{mesh_provider}: \
+  cxx_flags = pkg-config("gismo", "--cflags")
+  link_flags = pkg-config("gismo", "--libs")
+
