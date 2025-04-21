@@ -1,6 +1,8 @@
-lib{data_description}: \
-  cpp{*} \
+lib{data_description}:
+{
+  cpp{*}
   $libs_up_to_now
+}
 
 {h hpp}{*}: install
 

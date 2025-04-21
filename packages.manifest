@@ -1,0 +1,9 @@
+: 1
+location: libparacadis/
+
+#:
+#location: paracadis/
+
+:
+location: cpp_module_wrappers/libcgal
+

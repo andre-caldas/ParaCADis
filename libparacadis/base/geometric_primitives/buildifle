@@ -1,9 +1,11 @@
 # subdir('python_bindings')
 
-lib{geometric_primitives}: \
-  cpp{*} \
-  cpp{coorinate_system/*} \
+lib{geometric_primitives}:
+{
+  cpp{*}
+  cpp{coorinate_system/*}
   $libs_up_to_now
+}
 
 {h hpp}{*}: install
 {h hpp}{coorinate_system/*}: install

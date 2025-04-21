@@ -1,9 +1,11 @@
 # subdir('python_bindings')
 
-lib{xml}: \
-  cpp{*} \
-  cpp{streams/*} \
+lib{xml}:
+{
+  cpp{*}
+  cpp{streams/*}
   $libs_up_to_now
+}
 
 {h hpp}{*}: install
 {h hpp}{streams/*}: install

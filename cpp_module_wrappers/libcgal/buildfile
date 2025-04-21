@@ -1,0 +1,10 @@
+# subdir('python_bindings')
+
+lib{cgal}: {mxx cxx}{*}
+
+{h hpp}{*}: install
+
+lib{cgal}:
+{
+  cxx_flags = -DCGAL_HAS_THREADS -DCGAL_USE_GMPXX=1
+}

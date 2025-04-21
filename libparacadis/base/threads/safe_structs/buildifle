@@ -1,10 +1,12 @@
 # subdir('python_bindings')
 
-lib{safe_structs}: \
-  cpp{*} \
-  cpp{common_records/*} \
+lib{safe_structs}:
+{
+  cpp{*}
+  cpp{common_records/*}
   $libs_up_to_now
-
+}
+  
 {h hpp}{*}: install
 {h hpp}{common_records/*}: install
 

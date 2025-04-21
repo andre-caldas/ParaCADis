@@ -1,0 +1,11 @@
+: 1
+name: libcgal
+
+summary: C++20 module wrapper for CGAL
+
+version: 0.1.0-a.0.z
+license: GPL-3.0-or-later
+
+depends: openmp
+depends: gmpxx
+depends: mpfr

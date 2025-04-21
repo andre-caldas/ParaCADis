@@ -1,8 +1,10 @@
 # subdir('python_bindings')
 
-lib{locks}: \
-  cpp{*} \
+lib{locks}:
+{
+  cpp{*}
   $libs_up_to_now
+}
 
 {h hpp}{*}: install
 

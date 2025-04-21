@@ -1,0 +1,17 @@
+: 1
+project: ParaCADis
+name: libparacadis
+
+summary: ParaCADis C++ library
+
+version: 0.1.0-a.0.z
+language: c++
+license: GPL-3.0-or-later
+description-file: README.md
+url: https://github.com/andre-caldas/ParaCADis/
+email: andre.em.caldas@gmail.com
+#build-error-email: andre.em.caldas@gmail.com
+depends: * build2 >= 0.16.0
+depends: * bpkg >= 0.16.0
+depends: libcgal
+

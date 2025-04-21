@@ -1,10 +1,27 @@
 # subdir('python_bindings')
 
-lib{scene_graph}: \
-  cpp{*} \
+lib{scene_graph}:
+{
+  cpp{*}
   $libs_up_to_now
+}
 
 {h hpp}{*}: install
 
 libs_upto_now += lib{scene_graph}
+
+lib{scene_graph}:
+{
+  cxx_flags += pkg-config("gismo", "--cflags")
+  link_flags += pkg-config("gismo", "--libs")
+
+  cxx_flags += pkg-config("OGRE", "--cflags")
+  link_flags += pkg-config("OGRE", "--libs")
+
+  cxx_flags += pkg-config("OGRE-Bites", "--cflags")
+  link_flags += pkg-config("OGRE-Bites", "--libs")
+
+  cxx_flags += pkg-config("OGRE-RTShaderSystem", "--cflags")
+  link_flags += pkg-config("OGRE-RTShaderSystem", "--libs")
+}
 

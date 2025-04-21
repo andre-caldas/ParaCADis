@@ -1,14 +1,16 @@
 # subdir('python_bindings')
 
-./: \
-  dedicated_thread_scope \
-  locks \
-  message_queue \
-  python_bindings \
+./:
+{
+  dedicated_thread_scope
+  locks
+  message_queue
+  python_bindings
   safe_structs
+}
 
-lib{threads}: \
-  cpp{*} \
+lib{threads}:
+  cpp{*}
   $libs_up_to_now
 
 {h hpp}{*}: install

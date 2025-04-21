@@ -1,26 +1,33 @@
-./: \
-  xml \
-  type_traits \
-  expected_behaviour \
-  threads \
-  naming \
-  data_description \
-  geometric_primitives \
+./:
+{
+  xml
+  type_traits
+  expected_behaviour
+  threads
+  naming
+  data_description
+  geometric_primitives
   document_tree
+}
 
-lib{base}: \
-  lib{xml} \
-  lib{type_traits} \
-  lib{expected_behaviour} \
-  lib{threads} \
-  lib{naming} \
-  lib{data_description} \
-  lib{geometric_primitives} \
-  lib{document_tree} \
+lib{base}:
+{
+  lib{xml}
+  lib{type_traits}
+  lib{expected_behaviour}
+  lib{threads}
+  lib{naming}
+  lib{data_description}
+  lib{geometric_primitives}
+  lib{document_tree}
   exceptions.cpp
+}
 
-h{*}: install
-hpp{*}: install
+{h hpp}{*}: install
 
+#
+# Used by sibling libs that need to link with
+# previously defined siblings.
+#
 libs_upto_now =
 

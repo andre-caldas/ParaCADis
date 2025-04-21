@@ -1,8 +1,10 @@
 # subdir('python_bindings')
 
-lib{message_queue}: \
-  cpp{*} \
+lib{message_queue}:
+{
+  cpp{*}
   $libs_up_to_now
+}
 
 {h hpp}{*}: install
 
