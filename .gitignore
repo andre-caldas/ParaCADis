@@ -1,35 +1,18 @@
+# In build2, the directory build/ shall not be ignored.
+# This entry is for those who have git configured globally to ignore it.
+!build/
+build/.*
+
+.bdep/
+
+# Local default options files.
+#
+.build2/local/
+
 # Meson subprojects
+# TODO: remove this.
 /subprojects/*/
 
-# Prerequisites
-*.d
+# TODO: remove this.
+build/Desktop-Debug/
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
