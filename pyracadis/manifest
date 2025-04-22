@@ -14,6 +14,7 @@ email: andre.em.caldas@gmail.com
 depends: * build2 >= 0.16.0
 depends: * bpkg >= 0.16.0
 depends: libparacadis
+requires: python3
 requires: pybind11
 
 topics: parametric CAD, python bindings

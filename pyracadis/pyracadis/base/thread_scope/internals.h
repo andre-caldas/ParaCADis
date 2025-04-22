@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <python_bindings/types.h>
+#include <pyracadis/types.h>
 
 namespace py = pybind11;
 

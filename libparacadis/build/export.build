@@ -1,0 +1,6 @@
+$out_root/
+{
+  include libparacadis/
+}
+
+export $src_root/libparacadis/$import.target

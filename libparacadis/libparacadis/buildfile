@@ -6,3 +6,9 @@ for d: base scene_graph mesh_provider
   include $d/
   lib{paracadis}: $d/lib{$d}
 }
+
+lib{paracadis}:
+{
+  cxx.export.poptions = "-I$out_root" "-I$src_root"
+#  cxx.export.libs = $intf_libs
+}

@@ -1,4 +1,6 @@
-import libs  = pybind11%lib{pybind11}
+import libs  = libparacadis%lib{paracadis}
+import libs += pybind11%lib{pybind11}
+import libs += python3%lib{python3}
 
 lib{pyracadis}: $libs
 {
