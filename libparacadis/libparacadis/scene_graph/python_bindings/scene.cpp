@@ -26,7 +26,7 @@
 
 #include <libparacadis/base/expected_behaviour/SharedPtr.h>
 #include <libparacadis/base/document_tree/DocumentTree.h>
-#include <scene_graph/SceneRoot.h>
+#include <libparacadis/scene_graph/SceneRoot.h>
 
 #include <OGRE/OgreRoot.h>
 #include <OGRE/OgreSceneManager.h>

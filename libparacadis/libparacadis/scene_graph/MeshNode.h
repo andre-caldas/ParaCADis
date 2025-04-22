@@ -23,7 +23,7 @@
 #pragma once
 
 #include <libparacadis/base/geometric_primitives/DocumentGeometry.h>
-#include <mesh_provider/MeshProvider.h>
+#include <libparacadis/mesh_provider/MeshProvider.h>
 
 #include <memory>
 

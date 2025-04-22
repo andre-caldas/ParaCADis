@@ -26,7 +26,7 @@
 #include "MeshNode.h"
 
 #include <libparacadis/base/expected_behaviour/CycleGuard.h>
-#include <mesh_provider/MeshProvider.h>
+#include <libparacadis/mesh_provider/MeshProvider.h>
 
 #include <cassert>
 #include <exception>

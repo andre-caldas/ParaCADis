@@ -27,8 +27,8 @@
 #include <libparacadis/base/naming/python_bindings/module.h>
 #include <libparacadis/base/threads/python_bindings/module.h>
 
-#include <scene_graph/python_bindings/rendering_scope.h>
-#include <scene_graph/python_bindings/scene.h>
+#include <libparacadis/scene_graph/python_bindings/rendering_scope.h>
+#include <libparacadis/scene_graph/python_bindings/scene.h>
 
 #include <misc/imgui/python_bindings/imgui_scope.h>
 

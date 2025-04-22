@@ -24,7 +24,7 @@
 
 #include <exception>
 
-#include <scene_graph/RenderingScope.h>
+#include <libparacadis/scene_graph/RenderingScope.h>
 
 #include <python_bindings/types.h>
 
