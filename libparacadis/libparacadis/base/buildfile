@@ -11,3 +11,5 @@ for x: xml type_traits expected_behaviour threads naming data_description \
   lib{base}: lib{$x}: {h hxx mxx cxx}{$x/** -***/tests/** -***/python_bindings/**}
 }
 
+import geo_libs = libgismo%lib{gismo}
+lib{geometric_primitives}: $geo_libs
