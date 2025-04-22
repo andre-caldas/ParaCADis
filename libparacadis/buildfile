@@ -1,4 +1,7 @@
-./: {*/ -build/ -python_bindings/} \
-  lib{paracadis}
+dirs = base/ scene_graph/ mesh_provider/
 
-lib{paracadis}: lib{*}
+./: dir{$dirs} lib{paracadis}
+
+include $dirs
+
+lib{paracadis}: lib{$dirs}

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2024-2025 André Caldas <andre.em.caldas@gmail.com>       *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,15 +20,36 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "imgui_scope.h"
+#include "types.h"
 
-#include <python_bindings/types.h>
+#include <base/document_tree/python_bindings/module.h>
+#include <base/geometric_primitives/python_bindings/module.h>
+#include <base/naming/python_bindings/module.h>
+#include <base/threads/python_bindings/module.h>
 
-namespace py = pybind11;
+#include <scene_graph/python_bindings/rendering_scope.h>
+#include <scene_graph/python_bindings/scene.h>
 
-PYBIND11_MODULE(paracadis_imgui, m) {
-  m.doc() = "Python interface to ParaCADis Dear ImGui integration.";
+#include <misc/imgui/python_bindings/imgui_scope.h>
 
-  py::module_::import("paracadis");
+#include <base/expected_behaviour/SharedPtr.h>
+#include <base/naming/Exporter.h>
+
+using namespace Naming;
+
+PYBIND11_MODULE(pyracadis, m) {
+  m.doc() = "ParaCADis python interface library.";
+
+  py::class_<ExporterCommon, SharedPtr<ExporterCommon>>
+  exporter(m, "ExporterCommon", "Base class for types that export other types.");
+
+  init_naming(m);
+  init_geo(m);
+  init_document_tree(m);
+  init_threads(m);
+
+  init_rendering_scope(m);
+  init_scene(m);
+
   init_imgui(m);
 }

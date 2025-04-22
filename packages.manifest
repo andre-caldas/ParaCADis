@@ -5,5 +5,8 @@ location: libparacadis
 #location: paracadis
 
 :
+location: pyracadis
+
+:
 location: cpp_module_wrappers/libcgal
 
