@@ -1,11 +1,1 @@
-import libs  = pybind11%lib{pybind11}
-
-lib{pyracadis}: {mxx cxx}{pyracadis} $libs
-{
-  extension = shared
-  name = pyracadis$(python-ext-suffix)
-  install = true
-  install.root = $(config.python-module-dir)
-}
-
-{mxx cxx}{pyracadis}: {mxx cxx}{../libparacadis/***/python_bindings/** -***/build/** -***/tests/**}
+./: {*/ -build/} manifest

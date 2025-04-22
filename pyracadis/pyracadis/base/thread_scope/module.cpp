@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2025 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,30 +20,20 @@
  *                                                                          *
  ***************************************************************************/
 
-#pragma once
+#include "module.h"
 
-#include <libparacadis/base/expected_behaviour/SharedPtr.h>
+#include "internals.h"
 
-#include <python_bindings/types.h>
+#include <pyracadis/types.h>
 
 namespace py = pybind11;
+using namespace py::literals;
 
-void init_geo(py::module_& parent_module);
+void init_threads(py::module_& parent_module)
+{
+  auto module = parent_module.def_submodule("threads");
+  module.doc() = "Multithreading goddies for ParaCADis.";
 
-void init_geo_reals(py::module_& module);
-void init_geo_points(py::module_& module);
-void init_geo_vectors(py::module_& module);
-
-void init_geo_lines(py::module_& module);
-void init_geo_circles(py::module_& module);
-void init_geo_spheres(py::module_& module);
-
-void init_geo_coordinate_systems(py::module_& module);
-
-template<typename T, typename X = double>
-SharedPtr<T> new_from_vector(const std::vector<X>& v) {
-  return std::make_shared<T>(
-      (v.size() > 0)?v[0]:X(0),
-      (v.size() > 1)?v[1]:X(0),
-      (v.size() > 2)?v[2]:X(0));
+  init_thread_scope(module);
+  init_scope_of_scopes(module);
 }

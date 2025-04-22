@@ -20,36 +20,42 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "rendering_scope.h"
+#include "internals.h"
 
-#include <exception>
-
-#include <libparacadis/scene_graph/RenderingScope.h>
+#include <libparacadis/base/geometric_primitives/spheres.h>
+#include <libparacadis/base/geometric_primitives/types.h>
 
 #include <python_bindings/types.h>
 
 namespace py = pybind11;
 using namespace py::literals;
 
-using namespace Threads;
-using namespace SceneGraph;
+using namespace Naming;
+using namespace Document;
 
-void init_rendering_scope(py::module_& module)
+void init_geo_spheres(py::module_& module)
 {
-  py::module_::import("paracadis.threads");
-  py::class_<RenderingScope, ScopeOfScopes, SharedPtr<RenderingScope>>(
-      module, "RenderingScope",
-      "The rendering scope is a ScopeOfScopes registered to be executed"
-      "\nby the rendering thread."
-      "\n"
-      "\nScopes execute commands sent by other threads."
-      "\nIn the case of the RenderingScope, as a ScopeOfScopes,"
-      "\nthose commands are for adding sub-scopes."
-      "\nFor example, you can add a ImGuiScope. Then, you can send GUI elements"
-      "\nfor this scope to execute Dear ImGui commands to render those GUI elements."
-      "\n"
-      "\nThis object is automatically instantiated by the Scene object."
-      "\nYou (probably) should not instantiate it yourself.")
+  py::class_<SphereCenterRadius2, DocumentSurface,
+             SharedPtr<SphereCenterRadius2>>(
+      module, "SphereCenterRadius2",
+      "A sphere determined by its center and squared radius.")
+      .def(py::init(&SharedPtr<SphereCenterRadius2>::make_shared<Point&, Real&>),
+           "center"_a, "radius2"_a,
+           "The sphere is determined by its 'center' and squared radius ('radius2').")
       .def("__repr__",
-           [](const RenderingScope&){ return "<RENDERING SCOPE... (put info here)>"; });
+           [](const SphereCenterRadius2&)
+           { return "<SPHERECENTERRADIUS2... (put info here)>"; });
+
+
+  py::class_<SphereCenterSurfacePoint, DocumentSurface,
+             SharedPtr<SphereCenterSurfacePoint>>(
+      module, "SphereCenterSurfacePoint", py::multiple_inheritance(),
+      "A sphere determined by its center and one surface point.")
+      .def(py::init(&SharedPtr<SphereCenterSurfacePoint>::make_shared<Point&, Point&>),
+           "center"_a, "surface_point"_a,
+           "The sphere is determined by its 'center'"
+           " and a 'surface_point'.")
+      .def("__repr__",
+           [](const SphereCenterSurfacePoint&)
+           { return "<SPHERESURFACEPOINT... (put info here)>"; });
 }

@@ -20,10 +20,36 @@
  *                                                                          *
  ***************************************************************************/
 
-#pragma once
+#include "internals.h"
 
-#include <python_bindings/types.h>
+#include <exception>
+
+#include <libparacadis/scene_graph/RenderingScope.h>
+
+#include <pyracadis/types.h>
 
 namespace py = pybind11;
+using namespace py::literals;
 
-void init_rendering_scope(py::module_& module);
+using namespace Threads;
+using namespace SceneGraph;
+
+void init_rendering_scope(py::module_& module)
+{
+  py::module_::import("paracadis.threads");
+  py::class_<RenderingScope, ScopeOfScopes, SharedPtr<RenderingScope>>(
+      module, "RenderingScope",
+      "The rendering scope is a ScopeOfScopes registered to be executed"
+      "\nby the rendering thread."
+      "\n"
+      "\nScopes execute commands sent by other threads."
+      "\nIn the case of the RenderingScope, as a ScopeOfScopes,"
+      "\nthose commands are for adding sub-scopes."
+      "\nFor example, you can add a ImGuiScope. Then, you can send GUI elements"
+      "\nfor this scope to execute Dear ImGui commands to render those GUI elements."
+      "\n"
+      "\nThis object is automatically instantiated by the Scene object."
+      "\nYou (probably) should not instantiate it yourself.")
+      .def("__repr__",
+           [](const RenderingScope&){ return "<RENDERING SCOPE... (put info here)>"; });
+}

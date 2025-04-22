@@ -20,7 +20,7 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "scene.h"
+#include "internals.h"
 
 #include <exception>
 
@@ -35,7 +35,7 @@
 
 #include <Python.h>
 
-#include <python_bindings/types.h>
+#include <pyracadis/types.h>
 
 namespace py = pybind11;
 using namespace py::literals;

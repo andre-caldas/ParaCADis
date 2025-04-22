@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2024-2025 André Caldas <andre.em.caldas@gmail.com>       *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -21,16 +21,18 @@
  ***************************************************************************/
 
 #include "rendering_scope.h"
-#include "scene.h"
+#include "internals.h"
 
-#include <python_bindings/types.h>
+#include <pyracadis/types.h>
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(paracadis_scene_graph, m) {
-  m.doc() = "Python interface to display ParaCADis using Ogre3D.";
+void init_rendering(py::m_& parent_module)
+{
+  auto m = parent_module.def_submodule("document");
+  m.doc() = "Python interface to display ParaCADis using Ogre3D and Dear ImGui.";
 
-  py::module_::import("paracadis");
   init_rendering_scope(m);
   init_scene(m);
+  init_imgui(m);
 }

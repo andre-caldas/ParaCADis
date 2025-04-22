@@ -20,45 +20,53 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "module.h"
+#include "internals.h"
 
-#include <libparacadis/base/threads/dedicated_thread_scope/DedicatedThreadScope.h>
-#include <libparacadis/base/threads/dedicated_thread_scope/ScopeOfScopes.h>
+#include <exception>
 
-#include <python_bindings/types.h>
+#include <libparacadis/base/expected_behaviour/SharedPtr.h>
+#include <libparacadis/base/geometric_primitives/power_cast.h>
+#include <libparacadis/base/geometric_primitives/all_translators.h>
+#include <libparacadis/base/naming/Exporter.h>
+
+#include <misc/imgui/ImGuiScope.h>
+
+#include <OGRE/Overlay/OgreImGuiOverlay.h>
+
+#include <pyracadis/types.h>
 
 namespace py = pybind11;
 using namespace py::literals;
 
-using namespace Threads;
+using namespace ParacadisImGui;
+using namespace Naming;
 
-void init_thread_scope(py::module_& module)
-{
-  /*
-   * This only declares the class.
-   * Since executing python code involves locking the GIL,
-   * and since the dedicated thread is not supposed to block,
-   * this class will not be instantiable in python.
-   */
-  py::class_<DedicatedThreadScopeBase, SharedPtr<DedicatedThreadScopeBase>>(
-      module, "DedicatedThreadScope",
-      "Safely executes instructions in a dedicated thread."
-      " This object cannot be instantiated in python"
-      " and cannot be extended in python.")
-      .def("__repr__",
-           [](const DedicatedThreadScopeBase&){ return "<DEDICATEDTHREADSCOPE>"; });
+namespace {
+  void create_geometry_dialog(ImGuiScope& self, SharedPtr<ExporterCommon> exporter)
+  {
+    GeometryCast::dispatch(
+        std::move(exporter),
+        [&self]<typename T>(SharedPtr<T> geo){
+          auto lambda_draw = [](ImGuiScope::Translator<T>& /*translator*/){
+            ImGui::Text("Testando...");
+            return true;
+          };
+          self.addMutexHolder(std::move(geo), std::move(lambda_draw));
+        });
+  }
 }
 
-
-void init_scope_of_scopes(py::module_& module)
+void init_imgui(py::module_& module)
 {
-  py::class_<ScopeOfScopes, DedicatedThreadScopeBase, SharedPtr<ScopeOfScopes>>(
-      module, "A scope that is an array of scopes.",
-      "Safely adds new scopes.")
-      .def("addScope", &ScopeOfScopes::addScope, "scope"_a,
-           "Adds a scope that will be automatically removed when it is garbage collected.")
-      .def("addScopeKeepAlive", &ScopeOfScopes::addScopeKeepAlive, "scope"_a,
-           "Adds a scope that will never be removed.")
+  py::module_::import("Ogre.Bites");
+  py::class_<ImGuiScope, SharedPtr<ImGuiScope>>(
+      module, "ImGuiScope",
+      "Manipulates Dear ImGui's elements.")
+      .def(py::init<>(),
+           "Creates a ImGui scope you need to add to the RenderingScope.")
+      .def("create_geometry_dialog",
+           create_geometry_dialog , "native_geometry"_a,
+           "Creates a 'dialog' for a dataset.")
       .def("__repr__",
-         [](const ScopeOfScopes&){ return "<SCOPEOFSCOPES>"; });
+           [](const ImGuiScope&){ return "<ImGuiScope... (put info here)>"; });
 }

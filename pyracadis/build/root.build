@@ -6,7 +6,11 @@ using cxx
 assert $cxx.features.modules "no modules support for $cxx.signature"
 
 mxx{*}: extension = mxx
-cxx{*}: extension = cxx
+cxx{*}: extension = cpp
+
+# Build options.
+#
+cxx.poptions =+ "-I$out_root" "-I$src_root"
 
 
 # Configure python

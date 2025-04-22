@@ -4,6 +4,8 @@
 build/.*
 bootstrap/
 
+compile_commands.json
+
 .bdep/
 
 # Local default options files.

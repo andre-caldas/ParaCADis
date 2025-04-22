@@ -20,7 +20,7 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "module.h"
+#include "internals.h"
 
 #include <libparacadis/base/geometric_primitives/deferenceables.h>
 #include <libparacadis/base/geometric_primitives/types.h>

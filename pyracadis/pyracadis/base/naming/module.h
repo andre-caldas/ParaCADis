@@ -22,8 +22,8 @@
 
 #pragma once
 
-#include <python_bindings/types.h>
+#include <pyracadis/types.h>
 
 namespace py = pybind11;
 
-void init_scene(py::module_& module);
+py::module_ init_naming(py::module_& parent_module);

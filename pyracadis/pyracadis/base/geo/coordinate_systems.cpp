@@ -20,7 +20,7 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "module.h"
+#include "internals.h"
 
 #include <libparacadis/base/geometric_primitives/coordinate_system/DeferenceableCoordinateSystem.h>
 #include <libparacadis/base/geometric_primitives/coordinate_system/DeferenceableCoordinatePoints.h>

@@ -1,0 +1,11 @@
+import libs  = pybind11%lib{pybind11}
+
+lib{pyracadis}: $libs
+{
+  extension = shared
+  name = pyracadis$(python-ext-suffix)
+  install = true
+  install.root = $(config.python-module-dir)
+}
+
+lib{pyracadis}: {mxx cxx}{** -***/build/** -***/tests/**}

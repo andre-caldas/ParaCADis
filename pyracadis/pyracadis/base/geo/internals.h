@@ -20,36 +20,28 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "types.h"
-
-#include <libparacadis/base/document_tree/python_bindings/module.h>
-#include <libparacadis/base/geometric_primitives/python_bindings/module.h>
-#include <libparacadis/base/naming/python_bindings/module.h>
-#include <libparacadis/base/threads/python_bindings/module.h>
-
-#include <libparacadis/scene_graph/python_bindings/rendering_scope.h>
-#include <libparacadis/scene_graph/python_bindings/scene.h>
-
-#include <misc/imgui/python_bindings/imgui_scope.h>
+#pragma once
 
 #include <libparacadis/base/expected_behaviour/SharedPtr.h>
-#include <libparacadis/base/naming/Exporter.h>
 
-using namespace Naming;
+#include <pyracadis/types.h>
 
-PYBIND11_MODULE(pyracadis, m) {
-  m.doc() = "ParaCADis python interface library.";
+namespace py = pybind11;
 
-  py::class_<ExporterCommon, SharedPtr<ExporterCommon>>
-  exporter(m, "ExporterCommon", "Base class for types that export other types.");
+void init_geo_reals(py::module_& module);
+void init_geo_points(py::module_& module);
+void init_geo_vectors(py::module_& module);
 
-  init_naming(m);
-  init_geo(m);
-  init_document_tree(m);
-  init_threads(m);
+void init_geo_lines(py::module_& module);
+void init_geo_circles(py::module_& module);
+void init_geo_spheres(py::module_& module);
 
-  init_rendering_scope(m);
-  init_scene(m);
+void init_geo_coordinate_systems(py::module_& module);
 
-  init_imgui(m);
+template<typename T, typename X = double>
+SharedPtr<T> new_from_vector(const std::vector<X>& v) {
+  return std::make_shared<T>(
+      (v.size() > 0)?v[0]:X(0),
+      (v.size() > 1)?v[1]:X(0),
+      (v.size() > 2)?v[2]:X(0));
 }

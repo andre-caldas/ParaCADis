@@ -21,11 +21,13 @@
  ***************************************************************************/
 
 #include "module.h"
+#include "internals.h"
 
-#include <libparacadis/base/geometric_primitives/circles.h>
-#include <libparacadis/base/geometric_primitives/types.h>
+#include <libparacadis/base/expected_behaviour/SharedPtr.h>
+#include <libparacadis/base/geometric_primitives/DocumentGeometry.h>
+#include <libparacadis/base/naming/Exporter.h>
 
-#include <python_bindings/types.h>
+#include <pyracadis/types.h>
 
 namespace py = pybind11;
 using namespace py::literals;
@@ -33,40 +35,36 @@ using namespace py::literals;
 using namespace Naming;
 using namespace Document;
 
-void init_geo_circles(py::module_& module)
+void init_geo(py::module_& parent_module)
 {
-  /*
-   * CirclePointRadius2Normal.
-   */
-  py::class_<CirclePointRadius2Normal, DocumentCurve,
-             SharedPtr<CirclePointRadius2Normal>>(
-      module, "CirclePointRadius2Normal", py::multiple_inheritance(),
-      "An oriented circle specified by a center point,"
-      " the squared radius and a normal vector."
-      " The circle orientation is determined by the right-hand rule"
-      " applied to the normal vector"
-      " (a right-hand holding the normal vector is such that the fingers"
-      " point to the circle orientation).")
-      .def(py::init(&SharedPtr<CirclePointRadius2Normal>::make_shared<Point&, Real&, Vector&>),
-           "center"_a, "radius2"_a, "normal"_a,
-           "Creates the circle cetered at 'center', with squared radius 'radius2'"
-           " and orientation given the the 'normal' vector.")
-      .def("__repr__",
-           [](const CirclePointRadius2Normal&)
-           { return "<CIRCLEPOINTRADIUSNORMAL... (put info here)>"; });
+  auto module = parent_module.def_submodule("geo");
+  module.doc() = "Basic geometric objects used in ParaCADis.";
 
-  /*
-   * Circle3Points.
-   */
-  py::class_<Circle3Points, DocumentCurve,
-             SharedPtr<Circle3Points>>(
-      module, "Circle3Points", py::multiple_inheritance(),
-      "An oriented circle specified by three points.")
-      .def(py::init(&SharedPtr<Circle3Points>::make_shared<Point&, Point&, Point&>),
-           "a"_a, "b"_a, "c"_a,
-           "The circle passes by the given points."
-           " The orientation is determined by the sequence 'a->b->c'.")
+  py::class_<DocumentGeometry, ExporterCommon, SharedPtr<DocumentGeometry>>(
+      module, "Document",
+      "Base class for geometries in the document tree.")
       .def("__repr__",
-           [](const Circle3Points&)
-           { return "<CIRCLE3POINTS... (put info here)>"; });
+           [](const DocumentGeometry&){ return "<GEOMETRY... (put info here)>"; });
+
+  py::class_<DocumentCurve, DocumentGeometry, SharedPtr<DocumentCurve>>(
+      module, "Curve",
+      "Base class for curves in the document tree.")
+      .def("__repr__",
+           [](const DocumentCurve&){ return "<CURVE... (put info here)>"; });
+
+  py::class_<DocumentSurface, DocumentGeometry, SharedPtr<DocumentSurface>>(
+      module, "Surface",
+      "Base class for surfaces in the document tree.")
+      .def("__repr__",
+           [](const DocumentSurface&){ return "<SURFACE... (put info here)>"; });
+
+  init_geo_reals(module);
+  init_geo_points(module);
+  init_geo_vectors(module);
+
+  init_geo_lines(module);
+  init_geo_circles(module);
+  init_geo_spheres(module);
+
+  init_geo_coordinate_systems(module);
 }

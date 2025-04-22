@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2025 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2024-2025 André Caldas <andre.em.caldas@gmail.com>       *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,20 +20,12 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "module.h"
+#pragma once
 
-#include "scopes.h"
-
-#include <python_bindings/types.h>
+#include <pyracadis/types.h>
 
 namespace py = pybind11;
-using namespace py::literals;
 
-void init_threads(py::module_& parent_module)
-{
-  auto module = parent_module.def_submodule("threads");
-  module.doc() = "Multithreading goddies for ParaCADis.";
-
-  init_thread_scope(module);
-  init_scope_of_scopes(module);
-}
+void init_rendering_scope(py::module_& module);
+void init_scene(py::module_& module);
+void init_imgui(py::module_& module);

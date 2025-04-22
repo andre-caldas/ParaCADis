@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2024-2025 André Caldas <andre.em.caldas@gmail.com>       *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,42 +20,30 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "module.h"
+#include "types.h"
 
-#include <libparacadis/base/geometric_primitives/spheres.h>
-#include <libparacadis/base/geometric_primitives/types.h>
+#include "base/document_tree/module.h"
+#include "base/geo/module.h"
+#include "base/naming/module.h"
+#include "base/scope_module/thread.h"
 
-#include <python_bindings/types.h>
+#include "rendering/module.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+#include <libparacadis/base/expected_behaviour/SharedPtr.h>
+#include <libparacadis/base/naming/Exporter.h>
 
 using namespace Naming;
-using namespace Document;
 
-void init_geo_spheres(py::module_& module)
-{
-  py::class_<SphereCenterRadius2, DocumentSurface,
-             SharedPtr<SphereCenterRadius2>>(
-      module, "SphereCenterRadius2",
-      "A sphere determined by its center and squared radius.")
-      .def(py::init(&SharedPtr<SphereCenterRadius2>::make_shared<Point&, Real&>),
-           "center"_a, "radius2"_a,
-           "The sphere is determined by its 'center' and squared radius ('radius2').")
-      .def("__repr__",
-           [](const SphereCenterRadius2&)
-           { return "<SPHERECENTERRADIUS2... (put info here)>"; });
+PYBIND11_MODULE(pyracadis, m) {
+  m.doc() = "ParaCADis python interface library.";
 
+  py::class_<ExporterCommon, SharedPtr<ExporterCommon>>
+  exporter(m, "ExporterCommon", "Base class for types that export other types.");
 
-  py::class_<SphereCenterSurfacePoint, DocumentSurface,
-             SharedPtr<SphereCenterSurfacePoint>>(
-      module, "SphereCenterSurfacePoint", py::multiple_inheritance(),
-      "A sphere determined by its center and one surface point.")
-      .def(py::init(&SharedPtr<SphereCenterSurfacePoint>::make_shared<Point&, Point&>),
-           "center"_a, "surface_point"_a,
-           "The sphere is determined by its 'center'"
-           " and a 'surface_point'.")
-      .def("__repr__",
-           [](const SphereCenterSurfacePoint&)
-           { return "<SPHERESURFACEPOINT... (put info here)>"; });
+  init_naming(m);
+  init_geo(m);
+  init_document_tree(m);
+  init_threads(m);
+
+  init_rendering(m);
 }
