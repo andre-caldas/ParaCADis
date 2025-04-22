@@ -1,14 +1,20 @@
 ./: lib{paracadis}
 
-lib{paracadis}: {mxx cxx}{*}
-for d: base scene_graph mesh_provider
+lib{paracadis}: {mxx cxx}{**}
 {
-  include $d/
-  lib{paracadis}: $d/lib{$d}
+#  cxx.export.libs =
 }
+
+#for d: base scene_graph mesh_provider
+#{
+#  include $d/
+#  lib{paracadis}: $d/lib{$d}
+#  {
+#    cxx.export.libs += $d/lib{$d}
+#  }
+#}
 
 lib{paracadis}:
 {
   cxx.export.poptions = "-I$out_root" "-I$src_root"
-#  cxx.export.libs = $intf_libs
 }

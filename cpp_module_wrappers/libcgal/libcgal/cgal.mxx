@@ -25,7 +25,7 @@ module;
 #include <CGAL/Origin.h>
 #include <CGAL/Quotient.h>
 #include <CGAL/Simple_homogeneous.h>
-export module cgal.types;
+export module cgal;
 
 export namespace cgal {
   typedef CGAL::Simple_homogeneous<CGAL::Gmpz> K;
@@ -36,7 +36,7 @@ export namespace cgal {
   typedef K::Vector_3  Vector;
   typedef K::Point_2   Point2;
   typedef K::Vector_2  Vector2;
-  typedef CGAL::ORIGIN Origin;
+//  auto& Origin = CGAL::ORIGIN;
 
   float sqrt_float(const Real& x);
 }

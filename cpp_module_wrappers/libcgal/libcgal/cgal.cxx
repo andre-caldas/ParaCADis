@@ -22,7 +22,7 @@
 
 module;
 #include <CGAL/number_utils.h>
-module cgal.types;
+module cgal;
 
 namespace cgal {
   float sqrt_float(const Real& x)
