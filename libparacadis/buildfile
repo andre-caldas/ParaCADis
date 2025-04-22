@@ -1,7 +1,1 @@
-dirs = base/ scene_graph/ mesh_provider/
-
-./: dir{$dirs} lib{paracadis}
-
-include $dirs
-
-lib{paracadis}: lib{$dirs}
+./: {*/ -build/} doc{LICENSE} manifest

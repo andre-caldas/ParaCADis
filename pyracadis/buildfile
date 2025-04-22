@@ -8,4 +8,4 @@ lib{pyracadis}: {mxx cxx}{pyracadis} $libs
   install.root = $(config.python-module-dir)
 }
 
-{mxx cxx}{pyracadis}: {mxx cxx}{../paracadis/***/python_bindings/** -build -tests}
+{mxx cxx}{pyracadis}: {mxx cxx}{../libparacadis/***/python_bindings/** -***/build/** -***/tests/**}

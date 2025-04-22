@@ -22,18 +22,18 @@
 
 #include "types.h"
 
-#include <base/document_tree/python_bindings/module.h>
-#include <base/geometric_primitives/python_bindings/module.h>
-#include <base/naming/python_bindings/module.h>
-#include <base/threads/python_bindings/module.h>
+#include <libparacadis/base/document_tree/python_bindings/module.h>
+#include <libparacadis/base/geometric_primitives/python_bindings/module.h>
+#include <libparacadis/base/naming/python_bindings/module.h>
+#include <libparacadis/base/threads/python_bindings/module.h>
 
 #include <scene_graph/python_bindings/rendering_scope.h>
 #include <scene_graph/python_bindings/scene.h>
 
 #include <misc/imgui/python_bindings/imgui_scope.h>
 
-#include <base/expected_behaviour/SharedPtr.h>
-#include <base/naming/Exporter.h>
+#include <libparacadis/base/expected_behaviour/SharedPtr.h>
+#include <libparacadis/base/naming/Exporter.h>
 
 using namespace Naming;
 

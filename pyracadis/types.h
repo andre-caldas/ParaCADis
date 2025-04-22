@@ -25,8 +25,8 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
 
-#include <base/expected_behaviour/SharedPtr.h>
-#include <base/naming/Uuid.h>
+#include <libparacadis/base/expected_behaviour/SharedPtr.h>
+#include <libparacadis/base/naming/Uuid.h>
 
 PYBIND11_MAKE_OPAQUE(Naming::Uuid::uuid_type);
 

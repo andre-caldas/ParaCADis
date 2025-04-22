@@ -1,0 +1,8 @@
+./: lib{paracadis}
+
+lib{paracadis}: {mxx cxx}{*}
+for d: base scene_graph mesh_provider
+{
+  include $d/
+  lib{paracadis}: $d/lib{$d}
+}

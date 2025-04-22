@@ -1,0 +1,5 @@
+lib{cgal}: {mxx cxx}{*}
+{
+  cxx_flags = -DCGAL_HAS_THREADS -DCGAL_USE_GMPXX=1
+}
+mxx{*}: install =

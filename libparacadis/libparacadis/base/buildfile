@@ -1,0 +1,13 @@
+./: lib{base}
+
+if ($cxx.target.system != 'win32-msvc')
+  cxx.libs += -pthread
+
+lib{base}: {mxx cxx}{*} 
+
+for x: xml type_traits expected_behaviour threads naming data_description \
+  geometric_primitives document_tree
+{
+  lib{base}: lib{$x}: {h hxx mxx cxx}{$x/** -***/tests/** -***/python_bindings/**}
+}
+
