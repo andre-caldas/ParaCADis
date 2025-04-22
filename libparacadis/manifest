@@ -1,11 +1,12 @@
 : 1
-project: ParaCADis
 name: libparacadis
+project: ParaCADis
 
 summary: ParaCADis C++ library
 
 version: 0.1.0-a.0.z
 language: c++
+type: lib
 license: GPL-3.0-or-later
 description-file: README.md
 url: https://github.com/andre-caldas/ParaCADis/
@@ -15,3 +16,4 @@ depends: * build2 >= 0.16.0
 depends: * bpkg >= 0.16.0
 depends: libcgal
 
+topics: parametric CAD

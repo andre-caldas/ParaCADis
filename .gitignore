@@ -2,6 +2,7 @@
 # This entry is for those who have git configured globally to ignore it.
 !build/
 build/.*
+bootstrap/
 
 .bdep/
 

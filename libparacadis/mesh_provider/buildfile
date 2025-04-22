@@ -1,0 +1,5 @@
+#import libs = libgismo%lib{gismo}
+
+lib{mesh_provider}: {mxx cxx}{*} #$libs
+
+{h mxx}{*}: install =

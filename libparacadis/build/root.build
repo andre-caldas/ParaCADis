@@ -1,0 +1,15 @@
+cxx.std = latest
+cxx.features.modules = true
+
+using cxx
+
+assert $cxx.features.modules "no modules support for $cxx.signature"
+
+mxx{*}: extension = mpp
+cxx{*}: extension = cpp
+hxx{*}: extension = hpp
+h{*}: extension = h
+
+# The test target for cross-testing (running tests under Wine, etc).
+#
+test.target = $cxx.target

@@ -1,18 +1,4 @@
-./:
-{
-  base
-  mesh_provider
-  scene_graph
-  misc
-  python_bindings
-}
+./: {*/ -build/ -python_bindings/} \
+  lib{paracadis}
 
-lib{paracadis}:
-{
-  lib{base}
-  lib{mesh_provider}
-  lib{scene_graph}
-  lib{misc}
-  lib{python_bindings}
-}
-
+lib{paracadis}: lib{*}
