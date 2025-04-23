@@ -21,12 +21,26 @@
  ***************************************************************************/
 
 module;
+#include <CGAL/Gmpz.h>
+#include <CGAL/Origin.h>
+#include <CGAL/Quotient.h>
+#include <CGAL/Simple_homogeneous.h>
 #include <CGAL/number_utils.h>
 module cgal;
 
 namespace cgal {
+  double to_double(const Real& x)
+  {
+    return CGAL::to_double(x);
+  }
+
   float sqrt_float(const Real& x)
   {
     return static_cast<float>(CGAL::to_double(CGAL::sqrt(x)));
+  }
+
+  Vector sqrt_float(const Vector& v, const Vector& w)
+  {
+    return CGAL::cross_product(v, w);
   }
 }

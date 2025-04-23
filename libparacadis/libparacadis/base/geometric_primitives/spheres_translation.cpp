@@ -22,7 +22,7 @@
 
 #include "spheres_translation.h"
 
-#include <CGAL/number_utils.h>
+#include "types.h"
 
 namespace DataDescription
 {
@@ -34,7 +34,7 @@ namespace DataDescription
       : center_tr(_inner.center.getSharedPtr(), user.center)
   {
     inner.radius2 = _inner.radius2;
-    user.radius = static_cast<float>(CGAL::to_double(CGAL::sqrt(_inner.radius2)));
+    user.radius = cgal::sqrt_float(_inner.radius2);
   }
 
   void DataTranslator<SphereCenterRadius2Data, SphereCenterRadius>::
@@ -42,7 +42,7 @@ namespace DataDescription
   {
     if(_inner.radius2 != inner.radius2) {
       inner.radius2 = _inner.radius2;
-      user.radius = static_cast<float>(CGAL::to_double(CGAL::sqrt(_inner.radius2)));
+      user.radius = cgal::sqrt_float(_inner.radius2);
       _user.radius = user.radius;
     }
   }

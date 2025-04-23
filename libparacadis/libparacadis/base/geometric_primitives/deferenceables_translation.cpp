@@ -46,9 +46,9 @@ namespace DataDescription
       init(const inner_t& _inner)
   {
     inner = _inner;
-    user.x = static_cast<float>(CGAL::to_double(_inner.x));
-    user.y = static_cast<float>(CGAL::to_double(_inner.y));
-    user.z = static_cast<float>(CGAL::to_double(_inner.z));
+    user.x = static_cast<float>(cgal::to_double(_inner.x));
+    user.y = static_cast<float>(cgal::to_double(_inner.y));
+    user.z = static_cast<float>(cgal::to_double(_inner.z));
   }
 
 
@@ -58,17 +58,17 @@ namespace DataDescription
   {
     if(inner.x != _inner.x) {
       inner.x = _inner.x;
-      user.x = static_cast<float>(CGAL::to_double(_inner.x));
+      user.x = static_cast<float>(cgal::to_double(_inner.x));
       _user.x = user.x;
     }
     if(inner.y != _inner.y) {
       inner.y = _inner.y;
-      user.y = static_cast<float>(CGAL::to_double(_inner.y));
+      user.y = static_cast<float>(cgal::to_double(_inner.y));
       _user.y = user.y;
     }
     if(inner.z != _inner.z) {
       inner.z = _inner.z;
-      user.z = static_cast<float>(CGAL::to_double(_inner.z));
+      user.z = static_cast<float>(cgal::to_double(_inner.z));
       _user.z = user.z;
     }
   }

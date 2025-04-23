@@ -47,12 +47,12 @@ SphereCenterRadius2::produceIgaSurface() const
   real_t radius2;
   {
     Threads::ReaderGate gate{*this};
-    radius2 = CGAL::to_double(gate->radius2);
+    radius2 = cgal::to_double(gate->radius2);
     center = gate->center;
   }
-  real_t x = CGAL::to_double(center.x());
-  real_t y = CGAL::to_double(center.y());
-  real_t z = CGAL::to_double(center.z());
+  real_t x = cgal::to_double(center.x());
+  real_t y = cgal::to_double(center.y());
+  real_t z = cgal::to_double(center.z());
   return SharedPtr{gismo::gsNurbsCreator<real_t>::NurbsSphere(std::sqrt(radius2), x, y, z)};
 }
 
@@ -79,10 +79,10 @@ SphereCenterSurfacePoint::produceIgaSurface() const
     surface_point = gate->surface_point;
     center = gate->center;
   }
-  real_t radius2 = CGAL::to_double((surface_point-center).squared_length());
-  real_t x = CGAL::to_double(center.x());
-  real_t y = CGAL::to_double(center.y());
-  real_t z = CGAL::to_double(center.z());
+  real_t radius2 = cgal::to_double((surface_point-center).squared_length());
+  real_t x = cgal::to_double(center.x());
+  real_t y = cgal::to_double(center.y());
+  real_t z = cgal::to_double(center.z());
   return SharedPtr{gismo::gsNurbsCreator<real_t>::NurbsSphere(std::sqrt(radius2), x, y, z)};
 }
 

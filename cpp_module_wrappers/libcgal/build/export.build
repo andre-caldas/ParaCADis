@@ -1,0 +1,6 @@
+$out_root/
+{
+  include libcgal/
+}
+
+export $out_root/libcgal/$import.target

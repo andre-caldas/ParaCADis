@@ -22,7 +22,7 @@
 
 #include "lines_translation.h"
 
-#include <CGAL/number_utils.h>
+#include "types.h"
 
 namespace {
   void _construct(auto& _inner, auto& inner, auto& user) {

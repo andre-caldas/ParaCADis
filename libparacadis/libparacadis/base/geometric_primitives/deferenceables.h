@@ -42,9 +42,6 @@ struct DeferenceablePointData {
  * This is not a native point. It is to be used only when you need a point
  * that exports its coordinates. In particular, if it is a geometric object
  * to be placed in the DocumenTree, use this and not the kernel native Point.
- *
- * @todo Maybe we should warrant we use a CGAL kernel that may have its
- * coordinates directly accessed and simply use it.
  */
 class DeferenceablePoint
     : public Naming::Exporter<DeferenceablePointData>
@@ -79,9 +76,6 @@ struct DeferenceableVectorData {
  * This is not a native vector. It is to be used only when you need a vector
  * that exports its coordinates. In particular, if it is a geometric object
  * to be placed in the DocumenTree, use this and not the kernel native Point.
- *
- * @todo Maybe we should warrant we use a CGAL kernel that may have its
- * coordinates directly accessed and simply use it.
  */
 class DeferenceableVector
     : public Naming::Exporter<DeferenceableVectorData>

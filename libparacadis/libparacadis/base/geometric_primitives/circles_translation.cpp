@@ -22,7 +22,7 @@
 
 #include "circles_translation.h"
 
-#include <CGAL/number_utils.h>
+#include "types.h"
 
 namespace DataDescription
 {
@@ -35,7 +35,7 @@ namespace DataDescription
       , normal_tr(_inner.normal.getSharedPtr(), user.normal)
   {
     inner.radius2 = _inner.radius2;
-    user.radius = static_cast<float>(CGAL::to_double(CGAL::sqrt(_inner.radius2)));
+    user.radius = cgal::sqrt_float(_inner.radius2);
   }
 
   void DataTranslator<CirclePointRadius2NormalData, CircleRadiusCenterNormal>::
@@ -43,7 +43,7 @@ namespace DataDescription
   {
     if(_inner.radius2 != inner.radius2) {
       inner.radius2 = _inner.radius2;
-      user.radius = static_cast<float>(CGAL::to_double(CGAL::sqrt(_inner.radius2)));
+      user.radius = cgal::sqrt_float(_inner.radius2);
       _user.radius = user.radius;
     }
   }

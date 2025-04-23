@@ -32,21 +32,21 @@ namespace {
   SharedPtr<gismo::gsNurbs<real_t>>
   nurbs_circle(const K::Circle_3& circle)
   {
-    auto radius = CGAL::approximate_sqrt(circle.squared_radius());
+    auto radius = cgal::sqrt_float(circle.squared_radius());
     const auto& center = circle.center();
     const auto& plane = circle.supporting_plane();
 
     Vector xdir = plane.base1();
-    xdir *= radius / CGAL::approximate_sqrt(xdir.squared_length());
-    double xdirx = CGAL::to_double(xdir.x());
-    double xdiry = CGAL::to_double(xdir.y());
-    double xdirz = CGAL::to_double(xdir.z());
+    xdir *= radius / cgal::sqrt_float(xdir.squared_length());
+    double xdirx = cgal::to_double(xdir.x());
+    double xdiry = cgal::to_double(xdir.y());
+    double xdirz = cgal::to_double(xdir.z());
 
     Vector ydir = plane.base2();
-    ydir *= radius / CGAL::approximate_sqrt(ydir.squared_length());
-    double ydirx = CGAL::to_double(ydir.x());
-    double ydiry = CGAL::to_double(ydir.y());
-    double ydirz = CGAL::to_double(ydir.z());
+    ydir *= radius / cgal::sqrt_float(ydir.squared_length());
+    double ydirx = cgal::to_double(ydir.x());
+    double ydiry = cgal::to_double(ydir.y());
+    double ydirz = cgal::to_double(ydir.z());
 
     gismo::gsKnotVector<real_t> KV2 (0,1,3,3,2) ;
     gismo::gsMatrix<real_t> C(9,3) ;
@@ -61,9 +61,9 @@ namespace {
       xdirx-ydirx, xdiry-ydiry, xdirz-ydirz,
       xdirx,       xdiry,       xdirz;
 
-    C.col(0).array() += CGAL::to_double(center.x());
-    C.col(1).array() += CGAL::to_double(center.y());
-    C.col(2).array() += CGAL::to_double(center.z());
+    C.col(0).array() += cgal::to_double(center.x());
+    C.col(1).array() += cgal::to_double(center.y());
+    C.col(2).array() += cgal::to_double(center.z());
 
     gismo::gsMatrix<real_t> ww(9,1) ;
     ww <<
@@ -96,7 +96,7 @@ CirclePointRadius2Normal::produceIgaCurve() const
   {
     Threads::ReaderGate gate{*this};
     center  = gate->center;
-    radius2 = CGAL::to_double(gate->radius2);
+    radius2 = cgal::to_double(gate->radius2);
     normal  = gate->normal;
   }
   K::Circle_3 cgal_circle{center, radius2, normal};
