@@ -39,7 +39,17 @@ namespace cgal {
     return static_cast<float>(CGAL::to_double(CGAL::sqrt(x)));
   }
 
-  Vector sqrt_float(const Vector& v, const Vector& w)
+  Real determinant(const Vector& u, const Vector& v, const Vector& w)
+  {
+    return CGAL::determinant(u, v, w);
+  }
+
+  Real scalar_product(const Vector& v, const Vector& w)
+  {
+    return CGAL::scalar_product(v, w);
+  }
+
+  Vector cross_product(const Vector& v, const Vector& w)
   {
     return CGAL::cross_product(v, w);
   }

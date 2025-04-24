@@ -43,5 +43,7 @@ export namespace cgal {
   double to_double(const Real& x);
   float sqrt_float(const Real& x);
 
-  Vector sqrt_float(const Vector& v, const Vector& w);
+  Real determinant(const Vector& u, const Vector& v, const Vector& w);
+  Real scalar_product(const Vector& v, const Vector& w);
+  Vector cross_product(const Vector& v, const Vector& w);
 }
