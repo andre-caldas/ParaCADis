@@ -50,7 +50,7 @@ void init_geo_reals(py::module_& module)
            [](SharedPtr<Real>& self, const Real& other) -> SharedPtr<Real>&
            {*self = other; return self;})
       .def("__float__",
-           [](const Real& r){return CGAL::to_double(r);})
+           [](const Real& r){return types::to_float(r);})
       .def("__iadd__",
            [](SharedPtr<Real>& self, const Real& other) -> SharedPtr<Real>&
            {*self += other; return self;})
@@ -98,7 +98,7 @@ void init_geo_reals(py::module_& module)
            [](const Real& self)
            {
              return std::format("<REAL... ({})>",
-             CGAL::to_double(self));
+             types::to_float(self));
            });
   py::implicitly_convertible<const int, Real>();
   py::implicitly_convertible<const float, Real>();

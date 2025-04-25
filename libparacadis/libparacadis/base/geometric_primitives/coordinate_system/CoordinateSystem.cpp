@@ -35,16 +35,16 @@ CoordinateSystem::CoordinateSystem(Point origin, AxisOrder order, Vector v, Vect
     : _origin(origin)
 {
   // x = normalized v.
-  auto x = v / cgal::sqrt_float(v.squared_length());
+  auto x = v / types::to_float(types::sqrt(v.squared_length()));
   getAxisVector(order, 0) = x;
 
   // z = normalized (v x w)
-  auto z = cgal::cross_product(v, w);
-  z /= cgal::sqrt_float(z.squared_length());
+  auto z = types::cross_product(v, w);
+  z /= types::to_float(types::sqrt(z.squared_length()));
   getAxisVector(order, 2) = z;
 
   // y = (z x x)
-  getAxisVector(order, 1) = cgal::cross_product(z, x);
+  getAxisVector(order, 1) = types::cross_product(z, x);
 }
 
 Vector& CoordinateSystem::getAxisVector(AxisOrder order, int j)

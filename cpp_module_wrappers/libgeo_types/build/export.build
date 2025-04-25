@@ -1,0 +1,6 @@
+$out_root/
+{
+  include libgeo_types/
+}
+
+export $out_root/libgeo_types/$import.target

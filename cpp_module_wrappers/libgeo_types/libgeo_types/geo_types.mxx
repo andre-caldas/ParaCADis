@@ -1,0 +1,118 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+/****************************************************************************
+ *                                                                          *
+ *   Copyright (c) 2025 André Caldas <andre.em.caldas@gmail.com>            *
+ *                                                                          *
+ *   This file is part of ParaCADis.                                        *
+ *                                                                          *
+ *   ParaCADis is free software: you can redistribute it and/or modify it   *
+ *   under the terms of the GNU General Public License as published         *
+ *   by the Free Software Foundation, either version 2.1 of the License,    *
+ *   or (at your option) any later version.                                 *
+ *                                                                          *
+ *   ParaCADis is distributed in the hope that it will be useful, but       *
+ *   WITHOUT ANY WARRANTY; without even the implied warranty of             *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                   *
+ *   See the GNU General Public License for more details.                   *
+ *                                                                          *
+ *   You should have received a copy of the GNU General Public License      *
+ *   along with ParaCADis. If not, see <https://www.gnu.org/licenses/>.     *
+ *                                                                          *
+ ***************************************************************************/
+
+export module geo_types;
+
+// TODO: split into separate files.
+
+export namespace geo_types
+{
+  struct Real
+  {
+    float value = 0;
+
+    Real() = default;
+
+    Real(const Real&) = default;
+    Real& operator=(const Real&) = default;
+
+    Real(float v) : value(v) {}
+
+    bool operator==(const Real&) const = default;
+
+    Real& operator+=(Real a);
+    Real& operator-=(Real v);
+    Real& operator*=(Real a);
+    Real& operator/=(Real a);
+
+    float operator()() const { return value; }
+  };
+  Real operator+(Real a, Real b);
+  Real operator-(Real a, Real b);
+  Real operator*(Real a, Real b);
+  Real operator/(Real a, Real b);
+  float to_float(Real a);
+  Real sqrt(Real a);
+
+
+  struct Point;
+  struct Vector
+  {
+    Real x = 0;
+    Real y = 0;
+    Real z = 0;
+
+    Vector() = default;
+
+    Vector(Vector&&) = default;
+    Vector(const Vector&) = default;
+    Vector& operator=(Vector&&) = default;
+    Vector& operator=(const Vector&) = default;
+
+    template<typename X, typename Y, typename Z>
+    Vector(X _x, Y _y, Z _z = 0.) : x(_x), y(_y), z(_z) {}
+
+    bool operator==(const Vector&) const = default;
+
+    Vector& operator+=(const Vector& v);
+    Vector& operator-=(const Vector& v);
+    Vector& operator*=(Real a);
+    Vector& operator/=(Real a);
+
+    Real squared_length() const;
+    Point to_point() const;
+  };
+  Vector operator+(const Vector& v, const Vector& w);
+  Vector operator-(const Vector& v, const Vector& w);
+  Vector operator*(const Real a, const Vector& v);
+  Vector operator/(const Vector& v, const Real a);
+
+  Real determinant(const Vector& u, const Vector& v, const Vector& w);
+  Real dot_product(const Vector& v, const Vector& w);
+  Vector cross_product(const Vector& v, const Vector& w);
+
+  struct Point
+  {
+    Real x = 0;
+    Real y = 0;
+    Real z = 0;
+
+    Point() = default;
+
+    Point(Point&&) = default;
+    Point(const Point&) = default;
+    Point& operator=(Point&&) = default;
+    Point& operator=(const Point&) = default;
+
+    template<typename X, typename Y, typename Z>
+    Point(X _x, Y _y, Z _z = 0.) : x(_x), y(_y), z(_z) {}
+
+    bool operator==(const Point&) const = default;
+
+    Vector to_vector() const;
+  };
+  Point operator+(const Point& p, const Vector& v);
+  Vector operator-(const Point& p, const Point& q);
+
+  const Point Origin{0,0,0};
+  const Vector NullVector{0,0,0};
+}

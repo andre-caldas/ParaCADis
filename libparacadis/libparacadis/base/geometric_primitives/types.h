@@ -20,6 +20,18 @@
  *                                                                          *
  ***************************************************************************/
 
-import cgal;
+#pragma once
 
-define VectorToPoint(v) Point(cgal::Origin + v)
+import geo_types;
+//import cgal;
+
+namespace types = geo_types;
+
+using Real = types::Real;
+using Point = types::Point;
+using Vector = types::Vector;
+
+extern decltype(types::Origin)& Origin;
+extern decltype(types::NullVector)& NullVector;
+
+inline Point VectorToPoint(const Vector& v) { return Origin + v; }

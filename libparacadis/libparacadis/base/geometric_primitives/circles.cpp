@@ -27,26 +27,24 @@
 #include <gismo/gismo.h>
 
 using namespace Document;
+using namespace types;
 
 namespace {
   SharedPtr<gismo::gsNurbs<real_t>>
-  nurbs_circle(const K::Circle_3& circle)
+  nurbs_circle(const Point& center, Vector normal,
+               const Vector& xdir_radius)
   {
-    auto radius = cgal::sqrt_float(circle.squared_radius());
-    const auto& center = circle.center();
-    const auto& plane = circle.supporting_plane();
+    normal /= sqrt(normal.squared_length());
 
-    Vector xdir = plane.base1();
-    xdir *= radius / cgal::sqrt_float(xdir.squared_length());
-    double xdirx = cgal::to_double(xdir.x());
-    double xdiry = cgal::to_double(xdir.y());
-    double xdirz = cgal::to_double(xdir.z());
+    const Vector& xdir = xdir_radius;
+    double xdirx = to_float(xdir.x());
+    double xdiry = to_float(xdir.y());
+    double xdirz = to_float(xdir.z());
 
-    Vector ydir = plane.base2();
-    ydir *= radius / cgal::sqrt_float(ydir.squared_length());
-    double ydirx = cgal::to_double(ydir.x());
-    double ydiry = cgal::to_double(ydir.y());
-    double ydirz = cgal::to_double(ydir.z());
+    Vector ydir = cross_product(normal, xdir);
+    double ydirx = to_float(ydir.x());
+    double ydiry = to_float(ydir.y());
+    double ydirz = to_float(ydir.z());
 
     gismo::gsKnotVector<real_t> KV2 (0,1,3,3,2) ;
     gismo::gsMatrix<real_t> C(9,3) ;
@@ -61,9 +59,9 @@ namespace {
       xdirx-ydirx, xdiry-ydiry, xdirz-ydirz,
       xdirx,       xdiry,       xdirz;
 
-    C.col(0).array() += cgal::to_double(center.x());
-    C.col(1).array() += cgal::to_double(center.y());
-    C.col(2).array() += cgal::to_double(center.z());
+    C.col(0).array() += to_float(center.x());
+    C.col(1).array() += to_float(center.y());
+    C.col(2).array() += to_float(center.z());
 
     gismo::gsMatrix<real_t> ww(9,1) ;
     ww <<
@@ -73,6 +71,24 @@ namespace {
       1, 0.707106781186548, 1;
 
     return std::make_shared<gismo::gsNurbs<real_t>>(KV2, give(ww), give(C));
+  }
+
+  SharedPtr<gismo::gsNurbs<real_t>>
+  nurbs_circle_3_points(const Point& A, const Point& B,
+                        const Point& C)
+  {
+    auto u = C - B;
+    auto v = A - C;
+    auto w = B - A;
+
+    auto a = u.squared_length() * dot_product(v, w);
+    auto b = v.squared_length() * dot_product(w, u);
+    auto c = w.squared_length() * dot_product(u, v);
+
+    auto center = (a*A.to_vector() + b*B.to_vector() + c*C.to_vector()).to_point();
+    auto normal = cross_product(u, v);
+
+    return nurbs_circle(center, std::move(normal), A - center);
   }
 }
 
@@ -91,16 +107,37 @@ SharedPtr<const DocumentGeometry::iga_curve_t>
 CirclePointRadius2Normal::produceIgaCurve() const
 {
   Point center;
-  real_t radius2;
+  real_t radius;
   Vector normal;
   {
     Threads::ReaderGate gate{*this};
-    center  = gate->center;
-    radius2 = cgal::to_double(gate->radius2);
-    normal  = gate->normal;
+    center = gate->center;
+    radius = to_float(sqrt(gate->radius2));
+    normal = gate->normal;
   }
-  K::Circle_3 cgal_circle{center, radius2, normal};
-  return nurbs_circle(cgal_circle);
+
+  auto absx = std::abs(normal.x());
+  auto absy = std::abs(normal.y());
+  auto absz = std::abs(normal.z());
+
+  auto xdir = normal;
+  if(absx <= absy && absx <= absz) {
+    xdir.x = 0;
+    xdir.y = -1 * normal.z;
+    xdir.z = normal.y;
+  } else if(absy <= absx && absy <= absz) {
+    xdir.x = -1 * normal.z;
+    xdir.y = 0;
+    xdir.z = normal.x;
+  } else {
+    xdir.x = -1 * normal.y;
+    xdir.y = normal.x;
+    xdir.z = 0;
+  }
+
+  xdir *= (radius / to_float(sqrt(xdir.squared_length())));
+
+  return nurbs_circle(center, std::move(normal), xdir);
 }
 
 
@@ -125,8 +162,7 @@ Circle3Points::produceIgaCurve() const
     b = gate->b;
     c = gate->c;
   }
-  K::Circle_3 cgal_circle{a, b, c};
-  return nurbs_circle(cgal_circle);
+  return nurbs_circle_3_points(a, b, c);
 }
 
 

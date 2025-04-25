@@ -1,0 +1,7 @@
+project = libgeo_types
+
+using version
+using config
+using test
+using install
+using dist

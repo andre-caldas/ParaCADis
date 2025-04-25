@@ -1,0 +1,16 @@
+: 1
+name: libgeo_types
+
+summary: C++20 module for basic geometric types
+
+version: 0.1.0-a.0.z
+license: GPL-3.0-or-later
+
+language: c++
+license: GPL-3.0-or-later
+url: https://github.com/andre-caldas/ParaCADis/
+email: andre.em.caldas@gmail.com
+#build-error-email: andre.em.caldas@gmail.com
+#depends: * build2 >= 0.16.0
+#depends: * bpkg >= 0.16.0
+

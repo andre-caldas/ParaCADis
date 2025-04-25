@@ -29,6 +29,9 @@
 #include <libparacadis/base/naming/IExport.h>
 #include <libparacadis/base/naming/NameSearch.h>
 
+decltype(types::Origin)& Origin = types::Origin;
+decltype(types::NullVector)& NullVector = types::NullVector;
+
 template class Naming::IExport<Real>;
 template class Naming::IExport<Point>;
 

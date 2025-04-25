@@ -34,7 +34,7 @@ namespace DataDescription
       : center_tr(_inner.center.getSharedPtr(), user.center)
   {
     inner.radius2 = _inner.radius2;
-    user.radius = cgal::sqrt_float(_inner.radius2);
+    user.radius = types::to_float(types::sqrt(_inner.radius2));
   }
 
   void DataTranslator<SphereCenterRadius2Data, SphereCenterRadius>::
@@ -42,7 +42,7 @@ namespace DataDescription
   {
     if(_inner.radius2 != inner.radius2) {
       inner.radius2 = _inner.radius2;
-      user.radius = cgal::sqrt_float(_inner.radius2);
+      user.radius = types::to_float(types::sqrt(_inner.radius2));
       _user.radius = user.radius;
     }
   }

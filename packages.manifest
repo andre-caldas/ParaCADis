@@ -1,5 +1,8 @@
 : 1
-location: cpp_module_wrappers/libcgal
+#location: cpp_module_wrappers/libcgal
+
+#:
+location: cpp_module_wrappers/libgeo_types
 
 :
 location: libparacadis

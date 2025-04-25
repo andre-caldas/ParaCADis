@@ -1,5 +1,5 @@
 import libs  = libgismo%lib{gismo}
-import libs += libcgal%lib{cgal}
+import libs += libgeo_types%lib{geo_types}
 import libs += OGRE%lib{OgreMain}
 import libs += OGRE-Bites%lib{OgreBites}
 import libs += OGRE-RTShaderSystem%lib{OgreRTShaderSystem}

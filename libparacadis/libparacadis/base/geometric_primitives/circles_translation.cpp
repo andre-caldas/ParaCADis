@@ -35,7 +35,7 @@ namespace DataDescription
       , normal_tr(_inner.normal.getSharedPtr(), user.normal)
   {
     inner.radius2 = _inner.radius2;
-    user.radius = cgal::sqrt_float(_inner.radius2);
+    user.radius = types::to_float(types::sqrt(_inner.radius2));
   }
 
   void DataTranslator<CirclePointRadius2NormalData, CircleRadiusCenterNormal>::
@@ -43,7 +43,7 @@ namespace DataDescription
   {
     if(_inner.radius2 != inner.radius2) {
       inner.radius2 = _inner.radius2;
-      user.radius = cgal::sqrt_float(_inner.radius2);
+      user.radius = types::to_float(types::sqrt(_inner.radius2));
       _user.radius = user.radius;
     }
   }

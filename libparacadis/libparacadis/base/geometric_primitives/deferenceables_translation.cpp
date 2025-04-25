@@ -22,6 +22,8 @@
 
 #include "deferenceables_translation.h"
 
+#include "types.h"
+
 namespace DataDescription
 {
   template<C_TripletStruct TripletStruct, typename FloatTripletStruct>
@@ -46,9 +48,9 @@ namespace DataDescription
       init(const inner_t& _inner)
   {
     inner = _inner;
-    user.x = static_cast<float>(cgal::to_double(_inner.x));
-    user.y = static_cast<float>(cgal::to_double(_inner.y));
-    user.z = static_cast<float>(cgal::to_double(_inner.z));
+    user.x = types::to_float(_inner.x);
+    user.y = types::to_float(_inner.y);
+    user.z = types::to_float(_inner.z);
   }
 
 
@@ -58,17 +60,17 @@ namespace DataDescription
   {
     if(inner.x != _inner.x) {
       inner.x = _inner.x;
-      user.x = static_cast<float>(cgal::to_double(_inner.x));
+      user.x = types::to_float(_inner.x);
       _user.x = user.x;
     }
     if(inner.y != _inner.y) {
       inner.y = _inner.y;
-      user.y = static_cast<float>(cgal::to_double(_inner.y));
+      user.y = types::to_float(_inner.y);
       _user.y = user.y;
     }
     if(inner.z != _inner.z) {
       inner.z = _inner.z;
-      user.z = static_cast<float>(cgal::to_double(_inner.z));
+      user.z = types::to_float(_inner.z);
       _user.z = user.z;
     }
   }

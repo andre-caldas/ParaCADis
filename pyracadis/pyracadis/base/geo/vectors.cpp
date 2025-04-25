@@ -71,9 +71,9 @@ void init_geo_vectors(py::module_& module)
            [](const Vector& self)
            {
              return std::format("<VECTOR... ({}, {}, {})>",
-             CGAL::to_double(self.x()),
-             CGAL::to_double(self.y()),
-             CGAL::to_double(self.z()));
+             types::to_float(self.x()),
+             types::to_float(self.y()),
+             types::to_float(self.z()));
            });
   py::implicitly_convertible<py::list, Vector>();
 

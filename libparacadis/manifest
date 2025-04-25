@@ -14,6 +14,7 @@ email: andre.em.caldas@gmail.com
 #build-error-email: andre.em.caldas@gmail.com
 depends: * build2 >= 0.16.0
 depends: * bpkg >= 0.16.0
-depends: libcgal
+#depends: libcgal
+depends: libgeo_types
 
 topics: parametric CAD

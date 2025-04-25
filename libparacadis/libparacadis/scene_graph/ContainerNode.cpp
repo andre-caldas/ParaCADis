@@ -322,7 +322,7 @@ namespace SceneGraph
   namespace {
     float tod(const Real& v)
     {
-      return CGAL::to_double(v);
+      return types::to_float(v);
     }
   }
 

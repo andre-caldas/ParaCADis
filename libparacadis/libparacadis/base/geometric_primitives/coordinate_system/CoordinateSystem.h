@@ -85,8 +85,8 @@ public:
   const Vector& z_axis() const {return bz;}
 
 private:
-  Point  _origin = {0,0,0,1};
-  Vector bx      = {1,0,0,1};
-  Vector by      = {0,1,0,1};
-  Vector bz      = {0,0,1,1};
+  Point  _origin = {0,0,0};
+  Vector bx      = {1,0,0};
+  Vector by      = {0,1,0};
+  Vector bz      = {0,0,1};
 };

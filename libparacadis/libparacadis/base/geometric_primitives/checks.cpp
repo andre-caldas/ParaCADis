@@ -29,7 +29,7 @@ namespace Check
 
   void assertOrthogonality(Vector x, Vector y)
   {
-    if (scalar_product(x, y) != 0) {
+    if (types::dot_product(x, y) != 0) {
       throw Exception::NeedsOrthogonal(x, y);
     }
   }
@@ -43,8 +43,8 @@ namespace Check
 
   Vector assertLI(Vector x, Vector y)
   {
-    auto z = cross_product(x, y);
-    if (z == cgal::NullVector) {
+    auto z = types::cross_product(x, y);
+    if (z == types::NullVector) {
       throw Exception::NeedsLI(x, y);
     }
     return z;
@@ -52,7 +52,7 @@ namespace Check
 
   Real assertLI(Vector x, Vector y, Vector z)
   {
-    auto det = determinant(x,y,z);
+    auto det = types::determinant(x,y,z);
     if(det == 0) {
       throw Exception::NeedsLI(x, y, z);
     }
