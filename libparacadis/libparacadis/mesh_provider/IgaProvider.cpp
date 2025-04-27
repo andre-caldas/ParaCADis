@@ -24,8 +24,6 @@
 
 #include <cassert>
 
-#include <gismo/gismo.h>
-
 using namespace Mesh;
 
 /**

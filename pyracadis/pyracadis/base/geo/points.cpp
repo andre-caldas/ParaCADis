@@ -24,11 +24,11 @@
 
 #include <libparacadis/base/geometric_primitives/deferenceables.h>
 #include <libparacadis/base/geometric_primitives/types.h>
-#include <libparacadis/base/naming/python_bindings/reference_to.h>
+#include <pyracadis/base/naming/reference_to.h>
 
 #include <format>
 
-#include <python_bindings/types.h>
+#include <pyracadis/types.h>
 #include <pybind11/stl.h>  // We need to convert [1,2,3] to Point.
 
 namespace py = pybind11;

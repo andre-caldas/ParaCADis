@@ -25,8 +25,6 @@
 #include <libparacadis/base/expected_behaviour/SharedPtr.h>
 #include <libparacadis/base/geometric_primitives/DocumentGeometry.h>
 
-#include <gismo/gismo.h>
-
 #include <OGRE/OgreMesh.h>
 #include <OGRE/OgreResource.h>
 

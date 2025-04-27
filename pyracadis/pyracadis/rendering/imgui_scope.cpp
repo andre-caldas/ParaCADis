@@ -29,7 +29,7 @@
 #include <libparacadis/base/geometric_primitives/all_translators.h>
 #include <libparacadis/base/naming/Exporter.h>
 
-#include <misc/imgui/ImGuiScope.h>
+#include <libparacadis/misc/imgui/ImGuiScope.h>
 
 #include <OGRE/Overlay/OgreImGuiOverlay.h>
 

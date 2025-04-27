@@ -20,14 +20,14 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "rendering_scope.h"
+#include "module.h"
 #include "internals.h"
 
 #include <pyracadis/types.h>
 
 namespace py = pybind11;
 
-void init_rendering(py::m_& parent_module)
+void init_rendering(py::module_& parent_module)
 {
   auto m = parent_module.def_submodule("document");
   m.doc() = "Python interface to display ParaCADis using Ogre3D and Dear ImGui.";

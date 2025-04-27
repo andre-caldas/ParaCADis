@@ -24,9 +24,9 @@
 
 #include <libparacadis/base/geometric_primitives/deferenceables.h>
 #include <libparacadis/base/geometric_primitives/types.h>
-#include <libparacadis/base/naming/python_bindings/reference_to.h>
+#include <pyracadis/base/naming/reference_to.h>
 
-#include <python_bindings/types.h>
+#include <pyracadis/types.h>
 
 namespace py = pybind11;
 using namespace py::literals;

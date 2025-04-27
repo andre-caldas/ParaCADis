@@ -25,7 +25,7 @@
 #include <libparacadis/base/naming/Exporter.h>
 #include <libparacadis/base/naming/PathToken.h>
 
-#include <python_bindings/types.h>
+#include <pyracadis/types.h>
 
 namespace py = pybind11;
 using namespace py::literals;

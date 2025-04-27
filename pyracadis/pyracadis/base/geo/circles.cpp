@@ -25,7 +25,7 @@
 #include <libparacadis/base/geometric_primitives/circles.h>
 #include <libparacadis/base/geometric_primitives/types.h>
 
-#include <python_bindings/types.h>
+#include <pyracadis/types.h>
 
 namespace py = pybind11;
 using namespace py::literals;

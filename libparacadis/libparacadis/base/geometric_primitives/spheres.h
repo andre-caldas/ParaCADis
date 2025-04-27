@@ -33,8 +33,6 @@
 #include <libparacadis/base/naming/Chainable.h>
 #include <libparacadis/base/naming/IExport.h>
 
-#include <gismo/gismo.h>
-
 /**
  * DataStruct for ShpereCenterRadius2.
  */

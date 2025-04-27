@@ -24,6 +24,8 @@
 
 #include "GlThreadQueue.h"
 
+#include <gismo/gismo.h>
+
 #include <OGRE/OgreHardwareBufferManager.h>
 #include <OGRE/OgreMeshManager.h>
 #include <OGRE/OgreRoot.h>

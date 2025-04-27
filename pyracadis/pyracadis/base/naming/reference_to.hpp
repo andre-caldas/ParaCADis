@@ -32,7 +32,7 @@
 #include <libparacadis/base/threads/locks/reader_locks.h>
 #include <libparacadis/base/threads/locks/writer_locks.h>
 
-#include <python_bindings/types.h>
+#include <pyracadis/types.h>
 
 namespace py = pybind11;
 using namespace py::literals;

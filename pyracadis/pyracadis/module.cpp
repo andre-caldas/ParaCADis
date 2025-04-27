@@ -25,7 +25,7 @@
 #include "base/document_tree/module.h"
 #include "base/geo/module.h"
 #include "base/naming/module.h"
-#include "base/scope_module/thread.h"
+#include "base/thread_scope/module.h"
 
 #include "rendering/module.h"
 
