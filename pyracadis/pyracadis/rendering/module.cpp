@@ -29,7 +29,7 @@ namespace py = pybind11;
 
 void init_rendering(py::module_& parent_module)
 {
-  auto m = parent_module.def_submodule("document");
+  auto m = parent_module.def_submodule("rendering");
   m.doc() = "Python interface to display ParaCADis using Ogre3D and Dear ImGui.";
 
   init_rendering_scope(m);
