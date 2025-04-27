@@ -17,4 +17,7 @@ depends: libparacadis
 requires: python3
 requires: pybind11
 
+# I should not be required to put this here! :-(
+depends: libgeo_types
+
 topics: parametric CAD, python bindings

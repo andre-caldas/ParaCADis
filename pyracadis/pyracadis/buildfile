@@ -2,12 +2,17 @@ import libs  = libparacadis%lib{paracadis}
 import libs += pybind11%lib{pybind11}
 import libs += python3%lib{python3}
 
-lib{pyracadis}: $libs
+# I should not have to use this here! :-(
+# It should be resolved, IMO, by lib{paracadis} export.
+import libs += libgeo_types%lib{geo_types}
+
+lib{pyracadis}: {mxx cxx}{** -***/tests/**} $libs
 {
   extension = shared
-  name = pyracadis$(python-ext-suffix)
+  name = "pyracadis$(config.pyracadis.python_module_suffix)"
   install = true
-  install.root = $(config.python-module-dir)
+  install.root = $(config.pyracadis.python_module_dir)
 }
 
-lib{pyracadis}: {mxx cxx}{** -***/build/** -***/tests/**}
+info "Python library name: $(lib{pyracadis}: name)."
+info "Python directory: $(lib{pyracadis}: install.root)."

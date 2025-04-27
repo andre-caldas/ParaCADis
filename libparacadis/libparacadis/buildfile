@@ -1,13 +1,16 @@
-import libs  = libgismo%lib{gismo}
-import libs += libgeo_types%lib{geo_types}
-import libs += OGRE%lib{OgreMain}
-import libs += OGRE-Bites%lib{OgreBites}
-import libs += OGRE-RTShaderSystem%lib{OgreRTShaderSystem}
-import libs += OGRE-Overlay%lib{OgreOverlay}
+import intf_libs  = libgismo%lib{gismo}
+import intf_libs += libgeo_types%lib{geo_types}
+import intf_libs += OGRE%lib{OgreMain}
+import intf_libs += OGRE-Bites%lib{OgreBites}
+import intf_libs += OGRE-Overlay%lib{OgreOverlay}
+import intf_libs += OGRE-RTShaderSystem%lib{OgreRTShaderSystem}
 
-lib{paracadis}: {h hxx mxx cxx}{**} $libs
+#import impl_libs  =
+
+lib{paracadis}: {h hxx mxx cxx}{**} $intf_libs #$impl_libs
 {
-#  cxx.export.libs =
+  cxx.export.poptions = "-I$out_root" "-I$src_root"
+  cxx.export.libs = $intf_libs
 }
 
 #for d: base scene_graph mesh_provider
@@ -22,9 +25,4 @@ lib{paracadis}: {h hxx mxx cxx}{**} $libs
 if ($cxx.target.system != 'win32-msvc')
 {
   cxx.libs += -pthread
-}
-
-lib{paracadis}:
-{
-  cxx.export.poptions = "-I$out_root" "-I$src_root"
 }

@@ -13,18 +13,35 @@ cxx{*}: extension = cpp
 cxx.poptions =+ "-I$out_root" "-I$src_root"
 
 
-# Configure python
-#
-# Usage:
-# b configure \
-#   config.pyracadis.suffix="$(python3-config --extension-suffix)" \
-#   config.pyracadis.python-module-dir="$(python3 -m site --user-site)"
-#
-config [string] config.pyracadis.suffix
-config [dir_path] config.pyracadis.python-module-dir
-
-
 # The test target for cross-testing (running tests under Wine, etc).
 #
 test.target = $cxx.target
 
+
+#
+# Configuration variables.
+#
+
+# Configure python
+#
+# Usage:
+# b configure \
+#   config.pyracadis.python_module_suffix="$(python3-config --extension-suffix)" \
+#   config.pyracadis.python_module_dir="$(python3 -m site --user-site)"
+#
+config [string] config.pyracadis.python_module_suffix
+config [dir_path] config.pyracadis.python_module_dir
+
+if! $defined(config.pyracadis.python_module_suffix)
+{
+  text 'Inform python extension suffix.'
+  text 'Hint: try... (python3-config --extension-suffix).'
+  fail 'Variable config.pyracadis.python_module_suffix not defined.'
+}
+
+if! $defined(config.pyracadis.python_module_dir)
+{
+  text 'Inform directory where to install python modules.'
+  text 'Hint: try... (python3 -m site --user-site).'
+  fail 'Variable config.pyracadis.python_module_dir not defined.'
+}

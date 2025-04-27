@@ -10,6 +10,6 @@ location: libparacadis
 #:
 #location: paracadis
 
-#:
-#location: pyracadis
+:
+location: pyracadis
 
