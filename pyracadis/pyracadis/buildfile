@@ -6,13 +6,13 @@ import libs += python3%lib{python3}
 # It should be resolved, IMO, by lib{paracadis} export.
 import libs += libgeo_types%lib{geo_types}
 
-lib{pyracadis}: {mxx cxx}{** -***/tests/**} $libs
-{
-  extension = shared
-  name = "pyracadis$(config.pyracadis.python_module_suffix)"
-  install = true
-  install.root = $(config.pyracadis.python_module_dir)
-}
+info "Install root: $(config.install.root)."
+root = [dir_path] "$(config.install.root)"
+module_name = "pyracadis$(config.pyracadis.python_module_suffix)"
+module_abs_dir = $(config.pyracadis.python_module_dir)
+module_dir = $path.relative($module_abs_dir, $(root))
 
-info "Python library name: $(lib{pyracadis}: name)."
-info "Python directory: $(lib{pyracadis}: install.root)."
+libs{pyracadis}: {mxx cxx}{** -***/tests/**} $libs
+{
+  install = $(module_dir)/$(module_name)
+}

@@ -7,7 +7,7 @@ import intf_libs += OGRE-RTShaderSystem%lib{OgreRTShaderSystem}
 
 #import impl_libs  =
 
-lib{paracadis}: {h hxx mxx cxx}{**} $intf_libs #$impl_libs
+lib{paracadis}: {h hxx mxx cxx}{** -***/tests/**} $intf_libs #$impl_libs
 {
   cxx.export.poptions = "-I$out_root" "-I$src_root"
   cxx.export.libs = $intf_libs
