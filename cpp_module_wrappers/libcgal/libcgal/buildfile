@@ -1,8 +1,0 @@
-lib{cgal}: {mxx cxx}{*}
-{
-  cxx.export.poptions = "-I$out_root" "-I$src_root"
-  cxx.poptions = -DCGAL_HAS_THREADS -DCGAL_USE_GMPXX=1
-}
-
-
-lib{cgal}: install = true
