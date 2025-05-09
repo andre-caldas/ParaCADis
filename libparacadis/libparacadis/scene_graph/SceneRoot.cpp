@@ -24,22 +24,42 @@
 
 #include "SceneRoot.h"
 
+#include "CameraWrapper.h"
 #include "ContainerNode.h"
+#include "RenderingScope.h"
+
+#include <libparacadis/base/threads/utils.h>
 
 #include <cassert>
+#include <memory>
 
-#include <OGRE/OgreRoot.h>
-#include <OGRE/OgreSceneManager.h>
+#include <filament/Engine.h>
+#include <filament/Renderer.h>
+#include <filament/Scene.h>
+#include <filament/View.h>
 
-#include <iostream>
+using namespace filament;
+
 namespace SceneGraph
 {
-  SceneRoot::SceneRoot(Ogre::SceneManager& scene_manager)
+  SceneRoot::SceneRoot(void* native_window_handler)
       : signalQueue(std::make_shared<Threads::SignalQueue>())
       , renderingScope(std::make_shared<RenderingScope>())
-      , sceneManager(&scene_manager)
   {
-    Ogre::Root::getSingleton().addFrameListener(renderingScope.get());
+    engine     = Engine::create();
+    swap_chain = engine->createSwapChain(native_window_handler);
+    renderer   = engine->createRenderer();
+    scene      = engine->createScene();
+  }
+
+  SceneRoot::~SceneRoot()
+  {
+    // Unfortunately, Filament does not like smart pointers... :-(
+    cameras.clear();
+    engine->destroy(scene);
+    engine->destroy(renderer);
+    engine->destroy(swap_chain);
+    Engine::destroy(engine);
   }
 
 
@@ -50,8 +70,22 @@ namespace SceneGraph
     self->rootContainer = ContainerNode::create_root_node(self, document);
   }
 
-  void SceneRoot::runQueue()
+  void SceneRoot::startRenderingThread()
   {
-    signalQueue->run_thread(signalQueue);
+    auto lambda = [queue = signalQueue, self = self.lock()](){
+      auto renderer = self->renderer;
+      auto swap_chain = self->swap_chain;
+      if(renderer->beginFrame(swap_chain)) {
+        // TODO: investigate a good number instead of 16.
+        // Ideally, we should know how long rendering took and do it after that.
+        // But I've heard `endFrame()` blocks... :-(
+        queue->try_run(std::chrono::milliseconds{16});
+        renderer->endFrame();
+      }
+    };
+
+    std::thread thread{std::move(lambda)};
+    Threads::set_thread_name(thread, "Rendering Thread");
+    thread.detach();
   }
 }

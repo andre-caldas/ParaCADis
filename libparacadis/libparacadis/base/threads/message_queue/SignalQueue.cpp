@@ -67,13 +67,23 @@ namespace Threads
     thread.detach();
   }
 
-  void SignalQueue::try_run()
+  void SignalQueue::try_run(std::chrono::steady_clock::duration approx_max_duration)
+  {
+    try_run(std::chrono::steady_clock::now() + approx_max_duration);
+  }
+
+  void SignalQueue::try_run(std::chrono::steady_clock::time_point until)
   {
     while(auto record = callBacks->try_pull()) {
       if(blockedCallBacks->contains(record->id)) {
         blockedCallBacks->at(record->id).push_back(std::move(record->callback));
       } else {
         record->callback();
+      }
+
+      // We call this at the end to warrant that we try_pull at least once.
+      if(std::chrono::steady_clock::now() >= until) {
+        return;
       }
     }
   }

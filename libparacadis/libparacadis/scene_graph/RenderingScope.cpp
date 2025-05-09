@@ -24,7 +24,7 @@
 
 namespace SceneGraph
 {
-  bool RenderingScope::frameRenderingQueued(const Ogre::FrameEvent&)
+  bool RenderingScope::frameRenderingQueued()
   {
     execute();
     return true;

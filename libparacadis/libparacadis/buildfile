@@ -1,9 +1,6 @@
 import intf_libs  = libgismo%lib{gismo}
 import intf_libs += libgeo_types%lib{geo_types}
-import intf_libs += OGRE%lib{OgreMain}
-import intf_libs += OGRE-Bites%lib{OgreBites}
-import intf_libs += OGRE-Overlay%lib{OgreOverlay}
-import intf_libs += OGRE-RTShaderSystem%lib{OgreRTShaderSystem}
+import intf_libs += filament%lib{filament}
 
 #import impl_libs  =
 

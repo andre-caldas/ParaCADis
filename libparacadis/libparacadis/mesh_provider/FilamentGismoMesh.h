@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2024-2025 André Caldas <andre.em.caldas@gmail.com>       *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -22,26 +22,60 @@
 
 #pragma once
 
-#include <libparacadis/base/threads/safe_structs/ThreadSafeQueue.h>
-#include <OGRE/OgreFrameListener.h>
+#include <libparacadis/base/expected_behaviour/SharedPtr.h>
+#include <libparacadis/base/geometric_primitives/DocumentGeometry.h>
 
-#include <functional>
+#include <filament/RenderableManager.h>
+
+#include <memory>
+#include <mutex>
 
 namespace Mesh
 {
+  using native_geometry_t = Document::DocumentGeometry;
+  using iga_geometry_t = native_geometry_t::iga_geometry_t;
+
   /**
-   * GL operations can only be made in the thread that holds the GL context.
-   * Therefore, we register this frame listener that holds a queue of
-   * closures (lambdas) that will be executed in this thread.
-   *
-   * @attention
-   * Ideally, only the GL part should be executed by those lambdas.
+   * A mesh for the IgA geometries provided by G+Smo.
    */
-  class GlThreadQueue
-      : public Ogre::FrameListener
+  class FilamentGismoMesh
   {
   public:
-    bool frameStarted(const Ogre::FrameEvent& evt) override;
-    Threads::SafeStructs::ThreadSafeQueue<std::function<void()>> queue;
+    FilamentGismoMesh(std::shared_ptr<const iga_geometry_t> iga_geometry);
+    void init();
+
+    void resetIgaGeometry(SharedPtr<const iga_geometry_t> iga_geometry);
+
+  private:
+//    SharedPtr<Ogre::Mesh> mesh;
+    std::atomic<std::shared_ptr<const iga_geometry_t>> igaGeometry;
+
+    std::mutex mutex;
+
+    // Prepared data.
+#if 0
+    std::vector<float> vertex;
+    std::vector<Ogre::uint16> indexes;
+    Ogre::Vector3 min_bound;
+    Ogre::Vector3 max_bound;
+
+    // Buffers.
+    int dimension = 0;
+    size_t vblock_size = 0;
+    size_t index_buffer_size = 0;
+    size_t vertex_buffer_size = 0;
+
+    Ogre::HardwareVertexBufferSharedPtr vbuf;
+    Ogre::HardwareIndexBufferSharedPtr ibuf;
+
+    size_t vertexEntriesPerPoint() const;
+
+    void setVertexData();
+
+    void prepareCurve(const std::shared_ptr<const iga_geometry_t>& igaGeo);
+    void prepareSurface(const std::shared_ptr<const iga_geometry_t>& igaGeo);
+
+    void prepareHardwareBuffers();
+#endif
   };
 }

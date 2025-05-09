@@ -22,7 +22,7 @@
 
 #include "MeshProvider.h"
 
-#include "OgreGismoMesh.h"
+#include "FilamentGismoMesh.h"
 
 #include <memory>
 

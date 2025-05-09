@@ -27,7 +27,6 @@
 
 namespace SceneGraph
 {
-
   SharedPtr<MeshNode> MeshNode::make_shared(SharedPtr<Mesh::MeshProvider> mp)
   {
     return SharedPtr<MeshNode>::from_pointer(new MeshNode(mp));
@@ -37,10 +36,11 @@ namespace SceneGraph
       : meshProvider(std::move(mesh_provider))
   {}
 
+#if 0
   SharedPtr<Ogre::Mesh> MeshNode::getOgreMesh()
   {
     assert(meshProvider && "Shared pointer not supposed to be invalid");
     return meshProvider->getOgreMesh();
   }
-
+#endif
 }

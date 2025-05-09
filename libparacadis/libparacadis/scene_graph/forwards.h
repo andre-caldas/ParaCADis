@@ -27,8 +27,12 @@
 #include <libparacadis/base/expected_behaviour/CycleGuard.h>
 #include <libparacadis/base/expected_behaviour/SharedPtr.h>
 
-namespace Ogre {
-  class SceneNode;
+namespace filament {
+  class Engine;
+  class SwapChain;
+  class Renderer;
+  class Scene;
+  class View;
 }
 
 namespace Document {
@@ -48,6 +52,8 @@ namespace SceneGraph {
   using non_container_t = Naming::ExporterCommon;
 
   class SceneRoot;
+  class RenderingScope;
   class ContainerNode;
   class MeshNode;
+  class CameraWrapper;
 }

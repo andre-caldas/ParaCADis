@@ -20,16 +20,13 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "OgreGismoMesh.h"
+#include "FilamentGismoMesh.h"
 
 #include "GlThreadQueue.h"
 
 #include <gismo/gismo.h>
 
-#include <OGRE/OgreHardwareBufferManager.h>
-#include <OGRE/OgreMeshManager.h>
-#include <OGRE/OgreRoot.h>
-#include <OGRE/OgreSubMesh.h>
+//#include <filament/...>
 
 #include <atomic>
 #include <memory>
@@ -37,25 +34,10 @@
 
 using namespace Mesh;
 
-namespace {
-  GlThreadQueue& register_queue()
-  {
-    static GlThreadQueue listener;
-    Ogre::Root::getSingleton().addFrameListener(&listener);
-    return listener;
-  }
-
-  auto& get_queue()
-  {
-    static GlThreadQueue& listener = register_queue();
-    return listener.queue;
-  }
-}
-
-
-OgreGismoMesh::OgreGismoMesh(std::shared_ptr<const iga_geometry_t> iga_geometry)
+FilamentGismoMesh::FilamentGismoMesh(std::shared_ptr<const iga_geometry_t> iga_geometry)
     : igaGeometry(std::move(iga_geometry))
 {
+#if 0
   using namespace Ogre;
 
   static std::atomic<unsigned int> counter = 0;
@@ -65,15 +47,19 @@ OgreGismoMesh::OgreGismoMesh(std::shared_ptr<const iga_geometry_t> iga_geometry)
       this                                              // Loader
   );
   mesh->setBackgroundLoaded(true);
+#endif
 }
 
-void OgreGismoMesh::init()
+void FilamentGismoMesh::init()
 {
+#if 0
   mesh->prepare();
+#endif
 }
 
-void OgreGismoMesh::resetIgaGeometry(SharedPtr<const iga_geometry_t> iga_geometry)
+void FilamentGismoMesh::resetIgaGeometry(SharedPtr<const iga_geometry_t> iga_geometry)
 {
+#if 0
   igaGeometry = iga_geometry.sliced();
   justPrepare();
 
@@ -86,17 +72,19 @@ void OgreGismoMesh::resetIgaGeometry(SharedPtr<const iga_geometry_t> iga_geometr
     self->mesh->_dirtyState();
   };
   get_queue().push(lambda);
+#endif
 }
 
 
-size_t OgreGismoMesh::vertexEntriesPerPoint() const
+#if 0
+size_t FilamentGismoMesh::vertexEntriesPerPoint() const
 {
   assert(dimension && "The dimension was supposed to be set.");
   return ((dimension == 1) ? 3 : 6);
 }
 
 
-void OgreGismoMesh::prepareResource(Ogre::Resource*)
+void FilamentGismoMesh::prepareResource(Ogre::Resource*)
 {
   justPrepare();
 
@@ -110,7 +98,7 @@ void OgreGismoMesh::prepareResource(Ogre::Resource*)
   get_queue().push(lambda);
 }
 
-void OgreGismoMesh::justPrepare()
+void FilamentGismoMesh::justPrepare()
 {
   auto igaGeo = igaGeometry.load();
   if(!igaGeo) {
@@ -128,7 +116,7 @@ void OgreGismoMesh::justPrepare()
   }
 }
 
-void OgreGismoMesh::loadResource(Ogre::Resource*)
+void FilamentGismoMesh::loadResource(Ogre::Resource*)
 {
   using namespace Ogre;
   std::scoped_lock lock{mutex};
@@ -154,7 +142,7 @@ void OgreGismoMesh::loadResource(Ogre::Resource*)
 }
 
 
-void OgreGismoMesh::prepareCurve(const std::shared_ptr<const iga_geometry_t>& igaGeo)
+void FilamentGismoMesh::prepareCurve(const std::shared_ptr<const iga_geometry_t>& igaGeo)
 {
   using namespace Ogre;
 
@@ -202,7 +190,7 @@ void OgreGismoMesh::prepareCurve(const std::shared_ptr<const iga_geometry_t>& ig
   max_bound = local_max_bound;
 }
 
-void OgreGismoMesh::prepareSurface(const std::shared_ptr<const iga_geometry_t>& igaGeo)
+void FilamentGismoMesh::prepareSurface(const std::shared_ptr<const iga_geometry_t>& igaGeo)
 {
   using namespace Ogre;
 
@@ -283,7 +271,7 @@ void OgreGismoMesh::prepareSurface(const std::shared_ptr<const iga_geometry_t>& 
 }
 
 
-void OgreGismoMesh::setVertexData()
+void FilamentGismoMesh::setVertexData()
 {
   using namespace Ogre;
 
@@ -309,7 +297,7 @@ void OgreGismoMesh::setVertexData()
 }
 
 
-void OgreGismoMesh::prepareHardwareBuffers()
+void FilamentGismoMesh::prepareHardwareBuffers()
 {
   using namespace Ogre;
 
@@ -369,3 +357,4 @@ void OgreGismoMesh::prepareHardwareBuffers()
   assert(sizeof(Ogre::uint16)*indexes.size() <= ibuf->getSizeInBytes());
   ibuf->writeData(0, sizeof(Ogre::uint16)*indexes.size(), indexes.data(), true);
 }
+#endif

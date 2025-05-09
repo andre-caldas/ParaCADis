@@ -28,10 +28,7 @@
 #include <libparacadis/base/document_tree/DocumentTree.h>
 #include <libparacadis/scene_graph/SceneRoot.h>
 
-#include <OGRE/OgreRoot.h>
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/Bites/OgreApplicationContext.h>
-#include <OGRE/Bites/OgreInput.h>
+//#include <filament/...>
 
 #include <Python.h>
 
@@ -43,44 +40,13 @@ using namespace py::literals;
 using namespace Document;
 using namespace SceneGraph;
 
-namespace {
-  /**
-   * A hack to extract an object form the SWIG wrapper.
-   * Probably introduces security issues.
-   */
-  template<typename T>
-  T* extract_from_swig(py::handle swig_wrapper)
-  {
-    typedef struct
-    {
-      PyObject_HEAD
-      void* ptr;
-    } SwigPyObject;
-
-    PyObject* pySwigThis = PyObject_GetAttrString(swig_wrapper.ptr(), "this");
-    if(!pySwigThis) {
-      throw std::runtime_error("Passed object is not SWIG (I think!).");
-    }
-    auto* swig = reinterpret_cast<SwigPyObject*>(pySwigThis);
-    return reinterpret_cast<T*>(swig->ptr);
-  }
-
-  SharedPtr<SceneRoot> new_scene(py::handle py_scn_mgr)
-  {
-    auto* scene_manager = extract_from_swig<Ogre::SceneManager>(py_scn_mgr);
-    auto result = std::make_shared<SceneRoot>(*scene_manager);
-    result->runQueue();
-    return result;
-  }
-}
-
 void init_scene(py::module_& module)
 {
   py::class_<SceneRoot, SharedPtr<SceneRoot>>(
       module, "Scene",
       "A scene graph with a message queue that keeps it updated.")
-      .def(py::init(&new_scene),
-           "Creates an empty scene and associates it to an OGRE SceneManager.")
+      .def(py::init<void*>(),
+           "Creates an empty scene.")
       .def("populate",
            [](SharedPtr<SceneRoot> self, std::shared_ptr<DocumentTree> doc)
            {self->populate(std::move(self), std::move(doc));},

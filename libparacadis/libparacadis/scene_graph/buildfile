@@ -1,6 +1,4 @@
 import libs  = gismo%lib{gismo}
-import libs += OGRE%lib{OgreMain}
-import libs += OGRE-Bites%lib{OgreBites}
-import libs += OGRE-RTShaderSystem%lib{OgreRTShaderSystem}
+import libs += filament%lib{filament}
 
 lib{scene_graph}: {mxx cxx}{*} $libs

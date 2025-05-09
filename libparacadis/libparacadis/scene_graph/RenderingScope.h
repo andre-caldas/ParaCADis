@@ -24,17 +24,14 @@
 
 #include <libparacadis/base/threads/dedicated_thread_scope/ScopeOfScopes.h>
 
-#include <OGRE/OgreFrameListener.h>
-
 #include <deque>
 
 namespace SceneGraph
 {
   class RenderingScope
     : public Threads::ScopeOfScopes
-    , public Ogre::FrameListener
   {
   public:
-    bool frameRenderingQueued(const Ogre::FrameEvent& evt) override;
+    bool frameRenderingQueued();
   };
 }

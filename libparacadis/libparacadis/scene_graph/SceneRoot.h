@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2024-2025 André Caldas <andre.em.caldas@gmail.com>       *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -23,7 +23,6 @@
 #pragma once
 
 #include "forwards.h"
-#include "RenderingScope.h"
 
 #include <libparacadis/base/document_tree/Container.h>
 #include <libparacadis/base/document_tree/DocumentTree.h>
@@ -31,35 +30,37 @@
 #include <libparacadis/base/threads/safe_structs/ThreadSafeMap.h>
 
 #include <memory>
-
-namespace Ogre {
-  class SceneManager;
-}
+#include <unordered_map>
 
 namespace SceneGraph
 {
   /**
-   * The SceneRoot is the OGRE side of the DocumentTree.
+   * The SceneRoot is the Filament side of the DocumentTree.
    *
-   * A DocumentTree is associated to a SceneRoot.
-   * Every Container is associated to a ContainerNode and
-   * every geometry (Exporter) is associated to a NurbsNode.
+   * @todo
+   * Move the engine and renderer to outside this class.
    */
   class SceneRoot
   {
     friend class ContainerNode;
 
   public:
-    SceneRoot(Ogre::SceneManager& scene_manager);
+    /**
+     * Creates a scene root and manages views and cameras.
+     *
+     * @param
+     * The native window handler shall be passed cast to `void*`.
+     */
+    SceneRoot(void* native_window_handler);
+    ~SceneRoot();
 
     /**
-     * Initiates the bridge structure between the document and
-     * the OGRE scene graph.
+     * Initiates the bridge structure between the document and the Filament scene.
      */
     static void populate(const SharedPtr<SceneRoot>& self,
                          const SharedPtr<Document::DocumentTree>& document);
 
-    void runQueue();
+    void startRenderingThread();
 
     const SharedPtr<Threads::SignalQueue>& getQueue() { return signalQueue; }
     const SharedPtr<RenderingScope>& getRenderingScope() { return renderingScope; }
@@ -75,7 +76,7 @@ namespace SceneGraph
      * The document tree structure is kept flat.
      * We do not use a tree here.
      *
-     * The document tree strucutre is transported directly to the OGRE scene.
+     * The document tree strucutre is transported directly to the Filament scene.
      */
     /// @{
     template<typename Key, typename Val>
@@ -83,8 +84,15 @@ namespace SceneGraph
     multimap_t<geometry_t*, SharedPtr<MeshNode>> meshNodes;
     /// @}
 
-  /* OGRE stuff */
+  /* Filament stuff */
   public:
-    Ogre::SceneManager* sceneManager = nullptr;
+    // TODO: create all this outside this class.
+    filament::Engine*    engine;
+    filament::SwapChain* swap_chain;
+    filament::Renderer*  renderer;
+    filament::Scene*     scene;
+
+    // All cameras (and views) associated to this scene.
+    std::unordered_map<CameraWrapper*, std::unique_ptr<CameraWrapper>> cameras;
   };
 }

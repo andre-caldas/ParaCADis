@@ -97,7 +97,7 @@ namespace SceneGraph
      * auto* ogreNode = scene_root->sceneManager->createSceneNode();
      * ogreNodeWeak = SharedPtr{sceneRoot, ogreNode};
      */
-    WeakPtr<Ogre::SceneNode> ogreNodeWeak;
+//    WeakPtr<Ogre::SceneNode> ogreNodeWeak;
 
     template<typename Key, typename Val>
     using map_t = Threads::SafeStructs::ThreadSafeUnorderedMap<Key, Val>;

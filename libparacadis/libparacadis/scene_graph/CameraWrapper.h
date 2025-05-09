@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2025 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,31 +20,22 @@
  *                                                                          *
  ***************************************************************************/
 
-#include "GlThreadQueue.h"
+#pragma once
 
-#include <exception>
-#include <iostream>
+#include <filament/View.h>
+#include <filament/Camera.h>
 
-namespace Mesh
+namespace filament {
+  class Camera;
+  class Scene;
+  class View;
+}
+
+namespace SceneGraph
 {
-  bool GlThreadQueue::frameStarted(const Ogre::FrameEvent& /*evt*/)
+  class CameraWrapper
   {
-    // I know... queue.empty() is not thread safe.
-    // But we have no problems with spurious fail.
-    while(!queue.empty()) {
-      // Does not block.
-      auto callback = queue.try_pull();
-      if(!callback) {
-        break;
-      }
-      try {
-        (*callback)();
-      } catch(const std::exception& e) {
-        std::cerr << "Exception caught in rednering queue: " << e.what() << ".\n";
-      } catch(...) {
-        std::cerr << "Unkown exception caught in rendering queue.\n";
-      }
-    }
-    return true;
-  }
+  public:
+    CameraWrapper();
+  };
 }

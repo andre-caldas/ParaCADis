@@ -22,10 +22,6 @@
 
 #include "ImGuiScope.h"
 
-#include <OGRE/Bites/OgreInput.h>
-#include <OGRE/Overlay/OgreImGuiOverlay.h>
-#include <OGRE/Overlay/OgreOverlayManager.h>
-
 namespace ParacadisImGui
 {
   ImGuiScope::ImGuiScope()
@@ -34,6 +30,7 @@ namespace ParacadisImGui
     assert(first_run && "Are you sure you need two ImGuiScope? I thought you wouldn't.");
     first_run = false;
 
+#if 0
     auto* overlay_to_cast = Ogre::OverlayManager::getSingleton().getByName("ImGuiOverlay");
     assert(overlay_to_cast && "You need to initialize ImGuiOverlay, first.");
     if(overlay_to_cast) {
@@ -41,11 +38,12 @@ namespace ParacadisImGui
       imguiOverlay->setZOrder(300);
       imguiOverlay->show();
     }
+#endif
   }
 
   void ImGuiScope::execute() noexcept
   {
-    Ogre::ImGuiOverlay::NewFrame();
+    assert(false && "Implement!");
     DedicatedThreadScopeBase::execute();
   }
 }

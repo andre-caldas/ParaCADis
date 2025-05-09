@@ -23,7 +23,7 @@
 #pragma once
 
 #include "IgaProvider.h"
-#include "OgreGismoMesh.h"
+#include "FilamentGismoMesh.h"
 
 #include <libparacadis/base/expected_behaviour/SharedPtrWrap.h>
 
@@ -40,14 +40,11 @@ namespace Mesh
     make_shared(SharedPtr<IgaProvider> provider,
                 const SharedPtr<Threads::SignalQueue>& queue);
 
-    const SharedPtr<Ogre::Mesh>& getOgreMesh() const
-    { return mesh->getOgreMesh(); }
-
   protected:
     MeshProvider(SharedPtr<IgaProvider> iga_provider);
     void slotUpdate();
 
     const SharedPtr<IgaProvider> igaProvider;
-    SharedPtrWrap<OgreGismoMesh> mesh;
+    SharedPtrWrap<FilamentGismoMesh> mesh;
   };
 }

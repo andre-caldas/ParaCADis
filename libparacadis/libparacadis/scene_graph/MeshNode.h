@@ -42,7 +42,9 @@ namespace SceneGraph
   public:
     static SharedPtr<MeshNode> make_shared(SharedPtr<Mesh::MeshProvider> mesh_provider);
 
+#if 0
     SharedPtr<Ogre::Mesh> getOgreMesh();
+#endif
 
   private:
     MeshNode(SharedPtr<Mesh::MeshProvider> mesh_provider);

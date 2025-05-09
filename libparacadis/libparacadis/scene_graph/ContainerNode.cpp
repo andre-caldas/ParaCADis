@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2024-2025 André Caldas <andre.em.caldas@gmail.com>       *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -46,8 +46,10 @@ namespace SceneGraph
     std::shared_ptr<ContainerNode> result(new ContainerNode{scene_root});
     result->self = result;
 
+#if 0
     auto* root_node = scene_root->sceneManager->getRootSceneNode();
     result->ogreNodeWeak = scene_root.append(root_node);
+#endif
 
     CycleGuard<container_t> cycle_guard;
     result->populate(cycle_guard, document);
@@ -58,17 +60,21 @@ namespace SceneGraph
   ContainerNode::ContainerNode(const SharedPtr<SceneRoot>& scene_root)
       : sceneRootWeak(scene_root)
   {
+#if 0
     auto* ogre_node = scene_root->sceneManager->createSceneNode();
     ogreNodeWeak = scene_root.append(ogre_node);
+#endif
   }
 
   ContainerNode::~ContainerNode()
   {
+#if 0
     auto ogre_node = ogreNodeWeak.lock();
     assert(ogre_node);
     auto scene_root = sceneRootWeak.lock();
     assert(scene_root);
     scene_root->sceneManager->destroySceneNode(ogre_node.get());
+#endif
   }
 
 
@@ -179,6 +185,7 @@ namespace SceneGraph
 
     new_node->populate(cycle_guard, added_container);
 
+#if 0
     auto ogre_node = ogreNodeWeak.lock();
     auto ogre_new_node = new_node->ogreNodeWeak.lock();
     assert(ogre_node);
@@ -187,6 +194,7 @@ namespace SceneGraph
     // Adds to the scene only at the very end,
     // so we do not keep messing with the scene while it is beeing processed.
     ogre_node->addChild(ogre_new_node.get());
+#endif
   }
 
   void ContainerNode::addContainer(SharedPtr<container_t> added_container)
@@ -202,9 +210,11 @@ namespace SceneGraph
       return;
     }
 
+#if 0
     auto ogre_node = ogreNodeWeak.lock();
     assert(ogre_node);
     Ogre::SceneNode* ogre_removed_node = nullptr;
+#endif
 
     SharedPtr<ContainerNode> removed_node;
     { // Scoped lock.
@@ -217,12 +227,14 @@ namespace SceneGraph
     }
 
     assert(removed_node);
+#if 0
     auto ogre_removed_lock = removed_node->ogreNodeWeak.lock();
     assert(ogre_removed_lock);
     ogre_removed_node = ogre_removed_lock.get();
 
     assert(ogre_removed_node);
     ogre_node->removeChild(ogre_removed_node);
+#endif
   }
 
   void ContainerNode::moveContainer(SharedPtr<container_t> /*moved_container*/,
@@ -298,6 +310,7 @@ namespace SceneGraph
       gate->emplace(geo.get(), new_mesh_node);
     }
 
+#if 0
     auto mesh = new_mesh_node->getOgreMesh();
     auto mesh_entity = scene_root->sceneManager->createEntity(mesh.sliced());
     mesh_entity->setMaterialName("WoodPallet");
@@ -305,6 +318,7 @@ namespace SceneGraph
     auto ogre_node = ogreNodeWeak.lock();
     assert(ogre_node);
     ogre_node->attachObject(mesh_entity);
+#endif
   }
 
   void ContainerNode::removeMesh(SharedPtr<geometry_t> geo)
@@ -340,6 +354,7 @@ namespace SceneGraph
     Ogre::Vector3 oz = {tod(z.x()), tod(z.y()), tod(z.z())};
     Ogre::Quaternion ogre_rotation(ox, oy, oz);
 
+#if 0
     auto ogre_node = ogreNodeWeak.lock();
     assert(ogre_node);
     if(!ogre_node) {
@@ -347,5 +362,6 @@ namespace SceneGraph
     }
     ogre_node->setPosition(oo);
     ogre_node->setOrientation(ogre_rotation);
+#endif
   }
 }

@@ -23,6 +23,7 @@
 #include "internals.h"
 
 #include <exception>
+#include <imgui/imgui.h>
 
 #include <libparacadis/base/expected_behaviour/SharedPtr.h>
 #include <libparacadis/base/geometric_primitives/power_cast.h>
@@ -30,8 +31,6 @@
 #include <libparacadis/base/naming/Exporter.h>
 
 #include <libparacadis/misc/imgui/ImGuiScope.h>
-
-#include <OGRE/Overlay/OgreImGuiOverlay.h>
 
 #include <pyracadis/types.h>
 
@@ -58,7 +57,6 @@ namespace {
 
 void init_imgui(py::module_& module)
 {
-  py::module_::import("Ogre.Bites");
   py::class_<ImGuiScope, SharedPtr<ImGuiScope>>(
       module, "ImGuiScope",
       "Manipulates Dear ImGui's elements.")

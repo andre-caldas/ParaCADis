@@ -25,6 +25,7 @@
 #include <libparacadis/base/expected_behaviour/SharedPtr.h>
 #include <libparacadis/base/threads/safe_structs/ThreadSafeQueue.h>
 
+#include <chrono>
 #include <functional>
 #include <memory>
 #include <semaphore>
@@ -61,13 +62,20 @@ namespace Threads
      * Non-blocking try to run queued signals.
      *
      * @attention
-     * May fail spuriously.
+     * May fail spuriously. But this only means that processing
+     * might stop even when the queue still has items in it.
+     *
+     * @attention
+     * We try to read the queue at least once
      *
      * @attention
      * The block/unblock mechanism is not safe when we have
      * multiple threads running the queue.
      */
-    void try_run();
+    /// @{
+    void try_run(std::chrono::steady_clock::duration approx_max_duration = {});
+    void try_run(std::chrono::steady_clock::time_point until);
+    /// @}
 
     /**
      * Pushes a callback to the queue.
