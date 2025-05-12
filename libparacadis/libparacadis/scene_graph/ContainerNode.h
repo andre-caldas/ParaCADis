@@ -34,6 +34,8 @@ namespace SceneGraph
 {
   /**
    * Non-leaf scene graph node.
+   *
+   * Document containers translate to a ContainerNode in scene graph.
    */
   class ContainerNode
   {

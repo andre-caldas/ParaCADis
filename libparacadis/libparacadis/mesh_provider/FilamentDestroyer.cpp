@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /****************************************************************************
  *                                                                          *
- *   Copyright (c) 2024 André Caldas <andre.em.caldas@gmail.com>            *
+ *   Copyright (c) 2025 André Caldas <andre.em.caldas@gmail.com>            *
  *                                                                          *
  *   This file is part of ParaCADis.                                        *
  *                                                                          *
@@ -20,57 +20,35 @@
  *                                                                          *
  ***************************************************************************/
 
-/**
- * @file
- * A IgaProvider is a class that reads a native geometric object
- * and generates a mesh that can be processed using Isogeometric Analysis.
- *
- * Iga providers keep a reference to a native object of type DocumentGeometry
- * and a newly generated G+Smo object.
- */
+#include "FilamentDestroyer.h"
 
-#pragma once
-
-#include <libparacadis/base/geometric_primitives/DocumentGeometry.h>
-#include <libparacadis/base/threads/message_queue/Signal.h>
-
-#include <atomic>
-#include <memory>
+#include <filament/Engine.h>
+#include <filament/Renderer.h>
+#include <filament/SwapChain.h>
+#include <filament/Scene.h>
+#include <filament/View.h>
+#include <filament/VertexBuffer.h>
+#include <filament/IndexBuffer.h>
 
 namespace Mesh
 {
-  using native_geometry_t = Document::DocumentGeometry;
-  using iga_geometry_t = native_geometry_t::iga_geometry_t;
-
-  /**
-   * Sets up an IgA geometry that is updated when the original
-   * native geometry changes.
-   */
-  class IgaProvider
+  template<typename T>
+  FilamentDestroyer<T>::FilamentDestroyer(SharedPtr<filament::Engine> _engine, T* _data)
+    : engine(std::move(_engine))
+    , data(_data)
   {
-  public:
-    static SharedPtr<IgaProvider>
-    make_shared(SharedPtr<native_geometry_t> geometry,
-                const SharedPtr<Threads::SignalQueue>& queue);
+  }
 
-    std::shared_ptr<const iga_geometry_t> getIgaGeometry() const
-    {return igaGeometry.load();}
-
-    /**
-     * Signals that the IgA data structure was changed and is ready.
-     */
-    Threads::Signal<> igaChangedSig;
-
-  protected:
-    void setIgaGeometry(std::shared_ptr<const iga_geometry_t> value);
-    std::atomic<std::shared_ptr<const iga_geometry_t>> igaGeometry;
-
-    IgaProvider(SharedPtr<native_geometry_t> geometry);
-    WeakPtr<native_geometry_t> geometryWeak;
-
-    /**
-     * Called whenever DeferenceableGeometry changes.
-     */
-    void slotUpdate();
-  };
+  template<typename T>
+  FilamentDestroyer<T>::~FilamentDestroyer()
+  {
+    engine->destroy(data);
+  }
 }
+
+template class Mesh::FilamentDestroyer<filament::Renderer>;
+template class Mesh::FilamentDestroyer<filament::SwapChain>;
+template class Mesh::FilamentDestroyer<filament::Scene>;
+template class Mesh::FilamentDestroyer<filament::View>;
+template class Mesh::FilamentDestroyer<filament::VertexBuffer>;
+template class Mesh::FilamentDestroyer<filament::IndexBuffer>;

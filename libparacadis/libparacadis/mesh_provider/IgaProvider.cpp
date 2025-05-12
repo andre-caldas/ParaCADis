@@ -27,16 +27,6 @@
 using namespace Mesh;
 
 /**
- * IgaGeometryHolder
- */
-void IgaGeometryHolder::setIgaGeometry(std::shared_ptr<const iga_geometry_t> value)
-{
-  igaGeometry = std::move(value);
-  igaChangedSig.emit_signal();
-}
-
-
-/*
  * IgaProvider
  */
 IgaProvider::IgaProvider(SharedPtr<native_geometry_t> geometry)
@@ -57,6 +47,12 @@ IgaProvider::make_shared(SharedPtr<native_geometry_t> geometry,
   return self;
 }
 
+
+void IgaProvider::setIgaGeometry(std::shared_ptr<const iga_geometry_t> value)
+{
+  igaGeometry = std::move(value);
+  igaChangedSig.emit_signal();
+}
 
 void IgaProvider::slotUpdate()
 {

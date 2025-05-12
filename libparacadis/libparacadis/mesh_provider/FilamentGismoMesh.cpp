@@ -26,335 +26,246 @@
 
 #include <gismo/gismo.h>
 
-//#include <filament/...>
+#include <math/vec4.h>
 
 #include <atomic>
 #include <memory>
 #include <format>
 
-using namespace Mesh;
+namespace {
+  struct VertexSetCurve {
+    filament::math::float4 point;
+  };
 
-FilamentGismoMesh::FilamentGismoMesh(std::shared_ptr<const iga_geometry_t> iga_geometry)
-    : igaGeometry(std::move(iga_geometry))
-{
-#if 0
-  using namespace Ogre;
-
-  static std::atomic<unsigned int> counter = 0;
-  mesh = MeshManager::getSingleton().createManual(
-      std::format("Gismo Geometry - {:05}", counter++), // Name
-      RGN_DEFAULT,                                      // Group
-      this                                              // Loader
-  );
-  mesh->setBackgroundLoaded(true);
-#endif
+  struct VertexSetSurface {
+    filament::math::float4 point;
+    filament::math::float4 normal;
+  };
 }
 
-void FilamentGismoMesh::init()
-{
-#if 0
-  mesh->prepare();
-#endif
-}
 
-void FilamentGismoMesh::resetIgaGeometry(SharedPtr<const iga_geometry_t> iga_geometry)
+namespace Mesh
 {
-#if 0
-  igaGeometry = iga_geometry.sliced();
-  justPrepare();
+  FilamentGismoMesh::FilamentGismoMesh(WeakPtr<filament::Engine> _engine)
+      : engine(std::move(_engine))
+  {
+//    Create builder;
+  }
 
-  auto lambda = [weak_self = weak_from_this()]{
-    auto self = weak_self.lock();
-    if(!self) {
+
+  void FilamentGismoMesh::resetIgaSlot(SharedPtr<const iga_geometry_t> iga_geometry)
+  {
+    if(!iga_geometry) {
       return;
     }
-    self->loadResource(self->mesh.get());
-    self->mesh->_dirtyState();
-  };
-  get_queue().push(lambda);
-#endif
-}
+    auto dimension = iga_geometry->parDim();
+
+    if(dimension == 1) {
+      resetCurve(*iga_geometry);
+    } else if(dimension == 2) {
+      resetSurface(*iga_geometry);
+    } else {
+      assert(false && "Must be a curve or a surface.");
+    }
+  }
 
 
-#if 0
-size_t FilamentGismoMesh::vertexEntriesPerPoint() const
-{
-  assert(dimension && "The dimension was supposed to be set.");
-  return ((dimension == 1) ? 3 : 6);
-}
-
-
-void FilamentGismoMesh::prepareResource(Ogre::Resource*)
-{
-  justPrepare();
-
-  auto lambda = [weak_self = weak_from_this()]{
-    auto self = weak_self.lock();
-    if(!self) {
+  void FilamentGismoMesh::resetCurve(const iga_geometry_t& iga_geometry)
+  {
+    auto shared_engine = engine.lock();
+    if(!shared_engine) {
+      std::cerr << "Engine already destroyed." << std::endl;
       return;
     }
-      self->mesh->escalateLoading();
-  };
-  get_queue().push(lambda);
-}
 
-void FilamentGismoMesh::justPrepare()
-{
-  auto igaGeo = igaGeometry.load();
-  if(!igaGeo) {
-    return;
-  }
-  dimension = igaGeo->parDim();
+    const gismo::gsMatrix<real_t> param = iga_geometry.parameterRange();
+    // TODO: decide sample size according to some precise mathematical criteria.
+    gismo::gsGridIterator<real_t, gismo::CUBE> pIter(param, 100);
 
-  if(dimension == 1) {
-    prepareCurve(igaGeo);
-  } else if(dimension == 2) {
-    prepareSurface(igaGeo);
-  } else {
-    assert(false && "Must be a curve or a surface.");
-    return;
-  }
-}
-
-void FilamentGismoMesh::loadResource(Ogre::Resource*)
-{
-  using namespace Ogre;
-  std::scoped_lock lock{mutex};
-  assert(dimension != 0 && "Parameter dimension not set.");
-  assert(dimension < 3 && "Must be a curve or a surface.");
-
-  mesh->_setBounds(AxisAlignedBox(min_bound, max_bound));
-
-  if(!mesh->sharedVertexData) {
-    setVertexData();
-  }
-  prepareHardwareBuffers();
-
-  assert(!mesh->getSubMeshes().empty());
-
-  SubMesh* sub = mesh->getSubMeshes()[0];
-  sub->operationType = (dimension == 1) ? RenderOperation::OT_LINE_STRIP
-                                        : RenderOperation::OT_TRIANGLE_STRIP;
-  //    sub->useSharedVertices = true;
-  sub->indexData->indexBuffer = ibuf;
-  sub->indexData->indexStart = 0;
-  sub->indexData->indexCount = indexes.size();
-}
-
-
-void FilamentGismoMesh::prepareCurve(const std::shared_ptr<const iga_geometry_t>& igaGeo)
-{
-  using namespace Ogre;
-
-  const gismo::gsMatrix<real_t> param = igaGeo->parameterRange();
-  // TODO: decide sample size according to some precise mathematical criteria.
-  gismo::gsGridIterator<real_t, gismo::CUBE> pIter(param, 100);
-
-  const auto np = pIter.numPointsCwise();
-  const auto npoints = np[0];
-
-  std::vector<float> positions;
-  std::vector<Ogre::uint16> local_indexes;
-
-  auto local_min_bound = Vector3::ZERO;
-  auto local_max_bound = Vector3::ZERO;
-
-  positions.reserve(vertexEntriesPerPoint() * npoints);
-  local_indexes.reserve(npoints);
-
-  auto domain_points = pIter.toMatrix();
-  // TODO: process in parallel.
-  auto _positions  = igaGeo->eval(domain_points);
-  assert(_positions.cols() == npoints
-         && "Wrong number of positions predicted.");
-  for(int i=0; i < _positions.cols(); ++i) {
-    auto const& pcol = _positions.col(i);
-
-    Vector3 pos(pcol[0], pcol[1], pcol[2]);
-    // Sets the bounding box.
-    local_min_bound.makeFloor(pos);
-    local_max_bound.makeCeil(pos);
-
-    // Sets the positions
-    positions.push_back(pos[0]);
-    positions.push_back(pos[1]);
-    positions.push_back(pos[2]);
-
-    local_indexes.push_back(i);
-  }
-
-  std::scoped_lock lock{mutex};
-  vertex  = std::move(positions);
-  indexes = std::move(local_indexes);
-  min_bound = local_min_bound;
-  max_bound = local_max_bound;
-}
-
-void FilamentGismoMesh::prepareSurface(const std::shared_ptr<const iga_geometry_t>& igaGeo)
-{
-  using namespace Ogre;
-
-  gismo::gsNormalField<real_t> normal_field{*igaGeo};
-
-  const gismo::gsMatrix<real_t> param = igaGeo->parameterRange();
-  // TODO: decide sample size according to some precise mathematical criteria.
-  gismo::gsGridIterator<real_t, gismo::CUBE> pIter(param, 1000);
-
-  const auto np = pIter.numPointsCwise();
-  const auto npoints = np[0] * np[1];
-  const auto ntriangles = 2 * (np[0]-1) * (np[1]-1);
-
-  std::vector<float> positions_normals;
-  std::vector<Ogre::uint16> triangles;
-
-  auto local_min_bound = Vector3::ZERO;
-  auto local_max_bound = Vector3::ZERO;
-
-  positions_normals.reserve(vertexEntriesPerPoint() * npoints);
-  triangles.reserve(2 * 3 * ntriangles);
-
-  auto domain_points = pIter.toMatrix();
-  // TODO: process in parallel.
-  auto _positions  = igaGeo->eval(domain_points);
-  auto _normals = normal_field.eval(domain_points);
-  assert(_positions.cols() == npoints
-         && "Wrong number of positions predicted.");
-  assert(_positions.cols() == _normals.cols()
-         && "We should have one normal for each vertex.");
-  for(int i=0; i < _positions.cols(); ++i) {
-    auto const& pcol = _positions.col(i);
-    auto const& ncol = _normals.col(i);
-
-    Vector3 pos(pcol[0], pcol[1], pcol[2]);
-    Vector3 normal(ncol[0], ncol[1], ncol[2]);
-    normal.normalise();
-
-    // Sets the bounding box.
-    local_min_bound.makeFloor(pos);
-    local_max_bound.makeCeil(pos);
-
-    // Sets the positions
-    positions_normals.push_back(pos[0]);
-    positions_normals.push_back(pos[1]);
-    positions_normals.push_back(pos[2]);
-    // Sets the normals
-    positions_normals.push_back(normal[0]);
-    positions_normals.push_back(normal[1]);
-    positions_normals.push_back(normal[2]);
-  }
-
-  for(index_t j = 0; j < np[1]-1; ++j) {
-    for(index_t i= 0; i < np[0]-1; ++i) {
-      const index_t ind1 = j * np[0] + i;
-      const index_t ind2 = ind1 + np[0];
-      triangles.push_back(ind1);
-      triangles.push_back(ind1+1);
-      triangles.push_back(ind2+1);
-      triangles.push_back(ind1);
-      triangles.push_back(ind2+1);
-      triangles.push_back(ind1+1);
-
-      triangles.push_back(ind2+1);
-      triangles.push_back(ind2);
-      triangles.push_back(ind1);
-      triangles.push_back(ind2+1);
-      triangles.push_back(ind1);
-      triangles.push_back(ind2);
+    const auto np = pIter.numPointsCwise();
+    const auto npoints = np[0];
+    if(!npoints) {
+      return;
     }
+
+    /*
+     * Data for each vertex: position, normal, color, etc.
+     */
+    struct curve_vdata
+    {
+      filament::math::float4 pos;
+    };
+    std::unique_ptr<std::vector<curve_vdata>> vertices;
+    std::unique_ptr<std::vector<uint16_t>> indices;
+
+    vertices->reserve(npoints);
+    indices->reserve(npoints);
+
+    /*
+     * Extract and process data from G+Smo.
+     */
+    auto domain_points = pIter.toMatrix();
+    auto _positions  = iga_geometry.eval(domain_points);
+    assert(_positions.cols() == npoints
+           && "Wrong number of positions predicted.");
+
+    /*
+     * Bounding box book keeping.
+     */
+    auto const& firstp = _positions.col(0);
+    filament::math::float4 min_bound{firstp[0], firstp[1], firstp[2], 1.0f};
+    filament::math::float4 max_bound = min_bound;
+
+    for(uint16_t i=0; i < _positions.cols(); ++i) {
+      auto const& pcol = _positions.col(i);
+      filament::math::float4 pos{pcol[0], pcol[1], pcol[2], 1.0f};
+
+      // Sets the bounding box.
+      min_bound = min(min_bound, pos);
+      max_bound = max(max_bound, pos);
+
+      // Sets the positions
+      vertices->emplace_back(pos);
+      indices->push_back(i);
+    }
+
+    auto vb = filament::VertexBuffer::Builder()
+              .bufferCount(1)
+              .vertexCount(1)
+              .attribute(filament::VertexAttribute::POSITION, 0,
+                         filament::VertexBuffer::AttributeType::FLOAT4,
+                         offsetof(curve_vdata, pos), sizeof(curve_vdata))
+              .build(*shared_engine);
+
+    assert(vertices->size() && "Vertex data cannot be empty.");
+    vb->setBufferAt(*shared_engine, 0, filament::VertexBuffer::BufferDescriptor::make(
+      vertices->data(), vertices->size() * sizeof(curve_vdata),
+      [v = std::move(vertices)](void*, size_t, void*){}));
+
+    auto ib = filament::IndexBuffer::Builder()
+              .indexCount(indices->size())
+              .bufferType(filament::IndexBuffer::IndexType::USHORT)
+              .build(*shared_engine);
+
+    assert(indices->size() && "Index data cannot be empty.");
+    vb->setBufferAt(*shared_engine, 0, filament::IndexBuffer::BufferDescriptor::make(
+      indices->data(), indices->size() * sizeof(uint16_t),
+      [i = std::move(indices)](void*, size_t, void*){}));
+
+    mesh_data = std::make_shared<FilamentMeshData>(shared_engine, vb, ib, min_bound, max_bound);
   }
 
-  std::scoped_lock lock{mutex};
-  vertex  = std::move(positions_normals);
-  indexes = std::move(triangles);
-  min_bound = local_min_bound;
-  max_bound = local_max_bound;
+
+  void FilamentGismoMesh::resetSurface(const iga_geometry_t& iga_geometry)
+  {
+    auto shared_engine = engine.lock();
+    if(!shared_engine) {
+      std::cerr << "Engine already destroyed." << std::endl;
+      return;
+    }
+
+    gismo::gsNormalField<real_t> normal_field{iga_geometry};
+
+    const gismo::gsMatrix<real_t> param = iga_geometry.parameterRange();
+    // TODO: decide sample size according to some precise mathematical criteria.
+    gismo::gsGridIterator<real_t, gismo::CUBE> pIter(param, 1000);
+
+    const auto np = pIter.numPointsCwise();
+    const auto npoints = np[0] * np[1];
+    // Two per rectangle for each orientation.
+    const auto ntriangles = 2 * 2 * (np[0]-1) * (np[1]-1);
+
+    /*
+     * Data for each vertex: position, normal, color, etc.
+     */
+    struct surface_vdata
+    {
+      filament::math::float4 pos;
+      filament::math::float4 normal;
+    };
+    std::unique_ptr<std::vector<surface_vdata>> vertices;
+    std::unique_ptr<std::vector<uint16_t>> indices;
+
+    vertices->reserve(npoints);
+    indices->reserve(ntriangles);
+
+    /*
+     * Extract and process data from G+Smo.
+     */
+    auto domain_points = pIter.toMatrix();
+    auto _positions  = iga_geometry.eval(domain_points);
+    auto _normals = normal_field.eval(domain_points);
+    assert(_positions.cols() == npoints
+           && "Wrong number of positions predicted.");
+    assert(_positions.cols() == _normals.cols()
+           && "We should have one normal for each vertex.");
+
+    /*
+     * Bounding box book keeping.
+     */
+    auto const& firstp = _positions.col(0);
+    filament::math::float4 min_bound{firstp[0], firstp[1], firstp[2], 1.0f};
+    filament::math::float4 max_bound = min_bound;
+
+    for(int i=0; i < _positions.cols(); ++i) {
+      auto const& pcol = _positions.col(i);
+      auto const& ncol = _normals.col(i);
+
+      filament::math::float4 pos(pcol[0], pcol[1], pcol[2], 1.0f);
+      filament::math::float4 normal(ncol[0], ncol[1], ncol[2], 0.0f);
+      normal /= length(normal);
+
+      // Sets the bounding box.
+      min_bound = min(min_bound, pos);
+      max_bound = max(max_bound, pos);
+
+      // Sets the positions
+      vertices->emplace_back(pos, normal);
+    }
+
+    for(index_t j = 0; j < np[1]-1; ++j) {
+      for(index_t i= 0; i < np[0]-1; ++i) {
+        const index_t ind1 = j * np[0] + i;
+        const index_t ind2 = ind1 + np[0];
+        indices->push_back(ind1);
+        indices->push_back(ind1+1);
+        indices->push_back(ind2+1);
+        indices->push_back(ind1);
+        indices->push_back(ind2+1);
+        indices->push_back(ind1+1);
+
+        indices->push_back(ind2+1);
+        indices->push_back(ind2);
+        indices->push_back(ind1);
+        indices->push_back(ind2+1);
+        indices->push_back(ind1);
+        indices->push_back(ind2);
+      }
+    }
+
+    auto vb = filament::VertexBuffer::Builder()
+              .bufferCount(1)
+              .vertexCount(1)
+              .attribute(filament::VertexAttribute::POSITION, 0,
+                         filament::VertexBuffer::AttributeType::FLOAT4,
+                         offsetof(surface_vdata, pos), sizeof(surface_vdata))
+              .build(*shared_engine);
+
+    assert(vertices->size() && "Vertex data cannot be empty.");
+    vb->setBufferAt(*shared_engine, 0, filament::VertexBuffer::BufferDescriptor::make(
+      vertices->data(), vertices->size() * sizeof(surface_vdata),
+      [v = std::move(vertices)](void*, size_t, void*){}));
+
+    auto ib = filament::IndexBuffer::Builder()
+              .indexCount(indices->size())
+              .bufferType(filament::IndexBuffer::IndexType::USHORT)
+              .build(*shared_engine);
+
+    assert(indices->size() && "Index data cannot be empty.");
+    vb->setBufferAt(*shared_engine, 0, filament::IndexBuffer::BufferDescriptor::make(
+      indices->data(), indices->size() * sizeof(uint16_t),
+      [i = std::move(indices)](void*, size_t, void*){}));
+
+    mesh_data = std::make_shared<FilamentMeshData>(shared_engine, vb, ib, min_bound, max_bound);
+  }
 }
-
-
-void FilamentGismoMesh::setVertexData()
-{
-  using namespace Ogre;
-
-  assert(dimension && "The dimension was supposed to be set.");
-
-  assert(mesh);
-
-  assert(mesh->getSubMeshes().empty());
-  mesh->createSubMesh();
-
-  assert(!mesh->sharedVertexData);
-  mesh->createVertexData();
-
-  auto* vdata = mesh->sharedVertexData;
-  auto* decl = vdata->vertexDeclaration;
-  vdata->vertexCount = vertexEntriesPerPoint();
-
-  assert(vblock_size == 0 && "VertexData can only be set once.");
-  vblock_size += decl->addElement(0, vblock_size, VET_FLOAT3, VES_POSITION).getSize();
-  if(dimension == 2) {
-    vblock_size += decl->addElement(0, vblock_size, VET_FLOAT3, VES_NORMAL).getSize();
-  }
-}
-
-
-void FilamentGismoMesh::prepareHardwareBuffers()
-{
-  using namespace Ogre;
-
-  // Vertexes.
-  bool need_vertex_buffer = false;
-
-  if(vertex_buffer_size <= 0) {
-    need_vertex_buffer = true;
-    vertex_buffer_size = 1;
-  }
-
-  auto needed_vertex_size = std::max(vertex.size(), vertexEntriesPerPoint());
-  while(vertex_buffer_size < needed_vertex_size) {
-    need_vertex_buffer = true;
-    vertex_buffer_size *= 2;
-  }
-  while(vertex_buffer_size > 4*needed_vertex_size) {
-    need_vertex_buffer = true;
-    vertex_buffer_size /= 2;
-  }
-
-  if(need_vertex_buffer) {
-    auto* vdata = mesh->sharedVertexData;
-    auto* bind = vdata->vertexBufferBinding;
-
-    vbuf = HardwareBufferManager::getSingleton().createVertexBuffer(
-        vblock_size, vertex_buffer_size/vertexEntriesPerPoint(), HBU_GPU_ONLY);
-    bind->setBinding(0, vbuf);
-  }
-  auto vbyte_count = vblock_size*vertex.size()/vertexEntriesPerPoint();
-  assert(vbyte_count <= vbuf->getSizeInBytes());
-  vbuf->writeData(0, sizeof(float)*vertex.size(), vertex.data(), true);
-
-
-  // Indexes
-  bool need_index_buffer = false;
-  if(index_buffer_size <= 0) {
-    need_index_buffer = true;
-    index_buffer_size = 1;
-  }
-
-  auto needed_index_size = std::max(indexes.size(), (size_t)1);
-  while(index_buffer_size < needed_index_size) {
-    need_index_buffer = true;
-    index_buffer_size *= 2;
-  }
-
-  while(index_buffer_size > 4*needed_index_size) {
-    need_index_buffer = true;
-    index_buffer_size /= 2;
-  }
-
-  if(need_index_buffer) {
-    ibuf = HardwareBufferManager::getSingleton().createIndexBuffer(
-        HardwareIndexBuffer::IT_16BIT, index_buffer_size, HBU_GPU_ONLY);
-  }
-  assert(sizeof(Ogre::uint16)*indexes.size() <= ibuf->getSizeInBytes());
-  ibuf->writeData(0, sizeof(Ogre::uint16)*indexes.size(), indexes.data(), true);
-}
-#endif

@@ -25,26 +25,16 @@
 #include <libparacadis/base/geometric_primitives/DocumentGeometry.h>
 #include <libparacadis/mesh_provider/MeshProvider.h>
 
-#include <memory>
+#include <math/vec4.h>
 
-namespace Ogre {
-  class Mesh;
-}
+#include <memory>
 
 namespace SceneGraph
 {
-  /**
-   * Vurtual base to implement a bridge between ParaCADis geometric objects
-   * and the SceneGraph tree leafs.
-   */
   class MeshNode
   {
   public:
     static SharedPtr<MeshNode> make_shared(SharedPtr<Mesh::MeshProvider> mesh_provider);
-
-#if 0
-    SharedPtr<Ogre::Mesh> getOgreMesh();
-#endif
 
   private:
     MeshNode(SharedPtr<Mesh::MeshProvider> mesh_provider);

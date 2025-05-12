@@ -348,13 +348,13 @@ namespace SceneGraph
     auto& x = cs.x_axis();
     auto& y = cs.y_axis();
     auto& z = cs.z_axis();
+#if 0
     Ogre::Vector3 oo = {tod(o.x()), tod(o.y()), tod(o.z())};
     Ogre::Vector3 ox = {tod(x.x()), tod(x.y()), tod(x.z())};
     Ogre::Vector3 oy = {tod(y.x()), tod(y.y()), tod(y.z())};
     Ogre::Vector3 oz = {tod(z.x()), tod(z.y()), tod(z.z())};
     Ogre::Quaternion ogre_rotation(ox, oy, oz);
 
-#if 0
     auto ogre_node = ogreNodeWeak.lock();
     assert(ogre_node);
     if(!ogre_node) {
